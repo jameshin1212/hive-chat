@@ -29,6 +29,11 @@ export const MessageType = {
   CHAT_LEFT: 'chat_left',
   CHAT_USER_OFFLINE: 'chat_user_offline',
   CHAT_ERROR: 'chat_error',
+  // Client -> Server (friends)
+  FRIEND_STATUS_REQUEST: 'friend_status_request',
+  // Server -> Client (friends)
+  FRIEND_STATUS_RESPONSE: 'friend_status_response',
+  FRIEND_STATUS_UPDATE: 'friend_status_update',
 } as const;
 
 // --- Shared sub-schemas ---
@@ -98,6 +103,13 @@ export const chatLeaveSchema = z.object({
   sessionId: uuidSchema,
 });
 
+// --- Client -> Server friend schemas ---
+
+export const friendStatusRequestSchema = z.object({
+  type: z.literal(MessageType.FRIEND_STATUS_REQUEST),
+  friends: z.array(z.object({ nickname: z.string(), tag: z.string() })),
+});
+
 export const clientMessageSchema = z.discriminatedUnion('type', [
   registerSchema,
   heartbeatSchema,
@@ -108,6 +120,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   chatDeclineSchema,
   chatMessageSchema,
   chatLeaveSchema,
+  friendStatusRequestSchema,
 ]);
 
 export type ClientMessage = z.infer<typeof clientMessageSchema>;
@@ -194,6 +207,25 @@ export const chatErrorSchema = z.object({
   message: z.string(),
 });
 
+// --- Server -> Client friend schemas ---
+
+export const friendStatusResponseSchema = z.object({
+  type: z.literal(MessageType.FRIEND_STATUS_RESPONSE),
+  statuses: z.array(z.object({
+    nickname: z.string(),
+    tag: z.string(),
+    status: z.enum(['online', 'offline', 'unknown']),
+    aiCli: z.enum(AI_CLI_OPTIONS).optional(),
+  })),
+});
+
+export const friendStatusUpdateSchema = z.object({
+  type: z.literal(MessageType.FRIEND_STATUS_UPDATE),
+  nickname: z.string(),
+  tag: z.string(),
+  status: z.enum(['online', 'offline']),
+});
+
 export const serverMessageSchema = z.discriminatedUnion('type', [
   registeredSchema,
   nearbyUsersResponseSchema,
@@ -208,6 +240,8 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
   chatLeftSchema,
   chatUserOfflineSchema,
   chatErrorSchema,
+  friendStatusResponseSchema,
+  friendStatusUpdateSchema,
 ]);
 
 export type ServerMessage = z.infer<typeof serverMessageSchema>;
@@ -237,3 +271,8 @@ export type ChatMsgMessage = z.infer<typeof chatMsgSchema>;
 export type ChatLeftMessage = z.infer<typeof chatLeftSchema>;
 export type ChatUserOfflineMessage = z.infer<typeof chatUserOfflineSchema>;
 export type ChatErrorMessage = z.infer<typeof chatErrorSchema>;
+
+// Friend message types
+export type FriendStatusRequestMessage = z.infer<typeof friendStatusRequestSchema>;
+export type FriendStatusResponseMessage = z.infer<typeof friendStatusResponseSchema>;
+export type FriendStatusUpdateMessage = z.infer<typeof friendStatusUpdateSchema>;
