@@ -46,11 +46,12 @@ Plans:
   2. Server determines user location from IP address and returns nearby users within selected radius (1/3/5/10km)
   3. User can change discovery radius and see updated nearby user list
   4. Online/offline status of other users updates in real-time (within heartbeat interval)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Protocol schemas, server package scaffolding, GeoLocationService, PresenceManager
+- [ ] 02-02-PLAN.md — SignalingServer WebSocket handler, SignalingClient with auto-reconnect, dev scripts
+- [ ] 02-03-PLAN.md — TUI integration: hooks, StatusBar, UserList, ChatScreen wiring, manual verification
 
 ### Phase 3: Relay Chat
 **Goal**: Users can chat with nearby users end-to-end, with messages relayed through the signaling server
@@ -104,7 +105,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/3 | In Progress|  |
-| 2. Signaling & Discovery | 0/2 | Not started | - |
+| 2. Signaling & Discovery | 0/3 | Not started | - |
 | 3. Relay Chat | 0/2 | Not started | - |
 | 4. Friends | 0/1 | Not started | - |
 | 5. P2P Upgrade | 0/2 | Not started | - |
