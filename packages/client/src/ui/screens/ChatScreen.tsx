@@ -99,6 +99,10 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     switch (status) {
       case 'connected':
         addSystemMessage('Connected', 'transition');
+        addSystemMessage('Cling Talk v0.1.0');
+        addSystemMessage('Tips: /users — browse nearby devs  |  /friends — friend list');
+        addSystemMessage('      /addfriend nick#TAG — add friend  |  /exit — quit');
+        addSystemMessage('      Tab — cycle radius (1/3/5/10km)  |  /help — all commands');
         break;
       case 'reconnecting':
         addSystemMessage('Connection lost. Reconnecting...');
