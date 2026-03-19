@@ -32,9 +32,9 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 
 ### Deferred from v1.0
 
-- **disconnected 이벤트 emit** — offline 상태 표시 수정 (tech debt)
-- **/settings, /chat 명령어 구현** — v1.0에서 placeholder
-- **클라이언트 zod 검증** — type assertion 대체
+- **disconnected 이벤트 emit** -- offline 상태 표시 수정 (tech debt)
+- **/settings, /chat 명령어 구현** -- v1.0에서 placeholder
+- **클라이언트 zod 검증** -- type assertion 대체
 
 ## Out of Scope
 
@@ -51,21 +51,21 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | — | Pending |
-| BUG-02 | — | Pending |
-| INP-01 | — | Pending |
-| INP-02 | — | Pending |
-| INP-03 | — | Pending |
-| VIS-01 | — | Pending |
-| VIS-02 | — | Pending |
-| VIS-03 | — | Pending |
-| CMD-01 | — | Pending |
+| BUG-01 | Phase 6 | Pending |
+| BUG-02 | Phase 6 | Pending |
+| INP-01 | Phase 7 | Pending |
+| INP-02 | Phase 7 | Pending |
+| INP-03 | Phase 7 | Pending |
+| VIS-01 | Phase 8 | Pending |
+| VIS-02 | Phase 8 | Pending |
+| VIS-03 | Phase 8 | Pending |
+| CMD-01 | Phase 8 | Pending |
 
 **Coverage:**
 - v1.0.1 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 after initial definition*
+*Last updated: 2026-03-20 -- traceability updated with phase mappings*
