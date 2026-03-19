@@ -259,12 +259,20 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
     }
   }, { isActive });
 
-  const showPlaceholder = (!text && placeholder) || !isActive;
-
   // Render with cursor-aware visible window
   const renderContent = () => {
-    if (showPlaceholder) {
-      return <Text dimColor>{!isActive ? (placeholder ?? 'Connection lost...') : placeholder}</Text>;
+    if (!isActive) {
+      return <Text dimColor>{placeholder ?? 'Connection lost...'}</Text>;
+    }
+
+    // Empty input: show cursor + dimmed placeholder behind it
+    if (!text) {
+      return (
+        <>
+          <Text color={theme.text.primary}>▏</Text>
+          {placeholder && <Text dimColor>{placeholder}</Text>}
+        </>
+      );
     }
 
     const { visibleText, cursorOffset } = getVisibleWindow(text, availableWidth, cursorPosition);

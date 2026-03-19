@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Box, Text } from 'ink';
 
 interface CommandSuggestion {
@@ -13,73 +13,63 @@ interface CommandSuggestionsProps {
   maxVisible?: number;
 }
 
-function renderItem(cmd: CommandSuggestion, isSelected: boolean) {
-  return (
-    <Box key={cmd.name}>
-      <Text inverse={isSelected} bold={isSelected}>
-        {isSelected ? '▸ ' : '  '}
-        {cmd.name}
-      </Text>
-      <Text dimColor>
-        {' — '}{cmd.description}
-      </Text>
-    </Box>
-  );
-}
-
+/**
+ * Command autocomplete dropdown.
+ *
+ * Scroll strategy: the selected item is ALWAYS visible.
+ * The window slides to keep selectedIndex in view — no ref, no persistent state.
+ * This is intentionally stateless to avoid sync issues with parent's selectedIndex.
+ */
 export function CommandSuggestions({ suggestions, selectedIndex, visible, maxVisible = 8 }: CommandSuggestionsProps) {
   if (!visible || suggestions.length === 0) return null;
 
   const total = suggestions.length;
-  const scrollTopRef = useRef(0);
 
-  // No scrolling needed
+  // All items fit — no scrolling needed
   if (total <= maxVisible) {
     return (
       <Box flexDirection="column" paddingX={1}>
-        {suggestions.map((cmd, i) => renderItem(cmd, i === selectedIndex))}
+        {suggestions.map((cmd, i) => (
+          <Box key={cmd.name}>
+            <Text inverse={i === selectedIndex} bold={i === selectedIndex}>
+              {i === selectedIndex ? '▸ ' : '  '}{cmd.name}
+            </Text>
+            <Text dimColor>{' — '}{cmd.description}</Text>
+          </Box>
+        ))}
       </Box>
     );
   }
 
-  // Fixed item slots (reserve 2 lines for ↑↓ indicators when in middle)
-  const itemSlots = maxVisible - 2; // always reserve both indicators for stable layout
+  // Scrolling needed: show a window around selectedIndex
+  // Strategy: selectedIndex is always centered (or as close as possible)
+  const half = Math.floor((maxVisible - 2) / 2); // -2 for ↑↓ indicators
+  const itemSlots = maxVisible - 2;
 
-  // Stable scroll: only move window when selected goes out of visible range
-  let scrollTop = scrollTopRef.current;
+  let start = selectedIndex - half;
+  start = Math.max(0, start);
+  start = Math.min(start, total - itemSlots);
+  start = Math.max(0, start); // clamp again after min
 
-  // Clamp scrollTop to valid range
-  scrollTop = Math.max(0, Math.min(scrollTop, total - itemSlots));
-
-  // Adjust if selected is outside visible window
-  if (selectedIndex < scrollTop) {
-    scrollTop = selectedIndex;
-  } else if (selectedIndex >= scrollTop + itemSlots) {
-    scrollTop = selectedIndex - itemSlots + 1;
-  }
-
-  // Edge cases: at very start or very end, reclaim indicator line
-  scrollTop = Math.max(0, Math.min(scrollTop, total - itemSlots));
-  scrollTopRef.current = scrollTop;
-
-  const endIndex = Math.min(scrollTop + itemSlots, total);
-  const visibleSuggestions = suggestions.slice(scrollTop, endIndex);
-  const showUp = scrollTop > 0;
-  const showDown = endIndex < total;
+  const end = Math.min(start + itemSlots, total);
+  const items = suggestions.slice(start, end);
 
   return (
     <Box flexDirection="column" paddingX={1}>
-      {showUp ? (
-        <Text dimColor>  ↑ {scrollTop} more</Text>
-      ) : (
-        <Text> </Text>
-      )}
-      {visibleSuggestions.map((cmd, i) => renderItem(cmd, scrollTop + i === selectedIndex))}
-      {showDown ? (
-        <Text dimColor>  ↓ {total - endIndex} more</Text>
-      ) : (
-        <Text> </Text>
-      )}
+      <Text dimColor>{start > 0 ? `  ↑ ${start} more` : ' '}</Text>
+      {items.map((cmd, i) => {
+        const realIndex = start + i;
+        const isSelected = realIndex === selectedIndex;
+        return (
+          <Box key={cmd.name}>
+            <Text inverse={isSelected} bold={isSelected}>
+              {isSelected ? '▸ ' : '  '}{cmd.name}
+            </Text>
+            <Text dimColor>{' — '}{cmd.description}</Text>
+          </Box>
+        );
+      })}
+      <Text dimColor>{end < total ? `  ↓ ${total - end} more` : ' '}</Text>
     </Box>
   );
 }
