@@ -9,8 +9,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Identity
 
-- [ ] **IDEN-01**: 최초 실행 시 닉네임 입력 + 고유태그 자동발급 (nick#1234 형식)
-- [ ] **IDEN-02**: AI CLI 도구 선택 (Claude Code, Codex, Gemini, Cursor 등) 및 뱃지 표시
+- [x] **IDEN-01**: 최초 실행 시 닉네임 입력 + 고유태그 자동발급 (nick#1234 형식)
+- [x] **IDEN-02**: AI CLI 도구 선택 (Claude Code, Codex, Gemini, Cursor 등) 및 뱃지 표시
 - [ ] **IDEN-03**: 온라인/오프라인 상태가 다른 사용자에게 실시간 표시
 
 ### Discovery
@@ -37,11 +37,11 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **TUI-01**: 스플릿 레이아웃 (메시지 영역 + 입력 영역)
 - [ ] **TUI-02**: 한글/CJK IME 조합 정상 처리 — 입력 중 밀림/깨짐 없음
 - [ ] **TUI-03**: 연결 상태 표시 (direct/relay/disconnected)
-- [ ] **TUI-04**: Ctrl+C 또는 /quit으로 깔끔한 종료
+- [x] **TUI-04**: Ctrl+C 또는 /quit으로 깔끔한 종료
 
 ### Distribution
 
-- [ ] **DIST-01**: npm 패키지로 배포, npx cling-talk으로 즉시 실행
+- [x] **DIST-01**: npm 패키지로 배포, npx cling-talk으로 즉시 실행
 
 ## v2 Requirements
 
@@ -76,8 +76,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| IDEN-01 | Phase 1 | Pending |
-| IDEN-02 | Phase 1 | Pending |
+| IDEN-01 | Phase 1 | Complete |
+| IDEN-02 | Phase 1 | Complete |
 | IDEN-03 | Phase 2 | Pending |
 | DISC-01 | Phase 2 | Pending |
 | DISC-02 | Phase 2 | Pending |
@@ -92,8 +92,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TUI-01 | Phase 1 | Pending |
 | TUI-02 | Phase 1 | Pending |
 | TUI-03 | Phase 5 | Pending |
-| TUI-04 | Phase 1 | Pending |
-| DIST-01 | Phase 1 | Pending |
+| TUI-04 | Phase 1 | Complete |
+| DIST-01 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 18 total
