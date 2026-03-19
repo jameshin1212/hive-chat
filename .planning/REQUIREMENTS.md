@@ -15,8 +15,8 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 ### Input UX
 
 - [x] **INP-01**: 입력 필드에서 좌/우 화살표 키로 커서 이동 가능
-- [ ] **INP-02**: `/` 입력 시 명령어 자동완성 목록 표시
-- [ ] **INP-03**: 자동완성 목록에서 화살표 키로 명령어 선택 가능
+- [x] **INP-02**: `/` 입력 시 명령어 자동완성 목록 표시
+- [x] **INP-03**: 자동완성 목록에서 화살표 키로 명령어 선택 가능
 
 ### Visual UX
 
@@ -54,8 +54,8 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 | BUG-01 | Phase 6 | Complete |
 | BUG-02 | Phase 6 | Complete |
 | INP-01 | Phase 7 | Complete |
-| INP-02 | Phase 7 | Pending |
-| INP-03 | Phase 7 | Pending |
+| INP-02 | Phase 7 | Complete |
+| INP-03 | Phase 7 | Complete |
 | VIS-01 | Phase 8 | Pending |
 | VIS-02 | Phase 8 | Pending |
 | VIS-03 | Phase 8 | Pending |

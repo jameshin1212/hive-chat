@@ -23,7 +23,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 ### v1.0.1 Bug Fix & UX Polish
 
 - [ ] **Phase 6: Chat Bug Fixes** - input text visibility and scroll rendering bugs
-- [ ] **Phase 7: Input UX** - cursor navigation and slash command autocomplete
+- [x] **Phase 7: Input UX** - cursor navigation and slash command autocomplete (completed 2026-03-19)
 - [ ] **Phase 8: Visual Polish** - status bar relocation, message color differentiation, command rename
 
 ## Phase Details
@@ -76,7 +76,7 @@ Plans:
 | 4. Friends | v1.0 | 2/2 | Complete | 2026-03-19 |
 | 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 6. Chat Bug Fixes | v1.0.1 | 1/2 | In progress | - |
-| 7. Input UX | v1.0.1 | 0/2 | Not started | - |
+| 7. Input UX | 2/2 | Complete   | 2026-03-19 | - |
 | 8. Visual Polish | v1.0.1 | 0/? | Not started | - |
 
 ---
