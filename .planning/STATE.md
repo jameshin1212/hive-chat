@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-19T13:34:42Z"
+status: complete
+stopped_at: Completed 05-03-PLAN.md — All phases complete
+last_updated: "2026-03-19T14:26:52Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 05 — p2p-upgrade
+**Current focus:** All phases complete — v1.0 milestone achieved
 
 ## Current Position
 
-Phase: 05 (p2p-upgrade) — EXECUTING
-Plan: 3 of 3
+Phase: 05 (p2p-upgrade) — COMPLETE
+Plan: 3 of 3 (all done)
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Plan: 3 of 3
 | Phase 04 P02 | 6min | 3 tasks | 4 files |
 | Phase 05 P01 | 3min | 2 tasks | 7 files |
 | Phase 05 P02 | 4min | 2 tasks | 6 files |
+| Phase 05 P03 | 8min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,10 @@ Recent decisions affecting current work:
 - [05-02]: Initiator client-only, acceptor server-only to prevent duplicate connections
 - [05-02]: JSON over newline-delimited Duplex stream for P2P handshake/messages
 - [05-02]: ConnectionManager proxies all SignalingClient events for transparent hook integration
+- [05-03]: Text label stays 'connected' for both direct and relay -- only color changes
+- [05-03]: No system messages in chat area during transport transitions
+- [05-03]: connectionColor defaults to yellow when transportType undefined (backward compat)
+- [05-03]: Error event handler on ConnectionManager to prevent unhandled crash
 
 ### Pending Todos
 
@@ -111,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T13:41:06Z
-Stopped at: Completed 05-02-PLAN.md
-Resume file: .planning/phases/05-p2p-upgrade/05-02-SUMMARY.md
+Last session: 2026-03-19T14:26:52Z
+Stopped at: Completed 05-03-PLAN.md — All phases complete
+Resume file: .planning/phases/05-p2p-upgrade/05-03-SUMMARY.md
