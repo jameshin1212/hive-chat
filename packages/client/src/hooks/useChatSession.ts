@@ -32,12 +32,13 @@ export function ringBell(): void {
   }
 }
 
-function createSystemMessage(content: string): ChatMessage {
+function createSystemMessage(content: string, kind?: 'transition'): ChatMessage {
   return {
     id: crypto.randomUUID(),
     from: { nickname: 'system', tag: '0000', aiCli: 'Claude Code', schemaVersion: 1 },
     content,
     timestamp: Date.now(),
+    kind,
   };
 }
 
@@ -111,7 +112,7 @@ export function useChatSession(
       setPartnerLeft(false);
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage(`Chat started with ${data.partner.nickname}#${data.partner.tag}`),
+        createSystemMessage(`Chat started with ${data.partner.nickname}#${data.partner.tag}`, 'transition'),
       ].slice(-MAX_MESSAGES));
     };
 
@@ -141,7 +142,7 @@ export function useChatSession(
     const handleChatLeft = (data: { sessionId: string; nickname: string; tag: string }) => {
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} left the chat`),
+        createSystemMessage(`${data.nickname}#${data.tag} left the chat`, 'transition'),
       ].slice(-MAX_MESSAGES));
       setPartnerLeft(true);
     };

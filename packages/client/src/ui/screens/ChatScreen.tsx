@@ -59,9 +59,18 @@ export function ChatScreen({ identity }: ChatScreenProps) {
   const isInputDisabled = chatStatus === 'disconnected' || chatStatus === 'requesting';
 
   // Dynamic overlay height — subtract from MessageArea so overlays don't clip below StatusBar
+  const maxListVisible = 8;
   const overlayHeight = (() => {
-    if (showUserList) return Math.min(users.length + 4, 12);
-    if (showFriendList) return Math.min(friendStatuses.length + 4, 12);
+    if (showUserList) {
+      const items = Math.min(users.length, maxListVisible);
+      const indicators = users.length > maxListVisible ? 2 : 0;
+      return items + indicators + 4; // +4 for title/subtitle/header/divider
+    }
+    if (showFriendList) {
+      const items = Math.min(friendStatuses.length, maxListVisible);
+      const indicators = friendStatuses.length > maxListVisible ? 2 : 0;
+      return items + indicators + 4;
+    }
     if (showSuggestions) {
       const filtered = filterCommands(currentInput);
       return Math.min(filtered.length, 8) + (filtered.length > 8 ? 2 : 0);
@@ -70,12 +79,13 @@ export function ChatScreen({ identity }: ChatScreenProps) {
   })();
   const messageAreaHeight = Math.max(1, rows - 4 - overlayHeight);
 
-  const addSystemMessage = useCallback((content: string) => {
+  const addSystemMessage = useCallback((content: string, kind?: 'transition') => {
     const sysMsg: ChatMessage = {
       id: nextMessageId(),
       from: { nickname: 'system', tag: '0000', aiCli: 'Claude Code', schemaVersion: 1 },
       content,
       timestamp: Date.now(),
+      kind,
     };
     setMessages(prev => [...prev, sysMsg].slice(-MAX_MESSAGES));
   }, []);
@@ -88,7 +98,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
 
     switch (status) {
       case 'connected':
-        addSystemMessage('Connected to signaling server');
+        addSystemMessage('Connected', 'transition');
         break;
       case 'reconnecting':
         addSystemMessage('Connection lost. Reconnecting...');
@@ -282,6 +292,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         messages={displayMessages}
         myIdentity={identity}
         availableHeight={messageAreaHeight}
+        columns={columns}
         isActive={!showUserList && !showFriendList && !incomingRequest}
       />
       {showFriendList && !showUserList && !incomingRequest && (

@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import stringWidth from 'string-width';
 import type { ChatMessage, Identity } from '@cling-talk/shared';
+import { DEFAULT_TERMINAL_WIDTH } from '@cling-talk/shared';
 import { theme, getUserColor } from '../theme.js';
+import { TransitionLine } from './TransitionLine.js';
 
 interface MessageAreaProps {
   messages: ChatMessage[];
   myIdentity?: Identity;
   availableHeight: number;
+  columns?: number;
   isActive?: boolean;
 }
 
@@ -52,7 +55,7 @@ export function calcVisibleMessages(
   return messages.slice(safeStart, endIndex);
 }
 
-export function MessageArea({ messages, myIdentity, availableHeight, isActive }: MessageAreaProps) {
+export function MessageArea({ messages, myIdentity, availableHeight, columns = DEFAULT_TERMINAL_WIDTH, isActive }: MessageAreaProps) {
   const [scrollOffset, setScrollOffset] = useState(0);
   const prevMessageCount = useRef(messages.length);
 
@@ -96,6 +99,9 @@ export function MessageArea({ messages, myIdentity, availableHeight, isActive }:
     <Box flexDirection="column" height={availableHeight} overflow="hidden">
       {visibleMessages.map((msg) => {
         if (msg.from.nickname === 'system') {
+          if (msg.kind === 'transition') {
+            return <TransitionLine key={msg.id} text={msg.content} columns={columns} />;
+          }
           return (
             <Box key={msg.id}>
               <Text color={theme.text.secondary} italic>{'\u2500'} {msg.content} {'\u2500'}</Text>

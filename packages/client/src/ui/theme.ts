@@ -11,6 +11,7 @@ export const theme = {
     separator: THEME_COLORS.separator,  // green
     statusBar: THEME_COLORS.statusBar,  // green
     prompt: 'green',
+    transition: 'green',
   },
   badge: {
     'Claude Code': '#B87FFF',

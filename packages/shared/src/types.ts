@@ -13,6 +13,7 @@ export interface ChatMessage {
   from: Identity;
   content: string;
   timestamp: number;
+  kind?: 'transition'; // visual section divider (═══ text ═══)
 }
 
 export type SlashCommand = {
