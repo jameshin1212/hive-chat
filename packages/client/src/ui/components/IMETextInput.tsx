@@ -13,6 +13,31 @@ export function calcCursorX(text: string, prompt: string = PROMPT): number {
   return stringWidth(prompt + text);
 }
 
+/**
+ * Returns the visible portion of text that fits within availableWidth columns,
+ * showing the rightmost (most recent) content. Uses string-width for CJK-aware
+ * column calculation. If a CJK character straddles the boundary, it is excluded.
+ */
+export function getVisibleText(text: string, availableWidth: number): string {
+  if (availableWidth <= 0) return '';
+  const totalWidth = stringWidth(text);
+  if (totalWidth <= availableWidth) return text;
+
+  // Walk backwards from end, accumulating width
+  const chars = Array.from(text);
+  let accumulatedWidth = 0;
+  let startIndex = chars.length;
+
+  for (let i = chars.length - 1; i >= 0; i--) {
+    const charWidth = stringWidth(chars[i]!);
+    if (accumulatedWidth + charWidth > availableWidth) break;
+    accumulatedWidth += charWidth;
+    startIndex = i;
+  }
+
+  return chars.slice(startIndex).join('');
+}
+
 interface IMETextInputProps {
   onSubmit: (text: string) => void;
   placeholder?: string;
