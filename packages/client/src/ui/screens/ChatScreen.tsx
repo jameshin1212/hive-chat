@@ -3,7 +3,7 @@ import { Box, Text, useInput, useStdout } from 'ink';
 import type { Identity, ChatMessage } from '@cling-talk/shared';
 import { DEFAULT_TERMINAL_WIDTH, MAX_MESSAGES } from '@cling-talk/shared';
 import { parseNickTag } from '@cling-talk/shared';
-import { parseInput, isKnownCommand, COMMANDS } from '../../commands/CommandParser.js';
+import { parseInput, isKnownCommand, COMMANDS, filterCommands } from '../../commands/CommandParser.js';
 import { useGracefulExit } from '../../hooks/useGracefulExit.js';
 import { useServerConnection } from '../../hooks/useServerConnection.js';
 import type { ConnectionStatus } from '../../hooks/useServerConnection.js';
@@ -18,7 +18,9 @@ import { IMETextInput } from '../components/IMETextInput.js';
 import { UserList } from '../components/UserList.js';
 import { FriendList } from '../components/FriendList.js';
 import { ChatRequestOverlay } from '../components/ChatRequestOverlay.js';
+import { CommandSuggestions } from '../components/CommandSuggestions.js';
 import { theme } from '../theme.js';
+import type { Key } from 'ink';
 
 interface ChatScreenProps {
   identity: Identity;
@@ -48,6 +50,11 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     declineRequest, sendMessage, leaveChat,
   } = useChatSession(client, status);
   const { friendStatuses, friendCount, onlineFriendCount, refreshFriendStatuses } = useFriends(client, status);
+
+  // Command autocomplete state
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [currentInput, setCurrentInput] = useState('');
 
   const isInChat = chatStatus === 'active' || chatStatus === 'requesting' || chatStatus === 'disconnected';
   const isInputDisabled = chatStatus === 'disconnected' || chatStatus === 'requesting';
@@ -98,6 +105,43 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     prevRadiusRef.current = radiusKm;
     addSystemMessage(`Discovery radius changed to ${radiusKm}km`);
   }, [radiusKm, addSystemMessage]);
+
+  const handleTextChange = useCallback((text: string) => {
+    setCurrentInput(text);
+    if (text.startsWith('/') && text.indexOf(' ') === -1) {
+      const filtered = filterCommands(text);
+      setShowSuggestions(filtered.length > 0);
+      setSuggestionIndex(0);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, []);
+
+  const handleKeyIntercept = useCallback((_input: string, key: Key, setText: (t: string) => void): boolean => {
+    if (!showSuggestions) return false;
+    const filtered = filterCommands(currentInput);
+    if (key.upArrow) {
+      setSuggestionIndex(prev => Math.max(0, prev - 1));
+      return true;
+    }
+    if (key.downArrow) {
+      setSuggestionIndex(prev => Math.min(filtered.length - 1, prev + 1));
+      return true;
+    }
+    if (key.return && filtered.length > 0) {
+      const selected = filtered[suggestionIndex];
+      if (selected) {
+        setText(selected.name + ' ');
+        setShowSuggestions(false);
+      }
+      return true;
+    }
+    if (key.escape) {
+      setShowSuggestions(false);
+      return true;
+    }
+    return false;
+  }, [showSuggestions, currentInput, suggestionIndex]);
 
   const handleSubmit = useCallback((text: string) => {
     const parsed = parseInput(text);
@@ -275,11 +319,20 @@ export function ChatScreen({ identity }: ChatScreenProps) {
           onDecline={declineRequest}
         />
       )}
+      {showSuggestions && (
+        <CommandSuggestions
+          suggestions={filterCommands(currentInput)}
+          selectedIndex={suggestionIndex}
+          visible={showSuggestions}
+        />
+      )}
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>
       </Box>
       <IMETextInput
         onSubmit={handleSubmit}
+        onTextChange={handleTextChange}
+        onKeyIntercept={handleKeyIntercept}
         placeholder={inputPlaceholder}
         isActive={!isInputDisabled && !showUserList && !showFriendList && !incomingRequest}
       />

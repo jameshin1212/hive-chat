@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
+import type { Key } from 'ink';
 import stringWidth from 'string-width';
 import { DEFAULT_TERMINAL_WIDTH } from '@cling-talk/shared';
 import { theme } from '../theme.js';
@@ -129,6 +130,12 @@ interface IMETextInputProps {
   isActive?: boolean;
   /** Called whenever the input text changes (for autocomplete, etc.) */
   onTextChange?: (text: string) => void;
+  /**
+   * Intercept key events before IMETextInput processes them.
+   * Return true to consume the event (skip default handling).
+   * setText allows the interceptor to replace the input text.
+   */
+  onKeyIntercept?: (input: string, key: Key, setText: (text: string) => void) => boolean;
 }
 
 /**
@@ -140,7 +147,7 @@ interface IMETextInputProps {
  * Enter handler reads `text`. Solution: use a ref as the source of truth for
  * the current text value, so Enter always submits the latest accumulated input.
  */
-export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true, isActive = true, onTextChange }: IMETextInputProps) {
+export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true, isActive = true, onTextChange, onKeyIntercept }: IMETextInputProps) {
   const { stdout } = useStdout();
   const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
   const availableWidth = columns - stringWidth(PROMPT) - 1; // 1 for cursor
@@ -167,7 +174,15 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
     onTextChange?.(newText);
   };
 
+  /** Set text externally (used by onKeyIntercept for autocomplete) */
+  const setInputText = (newText: string) => {
+    const newCursorPos = Array.from(newText).length;
+    updateText(newText, newCursorPos);
+  };
+
   useInput((input, key) => {
+    if (onKeyIntercept?.(input, key, setInputText)) return;
+
     if (key.return) {
       // CRITICAL: Read from ref, not state — avoids React batching race
       const currentText = textRef.current;
