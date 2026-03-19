@@ -265,44 +265,45 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       return <Text dimColor>{placeholder ?? 'Connection lost...'}</Text>;
     }
 
-    // Empty input: show block cursor + dimmed placeholder
-    if (!text) {
+    // Has text — render with cursor (use textRef for IME-safe check)
+    const displayText = text || textRef.current;
+    if (displayText) {
+      const { visibleText, cursorOffset } = getVisibleWindow(displayText, availableWidth, cursorPosRef.current);
+
+      if (!showCursor) {
+        return <Text>{visibleText}</Text>;
+      }
+
+      const visibleChars = Array.from(visibleText);
+      let accWidth = 0;
+      let splitIdx = 0;
+      for (let i = 0; i < visibleChars.length; i++) {
+        if (accWidth >= cursorOffset) {
+          splitIdx = i;
+          break;
+        }
+        accWidth += stringWidth(visibleChars[i]!);
+        splitIdx = i + 1;
+      }
+
+      const before = visibleChars.slice(0, splitIdx).join('');
+      const cursorChar = visibleChars[splitIdx] ?? ' ';
+      const after = visibleChars.slice(splitIdx + 1).join('');
+
       return (
         <>
-          <Text inverse> </Text>
-          {placeholder && <Text dimColor>{placeholder}</Text>}
+          <Text>{before}</Text>
+          <Text inverse>{cursorChar}</Text>
+          <Text>{after}</Text>
         </>
       );
     }
 
-    const { visibleText, cursorOffset } = getVisibleWindow(text, availableWidth, cursorPosition);
-
-    if (!showCursor || !isActive) {
-      return <Text>{visibleText}</Text>;
-    }
-
-    // Split visible text at cursor offset — highlight the character AT cursor with inverse
-    const visibleChars = Array.from(visibleText);
-    let accWidth = 0;
-    let splitIdx = 0;
-    for (let i = 0; i < visibleChars.length; i++) {
-      if (accWidth >= cursorOffset) {
-        splitIdx = i;
-        break;
-      }
-      accWidth += stringWidth(visibleChars[i]!);
-      splitIdx = i + 1;
-    }
-
-    const before = visibleChars.slice(0, splitIdx).join('');
-    const cursorChar = visibleChars[splitIdx] ?? ' '; // space block at end of text
-    const after = visibleChars.slice(splitIdx + 1).join('');
-
+    // Empty — show block cursor, then dimmed placeholder (no overlap)
     return (
       <>
-        <Text>{before}</Text>
-        <Text inverse>{cursorChar}</Text>
-        <Text>{after}</Text>
+        <Text inverse> </Text>
+        {placeholder && <Text dimColor>{placeholder}</Text>}
       </>
     );
   };
