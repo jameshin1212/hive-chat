@@ -3,7 +3,8 @@
 ## Milestones
 
 - [x] **v1.0 Cling Talk MVP** -- Phases 1-5 (shipped 2026-03-19)
-- [ ] **v1.0.1 Bug Fix & UX Polish** -- Phases 6-8
+- [x] **v1.0.1 Bug Fix & UX Polish** -- Phases 6-8 (shipped 2026-03-19)
+- [ ] **v1.1 Settings & Cleanup** -- Phases 9-10
 
 ## Phases
 
@@ -20,54 +21,41 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 </details>
 
-### v1.0.1 Bug Fix & UX Polish
+<details>
+<summary>v1.0.1 Bug Fix & UX Polish (Phases 6-8) -- SHIPPED 2026-03-19</summary>
 
-- [ ] **Phase 6: Chat Bug Fixes** - input text visibility and scroll rendering bugs
-- [x] **Phase 7: Input UX** - cursor navigation and slash command autocomplete (completed 2026-03-19)
-- [ ] **Phase 8: Visual Polish** - status bar relocation, message color differentiation, command rename
+- [x] Phase 6: Chat Bug Fixes (2/2 plans) -- completed 2026-03-19
+- [x] Phase 7: Input UX (2/2 plans) -- completed 2026-03-19
+- [x] Phase 8: Visual Polish (2/2 plans) -- completed 2026-03-19
+
+</details>
+
+### v1.1 Settings & Cleanup
+
+- [ ] **Phase 9: Settings Command** - /settings 명령어로 닉네임 변경, AI CLI 변경, 프로필 확인
+- [ ] **Phase 10: Command Cleanup** - /chat placeholder 명령어 제거
 
 ## Phase Details
 
-### Phase 6: Chat Bug Fixes
-**Goal**: 채팅 중 입력 텍스트가 사라지거나 메시지 영역이 깨지는 문제가 해결되어 안정적으로 대화할 수 있다
-**Depends on**: Nothing (independent bug fixes)
-**Requirements**: BUG-01, BUG-02
+### Phase 9: Settings Command
+**Goal**: 사용자가 /settings 명령어를 통해 자신의 프로필을 확인하고 닉네임과 AI CLI를 변경할 수 있다
+**Depends on**: Nothing (v1.0 기능 기반, 독립 기능 추가)
+**Requirements**: SET-01, SET-02, SET-03, SET-04
 **Success Criteria** (what must be TRUE):
-  1. 터미널 폭보다 긴 텍스트를 입력해도 현재 입력 중인 내용이 항상 보인다
-  2. 메시지가 50개 이상 쌓여도 채팅 영역이 최신 메시지 방향으로 정상 스크롤된다
-  3. 스크롤 후에도 상단에 이전 메시지가 고정되어 남는 현상이 발생하지 않는다
-**Plans**: 2 plans
-Plans:
-- [x] 06-01-PLAN.md — IMETextInput sliding window로 긴 입력 텍스트 가시성 보장
-- [ ] 06-02-PLAN.md — MessageArea 스크롤 메커니즘 + ChatScreen 버퍼 제한
+  1. /settings 입력 시 설정 메뉴 화면이 표시되고, 채팅 화면에서 벗어나 설정 전용 UI가 보인다
+  2. 설정 메뉴에서 닉네임을 변경하면 TAG는 유지된 채 새 닉네임이 즉시 반영되고, 서버에 업데이트된 닉네임이 전파된다
+  3. 설정 메뉴에서 AI CLI를 변경하면 새 뱃지가 즉시 반영되고, 다른 사용자에게도 변경된 뱃지가 보인다
+  4. 설정 메뉴에서 현재 닉네임, TAG, AI CLI 등 프로필 정보를 확인할 수 있다
+**Plans**: TBD
 
-### Phase 7: Input UX
-**Goal**: 입력 필드에서 커서 이동과 명령어 자동완성이 가능하여 빠르고 편리하게 입력할 수 있다
-**Depends on**: Phase 6 (입력 필드 버그 수정 후 기능 추가)
-**Requirements**: INP-01, INP-02, INP-03
+### Phase 10: Command Cleanup
+**Goal**: 사용되지 않는 placeholder 명령어가 제거되어 명령어 목록이 깔끔하다
+**Depends on**: Nothing (독립 작업, Phase 9과 병렬 가능)
+**Requirements**: CLN-01
 **Success Criteria** (what must be TRUE):
-  1. 입력 필드에서 좌/우 화살표 키를 눌러 커서를 원하는 위치로 이동할 수 있다
-  2. 커서 중간 위치에서 문자를 입력하면 해당 위치에 삽입된다
-  3. `/` 입력 시 사용 가능한 명령어 목록이 자동으로 표시된다
-  4. 화살표 키로 자동완성 목록에서 명령어를 선택하고 Enter로 확정할 수 있다
-**Plans**: 2 plans
-Plans:
-- [ ] 07-01-PLAN.md — IMETextInput 커서 이동 + 중간 삽입/삭제
-- [ ] 07-02-PLAN.md — 명령어 자동완성 (CommandSuggestions + ChatScreen 통합)
-
-### Phase 8: Visual Polish
-**Goal**: 메시지와 UI 요소의 시각적 구분이 명확하여 채팅 내용을 한눈에 파악할 수 있다
-**Depends on**: Phase 6 (스크롤/레이아웃 버그 수정 후 시각 변경)
-**Requirements**: VIS-01, VIS-02, VIS-03, CMD-01
-**Success Criteria** (what must be TRUE):
-  1. 상태바가 입력 필드 바로 윗 라인에 위치한다
-  2. 시스템 메시지(입장/퇴장/연결 상태 등)가 사용자 채팅 메시지와 시각적으로 구분된다
-  3. 내가 보낸 메시지와 상대방이 보낸 메시지의 텍스트 색상이 다르다
-  4. `/exit` 명령어로 앱을 종료할 수 있다 (기존 `/quit` 대체)
-**Plans**: 2 plans
-Plans:
-- [x] 08-01-PLAN.md — MessageArea 시스템 메시지 스타일 + 메시지 본문 색상 구분
-- [x] 08-02-PLAN.md — StatusBar 입력 필드 위로 재배치 + /quit to /exit 변경
+  1. /chat 입력 시 명령어로 인식되지 않고 일반 메시지로 전송되거나 "알 수 없는 명령어" 안내가 표시된다
+  2. 명령어 자동완성 목록에 /chat이 나타나지 않는다
+**Plans**: TBD
 
 ## Progress
 
@@ -78,10 +66,12 @@ Plans:
 | 3. Relay Chat | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 4. Friends | v1.0 | 2/2 | Complete | 2026-03-19 |
 | 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
-| 6. Chat Bug Fixes | v1.0.1 | 1/2 | In progress | - |
-| 7. Input UX | 2/2 | Complete   | 2026-03-19 | - |
+| 6. Chat Bug Fixes | v1.0.1 | 2/2 | Complete | 2026-03-19 |
+| 7. Input UX | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
+| 9. Settings Command | v1.1 | 0/? | Not started | - |
+| 10. Command Cleanup | v1.1 | 0/? | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-20 (v1.0.1 phases added)*
+*Updated: 2026-03-20 (v1.1 phases added)*

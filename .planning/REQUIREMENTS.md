@@ -37,17 +37,17 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SET-01 | — | Pending |
-| SET-02 | — | Pending |
-| SET-03 | — | Pending |
-| SET-04 | — | Pending |
-| CLN-01 | — | Pending |
+| SET-01 | Phase 9 | Pending |
+| SET-02 | Phase 9 | Pending |
+| SET-03 | Phase 9 | Pending |
+| SET-04 | Phase 9 | Pending |
+| CLN-01 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 5 total
-- Mapped to phases: 0
-- Unmapped: 5 ⚠️
+- Mapped to phases: 5
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 after initial definition*
+*Last updated: 2026-03-20 after roadmap creation*
