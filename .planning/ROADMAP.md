@@ -46,7 +46,10 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
   2. 설정 메뉴에서 닉네임을 변경하면 TAG는 유지된 채 새 닉네임이 즉시 반영되고, 서버에 업데이트된 닉네임이 전파된다
   3. 설정 메뉴에서 AI CLI를 변경하면 새 뱃지가 즉시 반영되고, 다른 사용자에게도 변경된 뱃지가 보인다
   4. 설정 메뉴에서 현재 닉네임, TAG, AI CLI 등 프로필 정보를 확인할 수 있다
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 09-01-PLAN.md -- updateIdentity() + SettingsOverlay 컴포넌트 + App identity 콜백
+- [ ] 09-02-PLAN.md -- ChatScreen 통합 + /settings 명령어 연결 + 동작 검증
 
 ### Phase 10: Command Cleanup
 **Goal**: 사용되지 않는 placeholder 명령어가 제거되어 명령어 목록이 깔끔하다
@@ -69,9 +72,9 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 6. Chat Bug Fixes | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 7. Input UX | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
-| 9. Settings Command | v1.1 | 0/? | Not started | - |
+| 9. Settings Command | v1.1 | 0/2 | Not started | - |
 | 10. Command Cleanup | v1.1 | 0/? | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-20 (v1.1 phases added)*
+*Updated: 2026-03-20 (v1.1 Phase 9 planned)*
