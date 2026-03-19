@@ -38,7 +38,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
   3. 스크롤 후에도 상단에 이전 메시지가 고정되어 남는 현상이 발생하지 않는다
 **Plans**: 2 plans
 Plans:
-- [ ] 06-01-PLAN.md — IMETextInput sliding window로 긴 입력 텍스트 가시성 보장
+- [x] 06-01-PLAN.md — IMETextInput sliding window로 긴 입력 텍스트 가시성 보장
 - [ ] 06-02-PLAN.md — MessageArea 스크롤 메커니즘 + ChatScreen 버퍼 제한
 
 ### Phase 7: Input UX
@@ -72,7 +72,7 @@ Plans:
 | 3. Relay Chat | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 4. Friends | v1.0 | 2/2 | Complete | 2026-03-19 |
 | 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
-| 6. Chat Bug Fixes | v1.0.1 | 0/2 | Not started | - |
+| 6. Chat Bug Fixes | v1.0.1 | 1/2 | In progress | - |
 | 7. Input UX | v1.0.1 | 0/? | Not started | - |
 | 8. Visual Polish | v1.0.1 | 0/? | Not started | - |
 

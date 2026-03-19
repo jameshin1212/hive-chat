@@ -9,8 +9,8 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 
 ### Bug Fix
 
-- [ ] **BUG-01**: 채팅 입력이 길어지면 입력 중인 텍스트가 보이지 않는 문제 수정
-- [ ] **BUG-02**: 메시지가 많아지면 채팅 영역 상단 일부가 고정된 채 스크롤되는 문제 수정
+- [x] **BUG-01**: 채팅 입력이 길어지면 입력 중인 텍스트가 보이지 않는 문제 수정
+- [x] **BUG-02**: 메시지가 많아지면 채팅 영역 상단 일부가 고정된 채 스크롤되는 문제 수정
 
 ### Input UX
 
@@ -51,8 +51,8 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 6 | Pending |
-| BUG-02 | Phase 6 | Pending |
+| BUG-01 | Phase 6 | Complete |
+| BUG-02 | Phase 6 | Complete |
 | INP-01 | Phase 7 | Pending |
 | INP-02 | Phase 7 | Pending |
 | INP-03 | Phase 7 | Pending |
