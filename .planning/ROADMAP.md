@@ -50,7 +50,10 @@ Plans:
   2. 커서 중간 위치에서 문자를 입력하면 해당 위치에 삽입된다
   3. `/` 입력 시 사용 가능한 명령어 목록이 자동으로 표시된다
   4. 화살표 키로 자동완성 목록에서 명령어를 선택하고 Enter로 확정할 수 있다
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 07-01-PLAN.md — IMETextInput 커서 이동 + 중간 삽입/삭제
+- [ ] 07-02-PLAN.md — 명령어 자동완성 (CommandSuggestions + ChatScreen 통합)
 
 ### Phase 8: Visual Polish
 **Goal**: 메시지와 UI 요소의 시각적 구분이 명확하여 채팅 내용을 한눈에 파악할 수 있다
@@ -73,7 +76,7 @@ Plans:
 | 4. Friends | v1.0 | 2/2 | Complete | 2026-03-19 |
 | 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 6. Chat Bug Fixes | v1.0.1 | 1/2 | In progress | - |
-| 7. Input UX | v1.0.1 | 0/? | Not started | - |
+| 7. Input UX | v1.0.1 | 0/2 | Not started | - |
 | 8. Visual Polish | v1.0.1 | 0/? | Not started | - |
 
 ---
