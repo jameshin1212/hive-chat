@@ -11,12 +11,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **IDEN-01**: 최초 실행 시 닉네임 입력 + 고유태그 자동발급 (nick#1234 형식)
 - [x] **IDEN-02**: AI CLI 도구 선택 (Claude Code, Codex, Gemini, Cursor 등) 및 뱃지 표시
-- [ ] **IDEN-03**: 온라인/오프라인 상태가 다른 사용자에게 실시간 표시
+- [x] **IDEN-03**: 온라인/오프라인 상태가 다른 사용자에게 실시간 표시
 
 ### Discovery
 
-- [ ] **DISC-01**: 신호 서버가 IP geolocation으로 사용자 위치 파악
-- [ ] **DISC-02**: 근처 사용자 목록 조회 (메트로/도시 수준 정확도)
+- [x] **DISC-01**: 신호 서버가 IP geolocation으로 사용자 위치 파악
+- [x] **DISC-02**: 근처 사용자 목록 조회 (메트로/도시 수준 정확도)
 - [ ] **DISC-03**: 거리 범위 필터 선택 (1/3/5/10km)
 
 ### Messaging
@@ -78,9 +78,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | IDEN-01 | Phase 1 | Complete |
 | IDEN-02 | Phase 1 | Complete |
-| IDEN-03 | Phase 2 | Pending |
-| DISC-01 | Phase 2 | Pending |
-| DISC-02 | Phase 2 | Pending |
+| IDEN-03 | Phase 2 | Complete |
+| DISC-01 | Phase 2 | Complete |
+| DISC-02 | Phase 2 | Complete |
 | DISC-03 | Phase 2 | Pending |
 | MESG-01 | Phase 3 | Pending |
 | MESG-02 | Phase 3 | Pending |

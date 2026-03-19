@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Phase 2 context gathered
-last_updated: "2026-03-19T07:50:46.163Z"
+last_updated: "2026-03-19T08:17:56.717Z"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 01 — foundation
+**Current focus:** Phase 02 — signaling-discovery
 
 ## Current Position
 
-Phase: 01 (foundation) — EXECUTING
-Plan: 3 of 3
+Phase: 02 (signaling-discovery) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Plan: 3 of 3
 *Updated after each plan completion*
 | Phase 01 P01 | 4min | 2 tasks | 17 files |
 | Phase 01 P02 | 3min | 2 tasks | 9 files |
+| Phase 02 P01 | 4min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [01-02]: figlet.textSync at module level -- zero runtime cost for ASCII banner
 - [01-02]: Array.from for backspace -- correct surrogate pair/CJK character handling
 - [01-02]: Sender color by appearance order -- consistent color assignment in message area
+- [02-01]: DEV_GEO_LAT/DEV_GEO_LON env vars for localhost IP fallback
+- [02-01]: PresenceManager terminates old WebSocket on duplicate session registration
+- [02-01]: findNearbyUsers excludes offline users and rounds distance to 1 decimal
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T07:50:46.142Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-signaling-discovery/02-CONTEXT.md
+Last session: 2026-03-19T08:17:00Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: .planning/phases/02-signaling-discovery/02-01-SUMMARY.md
