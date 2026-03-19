@@ -34,6 +34,10 @@ export const MessageType = {
   // Server -> Client (friends)
   FRIEND_STATUS_RESPONSE: 'friend_status_response',
   FRIEND_STATUS_UPDATE: 'friend_status_update',
+  // Bidirectional (P2P)
+  P2P_SIGNAL: 'p2p_signal',
+  // Client -> Server (P2P)
+  P2P_STATUS: 'p2p_status',
 } as const;
 
 // --- Shared sub-schemas ---
@@ -110,6 +114,20 @@ export const friendStatusRequestSchema = z.object({
   friends: z.array(z.object({ nickname: z.string(), tag: z.string() })),
 });
 
+// --- Bidirectional P2P schemas ---
+
+export const p2pSignalSchema = z.object({
+  type: z.literal(MessageType.P2P_SIGNAL),
+  sessionId: uuidSchema,
+  topic: z.string().regex(/^[0-9a-f]{64}$/), // 32-byte hex-encoded Hyperswarm topic
+});
+
+export const p2pStatusSchema = z.object({
+  type: z.literal(MessageType.P2P_STATUS),
+  sessionId: uuidSchema,
+  transportType: z.enum(['relay', 'direct']),
+});
+
 export const clientMessageSchema = z.discriminatedUnion('type', [
   registerSchema,
   heartbeatSchema,
@@ -121,6 +139,8 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   chatMessageSchema,
   chatLeaveSchema,
   friendStatusRequestSchema,
+  p2pSignalSchema,
+  p2pStatusSchema,
 ]);
 
 export type ClientMessage = z.infer<typeof clientMessageSchema>;
@@ -242,6 +262,7 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
   chatErrorSchema,
   friendStatusResponseSchema,
   friendStatusUpdateSchema,
+  p2pSignalSchema,
 ]);
 
 export type ServerMessage = z.infer<typeof serverMessageSchema>;
@@ -276,3 +297,7 @@ export type ChatErrorMessage = z.infer<typeof chatErrorSchema>;
 export type FriendStatusRequestMessage = z.infer<typeof friendStatusRequestSchema>;
 export type FriendStatusResponseMessage = z.infer<typeof friendStatusResponseSchema>;
 export type FriendStatusUpdateMessage = z.infer<typeof friendStatusUpdateSchema>;
+
+// P2P message types
+export type P2PSignalMessage = z.infer<typeof p2pSignalSchema>;
+export type P2PStatusMessage = z.infer<typeof p2pStatusSchema>;

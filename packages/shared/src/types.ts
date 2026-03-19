@@ -37,6 +37,10 @@ export function parseNickTag(input: string): { nickname: string; tag: string } |
   return { nickname: match[1]!, tag: match[2]! };
 }
 
+// --- P2P types ---
+
+export type TransportType = 'relay' | 'direct';
+
 export interface FriendRecord {
   nickname: string;
   tag: string;
