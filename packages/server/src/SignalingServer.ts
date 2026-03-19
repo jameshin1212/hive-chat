@@ -28,6 +28,7 @@ export class SignalingServer {
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private presenceManager = new PresenceManager();
   private chatSessionManager = new ChatSessionManager();
+  private friendSubscriptions = new Map<string, Array<{ nickname: string; tag: string }>>();
   private port: number;
 
   constructor(port: number) {
@@ -131,6 +132,9 @@ export class SignalingServer {
       case MessageType.CHAT_LEAVE:
         this.handleChatLeave(ws, msg.sessionId);
         break;
+      case MessageType.FRIEND_STATUS_REQUEST:
+        this.handleFriendStatusRequest(ws, msg.friends);
+        break;
     }
   }
 
@@ -186,6 +190,9 @@ export class SignalingServer {
       },
       userId,
     );
+
+    // Notify friend subscribers that this user came online
+    this.notifyFriendSubscribers(userId, 'online');
   }
 
   private handleGetNearby(ws: AliveWebSocket, radiusKm: number): void {
@@ -357,6 +364,12 @@ export class SignalingServer {
     // Clean up pending requests
     this.chatSessionManager.removePendingByUser(ws.userId);
 
+    // Notify friend subscribers that this user went offline
+    this.notifyFriendSubscribers(ws.userId, 'offline');
+
+    // Clean up this user's own friend subscriptions
+    this.friendSubscriptions.delete(ws.userId);
+
     this.presenceManager.unregister(ws.userId);
 
     this.broadcastToRegistered(
@@ -367,6 +380,54 @@ export class SignalingServer {
       },
       ws.userId,
     );
+  }
+
+  // --- Friend status handlers ---
+
+  private handleFriendStatusRequest(
+    ws: AliveWebSocket,
+    friends: Array<{ nickname: string; tag: string }>,
+  ): void {
+    // Store subscription for push updates
+    this.friendSubscriptions.set(ws.userId!, friends);
+
+    // Build current status for each requested friend
+    const statuses = friends.map((f) => {
+      const friendUserId = `${f.nickname}#${f.tag}`;
+      const user = this.presenceManager.getUser(friendUserId);
+      return {
+        nickname: f.nickname,
+        tag: f.tag,
+        status: user ? (user.status as 'online' | 'offline') : ('unknown' as const),
+        ...(user?.aiCli ? { aiCli: user.aiCli as NearbyUser['aiCli'] } : {}),
+      };
+    });
+
+    this.send(ws, {
+      type: MessageType.FRIEND_STATUS_RESPONSE,
+      statuses,
+    });
+  }
+
+  private notifyFriendSubscribers(userId: string, status: 'online' | 'offline'): void {
+    // Parse userId into nickname and tag (last # is separator)
+    const lastHash = userId.lastIndexOf('#');
+    if (lastHash === -1) return;
+    const nickname = userId.substring(0, lastHash);
+    const tag = userId.substring(lastHash + 1);
+
+    for (const [subscriberId, friends] of this.friendSubscriptions) {
+      if (subscriberId === userId) continue;
+      const match = friends.some((f) => f.nickname === nickname && f.tag === tag);
+      if (match) {
+        this.sendToUser(subscriberId, {
+          type: MessageType.FRIEND_STATUS_UPDATE,
+          nickname,
+          tag,
+          status,
+        });
+      }
+    }
   }
 
   private startHeartbeatCheck(): void {

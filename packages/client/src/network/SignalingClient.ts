@@ -123,6 +123,13 @@ export class SignalingClient extends EventEmitter {
     this.send({ type: MessageType.CHAT_LEAVE, sessionId });
   }
 
+  /**
+   * Request status of friends from the server.
+   */
+  requestFriendStatus(friends: Array<{ nickname: string; tag: string }>): void {
+    this.send({ type: MessageType.FRIEND_STATUS_REQUEST, friends });
+  }
+
   private handleMessage(data: unknown): void {
     let msg: ServerMessage;
     try {
@@ -173,6 +180,12 @@ export class SignalingClient extends EventEmitter {
         break;
       case MessageType.CHAT_ERROR:
         this.emit('chat_error', { code: msg.code, message: msg.message });
+        break;
+      case MessageType.FRIEND_STATUS_RESPONSE:
+        this.emit('friend_status_response', { statuses: msg.statuses });
+        break;
+      case MessageType.FRIEND_STATUS_UPDATE:
+        this.emit('friend_status_update', { nickname: msg.nickname, tag: msg.tag, status: msg.status });
         break;
     }
   }

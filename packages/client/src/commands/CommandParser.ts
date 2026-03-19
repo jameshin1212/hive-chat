@@ -9,6 +9,8 @@ export const COMMANDS = {
   '/settings': { description: 'Open settings' },
   '/help': { description: 'Show available commands' },
   '/leave': { description: 'Leave current chat' },
+  '/addfriend': { description: 'Add friend by nick#tag' },
+  '/removefriend': { description: 'Remove friend by nick#tag' },
 } as const;
 
 export type CommandName = keyof typeof COMMANDS;
