@@ -1,0 +1,34 @@
+{
+  "name": "@cling-talk/server",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsdown src/index.ts --format esm --out-dir dist",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cling-talk/shared": "*",
+    "ws": "^8.19.0",
+    "geoip-lite": "^2.0.1",
+    "haversine": "^1.1.1",
+    "zod": "^3.24"
+  },
+  "devDependencies": {
+    "@types/ws": "^8",
+    "@types/geoip-lite": "^1",
+    "@types/haversine": "^1",
+    "typescript": "^5.7",
+    "tsx": "^4",
+    "tsdown": "^0",
+    "vitest": "^3"
+  }
+}

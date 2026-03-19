@@ -13,3 +13,14 @@ export const THEME_COLORS = {
 export const USER_COLORS = [
   'white', 'yellow', 'red', '#FF69B4', '#FF1493', 'magenta', '#FFA500',
 ] as const;
+
+// Server constants
+export const DEFAULT_SERVER_PORT = 3456;
+export const DEFAULT_SERVER_URL = 'ws://localhost:3456';
+export const HEARTBEAT_INTERVAL_MS = 30_000;
+export const STALE_TIMEOUT_MS = 60_000;
+export const RADIUS_OPTIONS = [1, 3, 5, 10] as const;
+export const DEFAULT_RADIUS_KM = 3;
+export const RECONNECT_BASE_DELAY_MS = 500;
+export const RECONNECT_MAX_DELAY_MS = 30_000;
+export const PROTOCOL_VERSION = 1;
