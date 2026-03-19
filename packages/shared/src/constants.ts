@@ -24,3 +24,7 @@ export const DEFAULT_RADIUS_KM = 3;
 export const RECONNECT_BASE_DELAY_MS = 500;
 export const RECONNECT_MAX_DELAY_MS = 30_000;
 export const PROTOCOL_VERSION = 1;
+
+// Chat constants
+export const CHAT_REQUEST_TIMEOUT_MS = 30_000;
+export const MAX_CHAT_MESSAGE_LENGTH = 2000;

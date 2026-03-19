@@ -24,3 +24,5 @@ export type SlashCommand = {
 export type ParsedInput =
   | SlashCommand
   | { type: 'message'; content: string };
+
+export type ChatSessionStatus = 'idle' | 'requesting' | 'active' | 'disconnected';
