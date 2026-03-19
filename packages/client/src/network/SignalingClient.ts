@@ -130,6 +130,20 @@ export class SignalingClient extends EventEmitter {
     this.send({ type: MessageType.FRIEND_STATUS_REQUEST, friends });
   }
 
+  /**
+   * Send P2P signal (topic) to partner via server relay.
+   */
+  sendP2PSignal(sessionId: string, topic: string): void {
+    this.send({ type: MessageType.P2P_SIGNAL, sessionId, topic });
+  }
+
+  /**
+   * Send P2P status update to server.
+   */
+  sendP2PStatus(sessionId: string, transportType: 'relay' | 'direct'): void {
+    this.send({ type: MessageType.P2P_STATUS, sessionId, transportType });
+  }
+
   private handleMessage(data: unknown): void {
     let msg: ServerMessage;
     try {
@@ -186,6 +200,9 @@ export class SignalingClient extends EventEmitter {
         break;
       case MessageType.FRIEND_STATUS_UPDATE:
         this.emit('friend_status_update', { nickname: msg.nickname, tag: msg.tag, status: msg.status });
+        break;
+      case MessageType.P2P_SIGNAL:
+        this.emit('p2p_signal', { sessionId: msg.sessionId, topic: msg.topic });
         break;
     }
   }
