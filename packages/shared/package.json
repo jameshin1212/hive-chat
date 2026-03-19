@@ -1,0 +1,13 @@
+{
+  "name": "@cling-talk/shared",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src"
+  ]
+}
