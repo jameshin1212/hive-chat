@@ -39,7 +39,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
   const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
   const gracefulExit = useGracefulExit();
 
-  const { status, client } = useServerConnection(identity);
+  const { status, client, transportType } = useServerConnection(identity);
   const { users, radiusKm, cycleRadius, refreshUsers } = useNearbyUsers(client);
   const {
     chatStatus, partner, sessionId, chatMessages,
@@ -230,6 +230,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         chatPartner={chatPartner}
         onlineFriendCount={onlineFriendCount}
         friendCount={friendCount}
+        transportType={transportType}
       />
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { NearbyUser } from '@cling-talk/shared';
 import { RADIUS_OPTIONS, DEFAULT_RADIUS_KM } from '@cling-talk/shared';
-import type { SignalingClient } from '../network/SignalingClient.js';
+import type { ConnectionManager } from '../network/ConnectionManager.js';
 
-export function useNearbyUsers(client: SignalingClient | null) {
+export function useNearbyUsers(client: ConnectionManager | null) {
   const [users, setUsers] = useState<NearbyUser[]>([]);
   const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_KM);
 

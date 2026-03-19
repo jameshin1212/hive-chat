@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { SignalingClient } from '../network/SignalingClient.js';
+import type { ConnectionManager } from '../network/ConnectionManager.js';
 import type { NearbyUser } from '@cling-talk/shared';
 import type { ChatSessionStatus, ChatMessage, Identity } from '@cling-talk/shared';
 import { CHAT_REQUEST_TIMEOUT_MS, MAX_MESSAGES } from '@cling-talk/shared';
@@ -42,7 +42,7 @@ function createSystemMessage(content: string): ChatMessage {
 }
 
 export function useChatSession(
-  client: SignalingClient | null,
+  client: ConnectionManager | null,
   connectionStatus: string,
 ): ChatSessionReturn {
   const [chatStatus, setChatStatus] = useState<ChatSessionStatus>('idle');

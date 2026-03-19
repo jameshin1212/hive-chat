@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { SignalingClient } from '../network/SignalingClient.js';
+import type { ConnectionManager } from '../network/ConnectionManager.js';
 import { getFriends } from '../friends/FriendManager.js';
 
 export interface FriendStatus {
@@ -10,7 +10,7 @@ export interface FriendStatus {
 }
 
 export function useFriends(
-  client: SignalingClient | null,
+  client: ConnectionManager | null,
   connectionStatus: string,
 ) {
   const [friendStatuses, setFriendStatuses] = useState<FriendStatus[]>([]);
