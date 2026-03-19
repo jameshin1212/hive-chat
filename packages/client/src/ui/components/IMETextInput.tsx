@@ -265,11 +265,11 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       return <Text dimColor>{placeholder ?? 'Connection lost...'}</Text>;
     }
 
-    // Empty input: show cursor + dimmed placeholder behind it
+    // Empty input: show block cursor + dimmed placeholder
     if (!text) {
       return (
         <>
-          <Text color={theme.text.primary}>▏</Text>
+          <Text inverse> </Text>
           {placeholder && <Text dimColor>{placeholder}</Text>}
         </>
       );
@@ -281,8 +281,7 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       return <Text>{visibleText}</Text>;
     }
 
-    // Split visible text at cursor offset for cursor rendering
-    // Use string-width to find the character split point
+    // Split visible text at cursor offset — highlight the character AT cursor with inverse
     const visibleChars = Array.from(visibleText);
     let accWidth = 0;
     let splitIdx = 0;
@@ -296,12 +295,13 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
     }
 
     const before = visibleChars.slice(0, splitIdx).join('');
-    const after = visibleChars.slice(splitIdx).join('');
+    const cursorChar = visibleChars[splitIdx] ?? ' '; // space block at end of text
+    const after = visibleChars.slice(splitIdx + 1).join('');
 
     return (
       <>
         <Text>{before}</Text>
-        <Text color={theme.text.primary}>▏</Text>
+        <Text inverse>{cursorChar}</Text>
         <Text>{after}</Text>
       </>
     );
