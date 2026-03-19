@@ -19,6 +19,7 @@ import { UserList } from '../components/UserList.js';
 import { FriendList } from '../components/FriendList.js';
 import { ChatRequestOverlay } from '../components/ChatRequestOverlay.js';
 import { CommandSuggestions } from '../components/CommandSuggestions.js';
+import { SettingsOverlay } from '../components/SettingsOverlay.js';
 import { theme } from '../theme.js';
 import type { Key } from 'ink';
 
@@ -37,6 +38,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [showUserList, setShowUserList] = useState(false);
   const [showFriendList, setShowFriendList] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { stdout } = useStdout();
   const rows = stdout?.rows ?? 24;
   const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
@@ -62,6 +64,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   // Dynamic overlay height — subtract from MessageArea so overlays don't clip below StatusBar
   const maxListVisible = 8;
   const overlayHeight = (() => {
+    if (showSettings) return 8;
     if (showUserList) {
       const items = Math.min(users.length, maxListVisible);
       const indicators = users.length > maxListVisible ? 2 : 0;
@@ -90,6 +93,16 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     };
     setMessages(prev => [...prev, sysMsg].slice(-MAX_MESSAGES));
   }, []);
+
+  const handleIdentityChange = useCallback((newIdentity: Identity) => {
+    onIdentityChange?.(newIdentity);
+    if (newIdentity.nickname !== identity.nickname) {
+      addSystemMessage(`Nickname changed to ${newIdentity.nickname}#${newIdentity.tag}`);
+    }
+    if (newIdentity.aiCli !== identity.aiCli) {
+      addSystemMessage(`AI CLI changed to ${newIdentity.aiCli}`);
+    }
+  }, [identity, onIdentityChange, addSystemMessage]);
 
   // Connection status system messages
   const prevStatusRef = useRef<ConnectionStatus>(status);
@@ -258,6 +271,10 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         }
         return;
       }
+      if (parsed.name === '/settings') {
+        setShowSettings(true);
+        return;
+      }
       if (!isKnownCommand(parsed.name)) {
         addSystemMessage(`Unknown command: ${parsed.name}. Type /help for available commands.`);
         return;
@@ -304,7 +321,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         myIdentity={identity}
         availableHeight={messageAreaHeight}
         columns={columns}
-        isActive={!showUserList && !showFriendList && !incomingRequest}
+        isActive={!showUserList && !showFriendList && !incomingRequest && !showSettings}
       />
       {showFriendList && !showUserList && !incomingRequest && (
         <FriendList
@@ -339,6 +356,17 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
           onDecline={declineRequest}
         />
       )}
+      {showSettings && (
+        <SettingsOverlay
+          identity={identity}
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+          onIdentityChange={(newIdentity) => {
+            handleIdentityChange(newIdentity);
+            setShowSettings(false);
+          }}
+        />
+      )}
       {showSuggestions && (
         <CommandSuggestions
           suggestions={filterCommands(currentInput)}
@@ -367,7 +395,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         onTextChange={handleTextChange}
         onKeyIntercept={handleKeyIntercept}
         placeholder={inputPlaceholder}
-        isActive={!isInputDisabled && !showUserList && !showFriendList && !incomingRequest}
+        isActive={!isInputDisabled && !showUserList && !showFriendList && !incomingRequest && !showSettings}
       />
     </Box>
   );
