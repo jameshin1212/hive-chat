@@ -30,12 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can select their AI CLI tool (Claude Code, Codex, Gemini, Cursor) and it displays as a badge
   4. User can type Korean/CJK characters in the input area without composition glitches (no invisible chars, no garbled output)
   5. User can exit cleanly with Ctrl+C or /quit
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Monorepo scaffolding, shared types, identity system, command parser, theme
+- [ ] 01-02-PLAN.md — IME-aware TextInput, TUI components, split layout, onboarding screen
+- [ ] 01-03-PLAN.md — App wiring, screen routing, integration + Korean IME manual verification
 
 ### Phase 2: Signaling & Discovery
 **Goal**: Users can discover nearby developers through a signaling server that tracks location and presence
