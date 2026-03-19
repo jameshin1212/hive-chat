@@ -121,11 +121,11 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     if (!showSuggestions) return false;
     const filtered = filterCommands(currentInput);
     if (key.upArrow) {
-      setSuggestionIndex(prev => Math.max(0, prev - 1));
+      setSuggestionIndex(prev => prev <= 0 ? filtered.length - 1 : prev - 1);
       return true;
     }
     if (key.downArrow) {
-      setSuggestionIndex(prev => Math.min(filtered.length - 1, prev + 1));
+      setSuggestionIndex(prev => prev >= filtered.length - 1 ? 0 : prev + 1);
       return true;
     }
     if (key.return && filtered.length > 0) {
