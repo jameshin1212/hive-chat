@@ -21,9 +21,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Messaging
 
-- [ ] **MESG-01**: 1:1 P2P 채팅 (직접 연결 우선, relay fallback)
-- [ ] **MESG-02**: 메시지 비저장 — 세션 동안 터미널에만 표시, 종료 시 소멸
-- [ ] **MESG-03**: 연결 끊김 시 자동 재연결 및 graceful disconnect 처리
+- [x] **MESG-01**: 1:1 P2P 채팅 (직접 연결 우선, relay fallback)
+- [x] **MESG-02**: 메시지 비저장 — 세션 동안 터미널에만 표시, 종료 시 소멸
+- [x] **MESG-03**: 연결 끊김 시 자동 재연결 및 graceful disconnect 처리
 
 ### Social
 
@@ -82,9 +82,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DISC-01 | Phase 2 | Complete |
 | DISC-02 | Phase 2 | Complete |
 | DISC-03 | Phase 2 | Complete |
-| MESG-01 | Phase 3 | Pending |
-| MESG-02 | Phase 3 | Pending |
-| MESG-03 | Phase 3 | Pending |
+| MESG-01 | Phase 3 | Complete |
+| MESG-02 | Phase 3 | Complete |
+| MESG-03 | Phase 3 | Complete |
 | SOCL-01 | Phase 4 | Pending |
 | SOCL-02 | Phase 4 | Pending |
 | SOCL-03 | Phase 5 | Pending |
