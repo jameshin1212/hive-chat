@@ -64,7 +64,10 @@ Plans:
   2. 시스템 메시지(입장/퇴장/연결 상태 등)가 사용자 채팅 메시지와 시각적으로 구분된다
   3. 내가 보낸 메시지와 상대방이 보낸 메시지의 텍스트 색상이 다르다
   4. `/exit` 명령어로 앱을 종료할 수 있다 (기존 `/quit` 대체)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 08-01-PLAN.md — MessageArea 시스템 메시지 스타일 + 메시지 본문 색상 구분
+- [ ] 08-02-PLAN.md — StatusBar 입력 필드 위로 재배치 + /quit to /exit 변경
 
 ## Progress
 
@@ -77,7 +80,7 @@ Plans:
 | 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 6. Chat Bug Fixes | v1.0.1 | 1/2 | In progress | - |
 | 7. Input UX | 2/2 | Complete   | 2026-03-19 | - |
-| 8. Visual Polish | v1.0.1 | 0/? | Not started | - |
+| 8. Visual Polish | v1.0.1 | 0/2 | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
