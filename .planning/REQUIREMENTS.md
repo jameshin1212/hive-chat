@@ -25,9 +25,9 @@
 
 ### Deferred
 
-- **disconnected 이벤트 emit** — offline 상태 표시 수정 (tech debt)
-- **클라이언트 zod 검증** — type assertion 대체
-- **그룹 채팅** — v2 고려
+- **disconnected 이벤트 emit** -- offline 상태 표시 수정 (tech debt)
+- **클라이언트 zod 검증** -- type assertion 대체
+- **그룹 채팅** -- v2 고려
 
 ## Out of Scope
 
@@ -43,19 +43,19 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PUB-01 | — | Pending |
-| PUB-02 | — | Pending |
-| PUB-03 | — | Pending |
-| DEP-01 | — | Pending |
-| DEP-02 | — | Pending |
-| DEP-03 | — | Pending |
-| DOC-01 | — | Pending |
+| DEP-01 | Phase 11 | Pending |
+| DEP-02 | Phase 11 | Pending |
+| DEP-03 | Phase 11 | Pending |
+| PUB-01 | Phase 12 | Pending |
+| PUB-02 | Phase 12 | Pending |
+| PUB-03 | Phase 12 | Pending |
+| DOC-01 | Phase 13 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 after initial definition*
+*Last updated: 2026-03-20 after roadmap creation*

@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: deploy-publish
-status: defining-requirements
-stopped_at: Milestone v1.2 started
-last_updated: "2026-03-20T04:00:00.000Z"
+status: roadmap-complete
+stopped_at: Roadmap created, ready for phase planning
+last_updated: "2026-03-20T04:30:00.000Z"
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -19,21 +19,26 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** v1.2 Deploy & Publish — defining requirements
+**Current focus:** v1.2 Deploy & Publish -- roadmap complete, Phase 11 ready
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-20 — Milestone v1.2 started
+Phase: 11 (Server Deploy) -- not started
+Plan: --
+Status: Ready for phase planning
+Last activity: 2026-03-20 -- Roadmap created
+
+```
+v1.2 Progress: [..........] 0/3 phases
+```
 
 ## Accumulated Context
 
 ### Decisions
 
-- [v1.2]: npm publish + Railway 서버 배포 + README
-- [v1.2]: Railway 선택 — WebSocket 지원, sleep 없음
+- [v1.2]: npm publish + Fly.io 서버 배포 + README
+- [v1.2]: Fly.io 선택 -- WebSocket 지원, Dockerfile 기반 배포
+- [v1.2]: Phase 순서: Deploy(11) -> Publish(12) -> Docs(13) -- 서버 URL 확정 후 번들에 포함
 
 ### Pending Todos
 
@@ -46,5 +51,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Defining requirements for v1.2
-Resume file: —
+Stopped at: Roadmap created for v1.2, ready to plan Phase 11
+Resume file: --
