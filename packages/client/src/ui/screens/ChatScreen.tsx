@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import type { Identity, ChatMessage } from '@cling-talk/shared';
-import { DEFAULT_TERMINAL_WIDTH } from '@cling-talk/shared';
+import { DEFAULT_TERMINAL_WIDTH, MAX_MESSAGES } from '@cling-talk/shared';
 import { parseNickTag } from '@cling-talk/shared';
 import { parseInput, isKnownCommand, COMMANDS } from '../../commands/CommandParser.js';
 import { useGracefulExit } from '../../hooks/useGracefulExit.js';
@@ -37,6 +37,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
   const { stdout } = useStdout();
   const rows = stdout?.rows ?? 24;
   const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
+  const messageAreaHeight = rows - 4; // StatusBar(1) + separator(1) + separator(1) + IMETextInput(1)
   const gracefulExit = useGracefulExit();
 
   const { status, client, transportType } = useServerConnection(identity);
@@ -58,7 +59,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
       content,
       timestamp: Date.now(),
     };
-    setMessages(prev => [...prev, sysMsg]);
+    setMessages(prev => [...prev, sysMsg].slice(-MAX_MESSAGES));
   }, []);
 
   // Connection status system messages
@@ -199,7 +200,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         content: parsed.content,
         timestamp: Date.now(),
       };
-      setMessages(prev => [...prev, msg]);
+      setMessages(prev => [...prev, msg].slice(-MAX_MESSAGES));
     }
   }, [identity, gracefulExit, addSystemMessage, refreshUsers, cycleRadius, isInChat, chatStatus, partner, sendMessage, leaveChat, refreshFriendStatuses]);
 
@@ -260,7 +261,12 @@ export function ChatScreen({ identity }: ChatScreenProps) {
           onClose={() => setShowUserList(false)}
         />
       ) : (
-        <MessageArea messages={displayMessages} myIdentity={identity} />
+        <MessageArea
+          messages={displayMessages}
+          myIdentity={identity}
+          availableHeight={messageAreaHeight}
+          isActive={!showUserList && !showFriendList && !incomingRequest}
+        />
       )}
       {incomingRequest && (
         <ChatRequestOverlay
