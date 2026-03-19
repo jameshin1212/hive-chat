@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-19T12:37:05.715Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-19T13:34:42Z"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 04 — friends (COMPLETE)
+**Current focus:** Phase 05 — p2p-upgrade
 
 ## Current Position
 
-Phase: 04 (friends) — COMPLETE
-Plan: 2 of 2 (all complete)
+Phase: 05 (p2p-upgrade) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Plan: 2 of 2 (all complete)
 | Phase 03 P02 | 4min | 2 tasks | 9 files |
 | Phase 04 P01 | 5min | 2 tasks | 10 files |
 | Phase 04 P02 | 6min | 3 tasks | 4 files |
+| Phase 05 P01 | 3min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [04-02]: FriendList follows UserList overlay pattern for consistent UX
 - [04-02]: StatusBar friend count hidden during active chat to reduce clutter
 - [04-02]: Offline friend selection shows system message instead of blocking
+- [05-01]: P2P_SIGNAL in both client and server unions for bidirectional relay
+- [05-01]: transportType optional field (undefined default) on ChatSession -- backward compatible
+- [05-01]: Topic validation: 64-char lowercase hex regex for 32-byte Hyperswarm topics
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T12:31:53.000Z
-Stopped at: Completed 04-02-PLAN.md
-Resume file: .planning/phases/04-friends/04-02-SUMMARY.md
+Last session: 2026-03-19T13:34:42Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: .planning/phases/05-p2p-upgrade/05-01-SUMMARY.md
