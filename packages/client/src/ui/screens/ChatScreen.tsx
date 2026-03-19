@@ -7,10 +7,12 @@ import { useGracefulExit } from '../../hooks/useGracefulExit.js';
 import { useServerConnection } from '../../hooks/useServerConnection.js';
 import type { ConnectionStatus } from '../../hooks/useServerConnection.js';
 import { useNearbyUsers } from '../../hooks/useNearbyUsers.js';
+import { useChatSession } from '../../hooks/useChatSession.js';
 import { StatusBar } from '../components/StatusBar.js';
 import { MessageArea } from '../components/MessageArea.js';
 import { IMETextInput } from '../components/IMETextInput.js';
 import { UserList } from '../components/UserList.js';
+import { ChatRequestOverlay } from '../components/ChatRequestOverlay.js';
 import { theme } from '../theme.js';
 
 interface ChatScreenProps {
@@ -33,6 +35,14 @@ export function ChatScreen({ identity }: ChatScreenProps) {
 
   const { status, client } = useServerConnection(identity);
   const { users, radiusKm, cycleRadius, refreshUsers } = useNearbyUsers(client);
+  const {
+    chatStatus, partner, sessionId, chatMessages,
+    incomingRequest, partnerLeft, requestChat, acceptRequest,
+    declineRequest, sendMessage, leaveChat,
+  } = useChatSession(client, status);
+
+  const isInChat = chatStatus === 'active' || chatStatus === 'requesting' || chatStatus === 'disconnected';
+  const isInputDisabled = chatStatus === 'disconnected' || chatStatus === 'requesting';
 
   const addSystemMessage = useCallback((content: string) => {
     const sysMsg: ChatMessage = {
@@ -68,7 +78,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     if (key.ctrl && _input === 'c') {
       gracefulExit();
     }
-    if (key.tab) {
+    if (key.tab && !isInChat) {
       cycleRadius();
     }
   });
@@ -105,6 +115,16 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         cycleRadius();
         return;
       }
+      if (parsed.name === '/leave') {
+        if (isInChat) {
+          const partnerName = partner ? `${partner.nickname}#${partner.tag}` : 'chat';
+          leaveChat();
+          addSystemMessage(`Left chat with ${partnerName}`);
+        } else {
+          addSystemMessage('Not in a chat');
+        }
+        return;
+      }
       if (!isKnownCommand(parsed.name)) {
         addSystemMessage(`Unknown command: ${parsed.name}. Type /help for available commands.`);
         return;
@@ -114,14 +134,35 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     }
 
     // Regular message
-    const msg: ChatMessage = {
-      id: nextMessageId(),
-      from: identity,
-      content: parsed.content,
-      timestamp: Date.now(),
-    };
-    setMessages(prev => [...prev, msg]);
-  }, [identity, gracefulExit, addSystemMessage, refreshUsers, cycleRadius]);
+    if (isInChat && chatStatus === 'active') {
+      sendMessage(parsed.content, identity);
+    } else {
+      const msg: ChatMessage = {
+        id: nextMessageId(),
+        from: identity,
+        content: parsed.content,
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, msg]);
+    }
+  }, [identity, gracefulExit, addSystemMessage, refreshUsers, cycleRadius, isInChat, chatStatus, partner, sendMessage, leaveChat]);
+
+  // Determine which messages to display
+  const displayMessages = isInChat ? chatMessages : messages;
+
+  // Chat info for status bar
+  const chatInfo = isInChat && partner
+    ? `Chatting with ${partner.nickname}#${partner.tag}`
+    : chatStatus === 'requesting' && partner
+      ? `Requesting ${partner.nickname}#${partner.tag}...`
+      : undefined;
+
+  // Input placeholder
+  const inputPlaceholder = isInputDisabled
+    ? 'Connection lost...'
+    : isInChat
+      ? 'Type a message...'
+      : 'Type a message or /help...';
 
   const separator = '\u2500'.repeat(columns);
 
@@ -132,6 +173,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         connectionStatus={status}
         radiusKm={radiusKm}
         nearbyCount={users.length}
+        chatInfo={chatInfo}
       />
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>
@@ -141,18 +183,29 @@ export function ChatScreen({ identity }: ChatScreenProps) {
           users={users}
           visible={showUserList}
           onSelect={(user) => {
-            addSystemMessage(`Selected ${user.nickname}#${user.tag} — Chat available in Phase 3`);
+            requestChat(user);
             setShowUserList(false);
           }}
           onClose={() => setShowUserList(false)}
         />
       ) : (
-        <MessageArea messages={messages} />
+        <MessageArea messages={displayMessages} myIdentity={identity} />
+      )}
+      {incomingRequest && (
+        <ChatRequestOverlay
+          request={incomingRequest}
+          onAccept={acceptRequest}
+          onDecline={declineRequest}
+        />
       )}
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>
       </Box>
-      <IMETextInput onSubmit={handleSubmit} placeholder="Type a message or /help..." />
+      <IMETextInput
+        onSubmit={handleSubmit}
+        placeholder={inputPlaceholder}
+        isActive={!isInputDisabled && !showUserList && !incomingRequest}
+      />
     </Box>
   );
 }

@@ -20,6 +20,8 @@ interface IMETextInputProps {
   allowEmpty?: boolean;
   /** Show visual cursor indicator. Default true */
   showCursor?: boolean;
+  /** When false, disables input handling. Default true */
+  isActive?: boolean;
 }
 
 /**
@@ -31,7 +33,7 @@ interface IMETextInputProps {
  * Enter handler reads `text`. Solution: use a ref as the source of truth for
  * the current text value, so Enter always submits the latest accumulated input.
  */
-export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true }: IMETextInputProps) {
+export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true, isActive = true }: IMETextInputProps) {
   const [text, setText] = useState('');
   const textRef = useRef('');
   const [history, setHistory] = useState<string[]>([]);
@@ -100,19 +102,19 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       textRef.current += input;
       setText(textRef.current);
     }
-  });
+  }, { isActive });
 
-  const showPlaceholder = !text && placeholder;
+  const showPlaceholder = (!text && placeholder) || !isActive;
 
   return (
     <Box>
       <Text color={theme.ui.prompt}>{PROMPT}</Text>
       {showPlaceholder ? (
-        <Text dimColor>{placeholder}</Text>
+        <Text dimColor>{!isActive ? (placeholder ?? 'Connection lost...') : placeholder}</Text>
       ) : (
         <Text>{text}</Text>
       )}
-      {showCursor && !showPlaceholder ? <Text color={theme.text.primary}>▏</Text> : null}
+      {showCursor && isActive && !showPlaceholder ? <Text color={theme.text.primary}>▏</Text> : null}
     </Box>
   );
 }
