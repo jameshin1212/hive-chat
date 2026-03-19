@@ -1,4 +1,4 @@
-# Requirements: Double Talk
+# Requirements: Cling Talk
 
 **Defined:** 2026-03-19
 **Core Value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
@@ -41,7 +41,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Distribution
 
-- [ ] **DIST-01**: npm 패키지로 배포, npx double-talk으로 즉시 실행
+- [ ] **DIST-01**: npm 패키지로 배포, npx cling-talk으로 즉시 실행
 
 ## v2 Requirements
 

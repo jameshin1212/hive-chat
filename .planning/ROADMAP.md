@@ -1,8 +1,8 @@
-# Roadmap: Double Talk
+# Roadmap: Cling Talk
 
 ## Overview
 
-Double Talk delivers terminal-native P2P chat in five phases. Phase 1 establishes the project foundation with identity system and TUI shell (validating CJK IME early to avoid costly rewrites). Phase 2 stands up the signaling server with geolocation-based discovery. Phase 3 delivers the core product -- working chat via server relay. Phase 4 adds the friend system for location-independent connections. Phase 5 upgrades to direct P2P messaging with Hyperswarm, adding connection health UI and NAT traversal for remote friends.
+Cling Talk delivers terminal-native P2P chat in five phases. Phase 1 establishes the project foundation with identity system and TUI shell (validating CJK IME early to avoid costly rewrites). Phase 2 stands up the signaling server with geolocation-based discovery. Phase 3 delivers the core product -- working chat via server relay. Phase 4 adds the friend system for location-independent connections. Phase 5 upgrades to direct P2P messaging with Hyperswarm, adding connection health UI and NAT traversal for remote friends.
 
 ## Phases
 
@@ -25,7 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Depends on**: Nothing (first phase)
 **Requirements**: IDEN-01, IDEN-02, TUI-01, TUI-02, TUI-04, DIST-01
 **Success Criteria** (what must be TRUE):
-  1. User runs `npx double-talk` and sees a TUI with split layout (message area + input area)
+  1. User runs `npx cling-talk` and sees a TUI with split layout (message area + input area)
   2. First-time user is prompted for nickname and receives auto-generated nick#tag identity that persists across sessions
   3. User can select their AI CLI tool (Claude Code, Codex, Gemini, Cursor) and it displays as a badge
   4. User can type Korean/CJK characters in the input area without composition glitches (no invisible chars, no garbled output)
