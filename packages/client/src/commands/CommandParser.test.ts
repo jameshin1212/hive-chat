@@ -10,10 +10,10 @@ describe('parseInput', () => {
     });
   });
 
-  it('parses /chat with args', () => {
-    expect(parseInput('/chat user#1234')).toEqual({
+  it('parses /addfriend with args', () => {
+    expect(parseInput('/addfriend user#1234')).toEqual({
       type: 'command',
-      name: '/chat',
+      name: '/addfriend',
       args: ['user#1234'],
     });
   });
@@ -80,7 +80,7 @@ describe('COMMANDS', () => {
     expect(commandNames).toContain('/exit');
     expect(commandNames).toContain('/users');
     expect(commandNames).toContain('/friends');
-    expect(commandNames).toContain('/chat');
+    expect(commandNames).not.toContain('/chat');
     expect(commandNames).toContain('/settings');
     expect(commandNames).toContain('/help');
   });
