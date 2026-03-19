@@ -1,7 +1,7 @@
 import type { ParsedInput } from '@cling-talk/shared';
 
 export const COMMANDS = {
-  '/quit': { description: 'Exit Cling Talk' },
+  '/exit': { description: 'Exit Cling Talk' },
   '/users': { description: 'Show nearby users' },
   '/friends': { description: 'Show friend list' },
   '/chat': { description: 'Start chat with user' },

@@ -147,7 +147,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     const parsed = parseInput(text);
 
     if (parsed.type === 'command') {
-      if (parsed.name === '/quit') {
+      if (parsed.name === '/exit') {
         gracefulExit();
         return;
       }
