@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
+stopped_at: Completed 05-02-PLAN.md
 last_updated: "2026-03-19T13:34:42Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 05 (p2p-upgrade) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Plan: 2 of 3
 | Phase 04 P01 | 5min | 2 tasks | 10 files |
 | Phase 04 P02 | 6min | 3 tasks | 4 files |
 | Phase 05 P01 | 3min | 2 tasks | 7 files |
+| Phase 05 P02 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,10 @@ Recent decisions affecting current work:
 - [05-01]: P2P_SIGNAL in both client and server unions for bidirectional relay
 - [05-01]: transportType optional field (undefined default) on ChatSession -- backward compatible
 - [05-01]: Topic validation: 64-char lowercase hex regex for 32-byte Hyperswarm topics
+- [05-02]: Single Hyperswarm instance reused across sessions (lazy creation)
+- [05-02]: Initiator client-only, acceptor server-only to prevent duplicate connections
+- [05-02]: JSON over newline-delimited Duplex stream for P2P handshake/messages
+- [05-02]: ConnectionManager proxies all SignalingClient events for transparent hook integration
 
 ### Pending Todos
 
@@ -106,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T13:34:42Z
-Stopped at: Completed 05-01-PLAN.md
-Resume file: .planning/phases/05-p2p-upgrade/05-01-SUMMARY.md
+Last session: 2026-03-19T13:41:06Z
+Stopped at: Completed 05-02-PLAN.md
+Resume file: .planning/phases/05-p2p-upgrade/05-02-SUMMARY.md

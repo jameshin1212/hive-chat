@@ -29,14 +29,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **SOCL-01**: 고유ID(nick#tag)로 위치 무관 친구추가/삭제
 - [x] **SOCL-02**: 친구 목록 로컬 파일 저장 (세션 간 유지)
-- [ ] **SOCL-03**: 원격 친구와 P2P 연결 (NAT traversal + relay fallback)
+- [x] **SOCL-03**: 원격 친구와 P2P 연결 (NAT traversal + relay fallback)
 - [x] **SOCL-04**: 새 메시지 수신 시 터미널 알림 (bell/notification)
 
 ### TUI
 
 - [x] **TUI-01**: 스플릿 레이아웃 (메시지 영역 + 입력 영역)
 - [x] **TUI-02**: 한글/CJK IME 조합 정상 처리 — 입력 중 밀림/깨짐 없음
-- [ ] **TUI-03**: 연결 상태 표시 (direct/relay/disconnected)
+- [x] **TUI-03**: 연결 상태 표시 (direct/relay/disconnected)
 - [x] **TUI-04**: Ctrl+C 또는 /quit으로 깔끔한 종료
 
 ### Distribution
@@ -87,11 +87,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MESG-03 | Phase 3 | Complete |
 | SOCL-01 | Phase 4 | Complete |
 | SOCL-02 | Phase 4 | Complete |
-| SOCL-03 | Phase 5 | Pending |
+| SOCL-03 | Phase 5 | Complete |
 | SOCL-04 | Phase 3 | Complete |
 | TUI-01 | Phase 1 | Complete |
 | TUI-02 | Phase 1 | Complete |
-| TUI-03 | Phase 5 | Pending |
+| TUI-03 | Phase 5 | Complete |
 | TUI-04 | Phase 1 | Complete |
 | DIST-01 | Phase 1 | Complete |
 
