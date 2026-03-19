@@ -39,20 +39,6 @@ export function ChatScreen({ identity }: ChatScreenProps) {
   const { stdout } = useStdout();
   const rows = stdout?.rows ?? 24;
   const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
-  // Calculate overlay height to subtract from message area
-  // Each overlay has: title(1) + blank(1) + header(1) + divider(1) + items + padding
-  const overlayHeight = (() => {
-    if (showUserList) return Math.min(users.length + 4, 12); // title + header + divider + items (capped)
-    if (showFriendList) return Math.min(friendStatuses.length + 4, 12);
-    if (showSuggestions) {
-      const filtered = filterCommands(currentInput);
-      const menuLines = Math.min(filtered.length, 8); // maxVisible=8
-      const indicatorLines = filtered.length > 8 ? 2 : 0;
-      return menuLines + indicatorLines;
-    }
-    return 0;
-  })();
-  const messageAreaHeight = rows - 4 - overlayHeight; // StatusBar(1) + sep(2) + input(1) + overlay
   const gracefulExit = useGracefulExit();
 
   const { status, client, transportType } = useServerConnection(identity);
@@ -71,6 +57,18 @@ export function ChatScreen({ identity }: ChatScreenProps) {
 
   const isInChat = chatStatus === 'active' || chatStatus === 'requesting' || chatStatus === 'disconnected';
   const isInputDisabled = chatStatus === 'disconnected' || chatStatus === 'requesting';
+
+  // Dynamic overlay height — subtract from MessageArea so overlays don't clip below StatusBar
+  const overlayHeight = (() => {
+    if (showUserList) return Math.min(users.length + 4, 12);
+    if (showFriendList) return Math.min(friendStatuses.length + 4, 12);
+    if (showSuggestions) {
+      const filtered = filterCommands(currentInput);
+      return Math.min(filtered.length, 8) + (filtered.length > 8 ? 2 : 0);
+    }
+    return 0;
+  })();
+  const messageAreaHeight = Math.max(1, rows - 4 - overlayHeight);
 
   const addSystemMessage = useCallback((content: string) => {
     const sysMsg: ChatMessage = {
