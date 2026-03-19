@@ -267,7 +267,13 @@ export function ChatScreen({ identity }: ChatScreenProps) {
 
   return (
     <Box flexDirection="column" height={rows}>
-      {showFriendList && !showUserList && !incomingRequest ? (
+      <MessageArea
+        messages={displayMessages}
+        myIdentity={identity}
+        availableHeight={messageAreaHeight}
+        isActive={!showUserList && !showFriendList && !incomingRequest}
+      />
+      {showFriendList && !showUserList && !incomingRequest && (
         <FriendList
           friends={friendStatuses}
           visible={showFriendList}
@@ -281,7 +287,8 @@ export function ChatScreen({ identity }: ChatScreenProps) {
           }}
           onClose={() => setShowFriendList(false)}
         />
-      ) : showUserList ? (
+      )}
+      {showUserList && (
         <UserList
           users={users}
           visible={showUserList}
@@ -290,13 +297,6 @@ export function ChatScreen({ identity }: ChatScreenProps) {
             setShowUserList(false);
           }}
           onClose={() => setShowUserList(false)}
-        />
-      ) : (
-        <MessageArea
-          messages={displayMessages}
-          myIdentity={identity}
-          availableHeight={messageAreaHeight}
-          isActive={!showUserList && !showFriendList && !incomingRequest}
         />
       )}
       {incomingRequest && (
