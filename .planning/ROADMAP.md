@@ -78,10 +78,11 @@ Plans:
   2. User can remove friends from their list
   3. Friend list persists across sessions (stored in local file)
   4. Friends' online/offline status is visible in the friend list
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md — Protocol schemas, FriendManager, server friend status handlers, SignalingClient extensions
+- [ ] 04-02-PLAN.md — useFriends hook, FriendList overlay, ChatScreen command routing, StatusBar friend count
 
 ### Phase 5: P2P Upgrade
 **Goal**: Chat connections upgrade to direct P2P when possible, with transparent relay fallback and visible connection health
@@ -108,5 +109,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Foundation | 3/3 | Complete | 2026-03-19 |
 | 2. Signaling & Discovery | 3/3 | Complete | 2026-03-19 |
 | 3. Relay Chat | 1/3 | In Progress | - |
-| 4. Friends | 0/1 | Not started | - |
+| 4. Friends | 0/2 | Not started | - |
 | 5. P2P Upgrade | 0/2 | Not started | - |
