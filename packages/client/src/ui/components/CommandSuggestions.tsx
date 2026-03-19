@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Box, Text } from 'ink';
 
 interface CommandSuggestion {
@@ -13,73 +13,72 @@ interface CommandSuggestionsProps {
   maxVisible?: number;
 }
 
+function renderItem(cmd: CommandSuggestion, isSelected: boolean) {
+  return (
+    <Box key={cmd.name}>
+      <Text inverse={isSelected} bold={isSelected}>
+        {isSelected ? '▸ ' : '  '}
+        {cmd.name}
+      </Text>
+      <Text dimColor>
+        {' — '}{cmd.description}
+      </Text>
+    </Box>
+  );
+}
+
 export function CommandSuggestions({ suggestions, selectedIndex, visible, maxVisible = 8 }: CommandSuggestionsProps) {
   if (!visible || suggestions.length === 0) return null;
 
   const total = suggestions.length;
+  const scrollTopRef = useRef(0);
 
-  // No scrolling needed if all fit
+  // No scrolling needed
   if (total <= maxVisible) {
     return (
       <Box flexDirection="column" paddingX={1}>
-        {suggestions.map((cmd, index) => {
-          const isSelected = index === selectedIndex;
-          return (
-            <Box key={cmd.name}>
-              <Text inverse={isSelected} bold={isSelected}>
-                {isSelected ? '▸ ' : '  '}
-                {cmd.name}
-              </Text>
-              <Text dimColor>
-                {' — '}{cmd.description}
-              </Text>
-            </Box>
-          );
-        })}
+        {suggestions.map((cmd, i) => renderItem(cmd, i === selectedIndex))}
       </Box>
     );
   }
 
-  // Scrolling: reserve lines for ↑↓ indicators
-  const hasUp = selectedIndex > 0;
-  const hasDown = selectedIndex < total - 1;
-  const itemSlots = maxVisible - (hasUp ? 1 : 0) - (hasDown ? 1 : 0);
+  // Fixed item slots (reserve 2 lines for ↑↓ indicators when in middle)
+  const itemSlots = maxVisible - 2; // always reserve both indicators for stable layout
 
-  // Keep selected item visible
-  let startIndex: number;
-  if (selectedIndex === 0) {
-    startIndex = 0;
-  } else if (selectedIndex === total - 1) {
-    startIndex = total - itemSlots;
-  } else {
-    // Center selected item in available slots
-    startIndex = Math.max(0, Math.min(selectedIndex - Math.floor(itemSlots / 2), total - itemSlots));
+  // Stable scroll: only move window when selected goes out of visible range
+  let scrollTop = scrollTopRef.current;
+
+  // Clamp scrollTop to valid range
+  scrollTop = Math.max(0, Math.min(scrollTop, total - itemSlots));
+
+  // Adjust if selected is outside visible window
+  if (selectedIndex < scrollTop) {
+    scrollTop = selectedIndex;
+  } else if (selectedIndex >= scrollTop + itemSlots) {
+    scrollTop = selectedIndex - itemSlots + 1;
   }
-  const endIndex = Math.min(startIndex + itemSlots, total);
-  const visibleSuggestions = suggestions.slice(startIndex, endIndex);
+
+  // Edge cases: at very start or very end, reclaim indicator line
+  scrollTop = Math.max(0, Math.min(scrollTop, total - itemSlots));
+  scrollTopRef.current = scrollTop;
+
+  const endIndex = Math.min(scrollTop + itemSlots, total);
+  const visibleSuggestions = suggestions.slice(scrollTop, endIndex);
+  const showUp = scrollTop > 0;
+  const showDown = endIndex < total;
 
   return (
     <Box flexDirection="column" paddingX={1}>
-      {hasUp && startIndex > 0 && (
-        <Text dimColor>  ↑ more</Text>
+      {showUp ? (
+        <Text dimColor>  ↑ {scrollTop} more</Text>
+      ) : (
+        <Text> </Text>
       )}
-      {visibleSuggestions.map((cmd, index) => {
-        const actualIndex = startIndex + index;
-        const isSelected = actualIndex === selectedIndex;
-        return (
-          <Box key={cmd.name}>
-            <Text inverse={isSelected} bold={isSelected}>
-              {isSelected ? '▸ ' : '  '}
-              {cmd.name}
-            </Text>
-            <Text dimColor>
-              {' — '}{cmd.description}
-            </Text>
-          </Box>
-        );
-      })}
-      {hasDown && endIndex < total && (
-        <Text dimColor>  ↓ more</Text>
+      {visibleSuggestions.map((cmd, i) => renderItem(cmd, scrollTop + i === selectedIndex))}
+      {showDown ? (
+        <Text dimColor>  ↓ {total - endIndex} more</Text>
+      ) : (
+        <Text> </Text>
       )}
     </Box>
   );
