@@ -76,30 +76,30 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| IDEN-01 | - | Pending |
-| IDEN-02 | - | Pending |
-| IDEN-03 | - | Pending |
-| DISC-01 | - | Pending |
-| DISC-02 | - | Pending |
-| DISC-03 | - | Pending |
-| MESG-01 | - | Pending |
-| MESG-02 | - | Pending |
-| MESG-03 | - | Pending |
-| SOCL-01 | - | Pending |
-| SOCL-02 | - | Pending |
-| SOCL-03 | - | Pending |
-| SOCL-04 | - | Pending |
-| TUI-01 | - | Pending |
-| TUI-02 | - | Pending |
-| TUI-03 | - | Pending |
-| TUI-04 | - | Pending |
-| DIST-01 | - | Pending |
+| IDEN-01 | Phase 1 | Pending |
+| IDEN-02 | Phase 1 | Pending |
+| IDEN-03 | Phase 2 | Pending |
+| DISC-01 | Phase 2 | Pending |
+| DISC-02 | Phase 2 | Pending |
+| DISC-03 | Phase 2 | Pending |
+| MESG-01 | Phase 3 | Pending |
+| MESG-02 | Phase 3 | Pending |
+| MESG-03 | Phase 3 | Pending |
+| SOCL-01 | Phase 4 | Pending |
+| SOCL-02 | Phase 4 | Pending |
+| SOCL-03 | Phase 5 | Pending |
+| SOCL-04 | Phase 3 | Pending |
+| TUI-01 | Phase 1 | Pending |
+| TUI-02 | Phase 1 | Pending |
+| TUI-03 | Phase 5 | Pending |
+| TUI-04 | Phase 1 | Pending |
+| DIST-01 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18 ⚠️
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*
