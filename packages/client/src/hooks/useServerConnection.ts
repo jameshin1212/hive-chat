@@ -26,6 +26,9 @@ export function useServerConnection(identity: Identity) {
     connectionManager.on('transport_changed', (type: TransportType) => {
       setTransportType(type);
     });
+    connectionManager.on('error', () => {
+      // Absorb server error events to prevent ERR_UNHANDLED_ERROR crash
+    });
 
     connectionManager.connect();
 
