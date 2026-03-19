@@ -117,9 +117,11 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     if (key.ctrl && _input === 'c') {
       gracefulExit();
     }
-    if (key.tab && !isInChat && !showUserList && !showFriendList) {
+    if (key.tab && !isInChat && !showFriendList) {
       if (key.shift) {
         cycleRadius();
+      } else if (showUserList) {
+        setShowUserList(false);
       } else {
         setShowUserList(true);
         refreshUsers();
