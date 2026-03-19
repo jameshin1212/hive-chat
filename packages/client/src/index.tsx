@@ -1,9 +1,10 @@
 import React from 'react';
 import { render } from 'ink';
-import { Text } from 'ink';
+import { App } from './ui/App.js';
 
-function App() {
-  return <Text color="green">Cling Talk v0.1.0 - Foundation</Text>;
-}
+// Restore cursor on exit (safety net for abnormal exit)
+process.on('exit', () => {
+  process.stdout.write('\x1b[?25h');
+});
 
 render(<App />);
