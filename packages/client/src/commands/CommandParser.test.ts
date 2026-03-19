@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { parseInput, isKnownCommand, COMMANDS } from './CommandParser.js';
 
 describe('parseInput', () => {
-  it('parses /quit as a command', () => {
-    expect(parseInput('/quit')).toEqual({
+  it('parses /exit as a command', () => {
+    expect(parseInput('/exit')).toEqual({
       type: 'command',
-      name: '/quit',
+      name: '/exit',
       args: [],
     });
   });
@@ -57,8 +57,8 @@ describe('parseInput', () => {
 });
 
 describe('isKnownCommand', () => {
-  it('returns true for /quit', () => {
-    expect(isKnownCommand('/quit')).toBe(true);
+  it('returns true for /exit', () => {
+    expect(isKnownCommand('/exit')).toBe(true);
   });
 
   it('returns true for /help', () => {
@@ -77,7 +77,7 @@ describe('isKnownCommand', () => {
 describe('COMMANDS', () => {
   it('contains all expected commands', () => {
     const commandNames = Object.keys(COMMANDS);
-    expect(commandNames).toContain('/quit');
+    expect(commandNames).toContain('/exit');
     expect(commandNames).toContain('/users');
     expect(commandNames).toContain('/friends');
     expect(commandNames).toContain('/chat');
