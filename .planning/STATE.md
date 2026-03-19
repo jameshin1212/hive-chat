@@ -1,62 +1,40 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: unknown
-stopped_at: Completed 05-03-PLAN.md — All phases complete
-last_updated: "2026-03-19T14:43:59.763Z"
+milestone: v1.0.1
+milestone_name: bug-fix-ux-polish
+status: defining-requirements
+stopped_at: Milestone v1.0.1 started — defining requirements
+last_updated: "2026-03-20T00:00:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 14
-  completed_plans: 14
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-19)
+See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** All phases complete — v1.0 milestone achieved
+**Current focus:** v1.0.1 Bug Fix & UX Polish — defining requirements
 
 ## Current Position
 
-Phase: 05 (p2p-upgrade) — COMPLETE
-Plan: 3 of 3 (all done)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-20 — Milestone v1.0.1 started
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 3
-- Average duration: 4min
-- Total execution time: 0.12 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 01-foundation | 2/3 | 7min | 4min |
-
-**Recent Trend:**
-
-- Last 5 plans: 01-01 (4min), 01-02 (3min), 02-01 (4min), 02-02 (5min), 03-01 (5min)
-- Trend: stable
-
-*Updated after each plan completion*
-| Phase 01 P01 | 4min | 2 tasks | 17 files |
-| Phase 01 P02 | 3min | 2 tasks | 9 files |
-| Phase 02 P01 | 4min | 2 tasks | 12 files |
-| Phase 02 P02 | 5min | 2 tasks | 8 files |
-| Phase 03 P01 | 5min | 2 tasks | 7 files |
-| Phase 03 P02 | 4min | 2 tasks | 9 files |
-| Phase 04 P01 | 5min | 2 tasks | 10 files |
-| Phase 04 P02 | 6min | 3 tasks | 4 files |
-| Phase 05 P01 | 3min | 2 tasks | 7 files |
-| Phase 05 P02 | 4min | 2 tasks | 6 files |
-| Phase 05 P03 | 8min | 3 tasks | 8 files |
+- Total plans completed: 0
+- Average duration: —
+- Total execution time: 0 hours
 
 ## Accumulated Context
 
@@ -65,45 +43,8 @@ Plan: 3 of 3 (all done)
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: Relay-first architecture -- deliver working chat in Phase 3 before P2P complexity in Phase 5
-- [Roadmap]: CJK IME validation in Phase 1 -- highest recovery cost if wrong library chosen
-- [Roadmap]: Friends (Phase 4) before P2P (Phase 5) -- friend system works via relay, P2P enhances it
-- [01-01]: React 19 instead of 18 -- Ink 6.8.0 peer requires react>=19.0.0
-- [01-01]: npm workspace `*` not pnpm `workspace:*` -- using npm workspaces
-- [01-01]: zod ^3.24 for stability -- zod 4.x compatibility unvalidated
-- [01-02]: figlet.textSync at module level -- zero runtime cost for ASCII banner
-- [01-02]: Array.from for backspace -- correct surrogate pair/CJK character handling
-- [01-02]: Sender color by appearance order -- consistent color assignment in message area
-- [02-01]: DEV_GEO_LAT/DEV_GEO_LON env vars for localhost IP fallback
-- [02-01]: PresenceManager terminates old WebSocket on duplicate session registration
-- [02-01]: findNearbyUsers excludes offline users and rounds distance to 1 decimal
-- [Phase 02]: Default Seoul coords as null-geo fallback for private IPs without DEV_GEO env
-- [Phase 02]: broadcastToRegistered sends to all registered clients; geo-filtered broadcast deferred to relay phase
-- [Phase 02]: ws package in both server and client for isomorphic WebSocket
-- [03-01]: UUID-based sessionId via crypto.randomUUID for session tracking
-- [03-01]: Dual-map pattern (sessions + userSessions reverse index) for O(1) lookup
-- [03-01]: Pending requests separate from active sessions for accept/decline flow
-- [03-02]: ringBell as exported function for testability without React hook context
-- [03-02]: Chat messages and local messages kept separate (not merged)
-- [03-02]: Auto-decline incoming requests when already in active chat
-- [03-02]: partnerLeft flag keeps chat screen open when partner leaves
-- [04-01]: friendSubscriptions Map keyed by userId for O(1) subscription lookup
-- [04-01]: notifyFriendSubscribers iterates all subscribers on join/leave
-- [04-01]: FriendManager uses simple append (no dedup) -- caller handles duplicate check
-- [04-02]: FriendList follows UserList overlay pattern for consistent UX
-- [04-02]: StatusBar friend count hidden during active chat to reduce clutter
-- [04-02]: Offline friend selection shows system message instead of blocking
-- [05-01]: P2P_SIGNAL in both client and server unions for bidirectional relay
-- [05-01]: transportType optional field (undefined default) on ChatSession -- backward compatible
-- [05-01]: Topic validation: 64-char lowercase hex regex for 32-byte Hyperswarm topics
-- [05-02]: Single Hyperswarm instance reused across sessions (lazy creation)
-- [05-02]: Initiator client-only, acceptor server-only to prevent duplicate connections
-- [05-02]: JSON over newline-delimited Duplex stream for P2P handshake/messages
-- [05-02]: ConnectionManager proxies all SignalingClient events for transparent hook integration
-- [05-03]: Text label stays 'connected' for both direct and relay -- only color changes
-- [05-03]: No system messages in chat area during transport transitions
-- [05-03]: connectionColor defaults to yellow when transportType undefined (backward compat)
-- [05-03]: Error event handler on ConnectionManager to prevent unhandled crash
+- [v1.0]: All v1.0 decisions preserved — see MILESTONES.md
+- [v1.0.1]: Bug-fix + UX polish milestone — no new features, focus on stability
 
 ### Pending Todos
 
@@ -111,11 +52,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Research]: Ink 6.x CJK IME behavior unconfirmed -- must prototype and validate in Phase 1
-- [Research]: Hyperswarm + custom signaling server coexistence pattern unclear -- address in Phase 5 planning
+- [Bug]: 채팅 입력이 길어지면 입력 텍스트가 노출되지 않는 문제
+- [Bug]: 채팅 메시지가 많아지면 상단 일부가 고정된 채 스크롤되는 문제
 
 ## Session Continuity
 
-Last session: 2026-03-19T14:26:52Z
-Stopped at: Completed 05-03-PLAN.md — All phases complete
-Resume file: .planning/phases/05-p2p-upgrade/05-03-SUMMARY.md
+Last session: 2026-03-20
+Stopped at: Defining requirements for v1.0.1
+Resume file: —
