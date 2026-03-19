@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Settings & Cleanup
-status: unknown
-stopped_at: Completed 09-02-PLAN.md (Phase 09 complete)
-last_updated: "2026-03-19T18:44:27.887Z"
+milestone: v1.2
+milestone_name: deploy-publish
+status: defining-requirements
+stopped_at: Milestone v1.2 started
+last_updated: "2026-03-20T04:00:00.000Z"
 progress:
-  total_phases: 2
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -19,23 +19,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 09 — settings-command
+**Current focus:** v1.2 Deploy & Publish — defining requirements
 
 ## Current Position
 
-Phase: 09 (settings-command) — COMPLETE
-Plan: 2 of 2 (all complete)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-20 — Milestone v1.2 started
 
 ## Accumulated Context
 
 ### Decisions
 
-- [v1.1]: /settings 구현 (닉네임 변경, AI CLI 변경, 프로필 확인)
-- [v1.1]: /chat placeholder 제거
-- [v1.1]: Phase 9 = Settings Command (SET-01~04), Phase 10 = Command Cleanup (CLN-01)
-- [09-01]: SettingsOverlay uses state machine with 3 sub-screens (menu/nickname/ai-cli)
-- [09-01]: Nickname/AI CLI change closes overlay via onClose() instead of returning to menu
-- [09-02]: Identity change auto-reconnect via useServerConnection deps, no manual reconnect logic
+- [v1.2]: npm publish + Railway 서버 배포 + README
+- [v1.2]: Railway 선택 — WebSocket 지원, sleep 없음
 
 ### Pending Todos
 
@@ -47,6 +45,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T00:00:00Z
-Stopped at: Completed 09-02-PLAN.md (Phase 09 complete)
-Resume file: .planning/phases/09-settings-command/09-02-SUMMARY.md
+Last session: 2026-03-20
+Stopped at: Defining requirements for v1.2
+Resume file: —
