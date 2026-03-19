@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-19T12:12:00.000Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-19T12:31:53.000Z"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 04 — friends
+**Current focus:** Phase 04 — friends (COMPLETE)
 
 ## Current Position
 
-Phase: 04 (friends) — EXECUTING
-Plan: 2 of 2
+Phase: 04 (friends) — COMPLETE
+Plan: 2 of 2 (all complete)
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: 2 of 2
 | Phase 03 P01 | 5min | 2 tasks | 7 files |
 | Phase 03 P02 | 4min | 2 tasks | 9 files |
 | Phase 04 P01 | 5min | 2 tasks | 10 files |
+| Phase 04 P02 | 6min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [04-01]: friendSubscriptions Map keyed by userId for O(1) subscription lookup
 - [04-01]: notifyFriendSubscribers iterates all subscribers on join/leave
 - [04-01]: FriendManager uses simple append (no dedup) -- caller handles duplicate check
+- [04-02]: FriendList follows UserList overlay pattern for consistent UX
+- [04-02]: StatusBar friend count hidden during active chat to reduce clutter
+- [04-02]: Offline friend selection shows system message instead of blocking
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T12:12:00.000Z
-Stopped at: Completed 04-01-PLAN.md
-Resume file: .planning/phases/04-friends/04-01-SUMMARY.md
+Last session: 2026-03-19T12:31:53.000Z
+Stopped at: Completed 04-02-PLAN.md
+Resume file: .planning/phases/04-friends/04-02-SUMMARY.md
