@@ -32,7 +32,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 ### v1.1 Settings & Cleanup
 
-- [ ] **Phase 9: Settings Command** - /settings 명령어로 닉네임 변경, AI CLI 변경, 프로필 확인
+- [x] **Phase 9: Settings Command** - /settings 명령어로 닉네임 변경, AI CLI 변경, 프로필 확인
 - [ ] **Phase 10: Command Cleanup** - /chat placeholder 명령어 제거
 
 ## Phase Details
@@ -49,7 +49,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Plans:** 2 plans
 Plans:
 - [x] 09-01-PLAN.md -- updateIdentity() + SettingsOverlay 컴포넌트 + App identity 콜백
-- [ ] 09-02-PLAN.md -- ChatScreen 통합 + /settings 명령어 연결 + 동작 검증
+- [x] 09-02-PLAN.md -- ChatScreen 통합 + /settings 명령어 연결 + 동작 검증
 
 ### Phase 10: Command Cleanup
 **Goal**: 사용되지 않는 placeholder 명령어가 제거되어 명령어 목록이 깔끔하다
@@ -72,7 +72,7 @@ Plans:
 | 6. Chat Bug Fixes | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 7. Input UX | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
-| 9. Settings Command | v1.1 | 1/2 | In progress | - |
+| 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
 | 10. Command Cleanup | v1.1 | 0/? | Not started | - |
 
 ---

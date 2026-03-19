@@ -7,10 +7,10 @@
 
 ### Settings
 
-- [ ] **SET-01**: /settings 입력 시 설정 메뉴가 표시됨
-- [ ] **SET-02**: 설정 메뉴에서 닉네임을 변경할 수 있음 (TAG 유지)
-- [ ] **SET-03**: 설정 메뉴에서 AI CLI를 변경할 수 있음
-- [ ] **SET-04**: 설정 메뉴에서 현재 프로필 정보를 확인할 수 있음
+- [x] **SET-01**: /settings 입력 시 설정 메뉴가 표시됨
+- [x] **SET-02**: 설정 메뉴에서 닉네임을 변경할 수 있음 (TAG 유지)
+- [x] **SET-03**: 설정 메뉴에서 AI CLI를 변경할 수 있음
+- [x] **SET-04**: 설정 메뉴에서 현재 프로필 정보를 확인할 수 있음
 
 ### Cleanup
 
@@ -37,10 +37,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SET-01 | Phase 9 | Pending |
-| SET-02 | Phase 9 | Pending |
-| SET-03 | Phase 9 | Pending |
-| SET-04 | Phase 9 | Pending |
+| SET-01 | Phase 9 | Complete |
+| SET-02 | Phase 9 | Complete |
+| SET-03 | Phase 9 | Complete |
+| SET-04 | Phase 9 | Complete |
 | CLN-01 | Phase 10 | Pending |
 
 **Coverage:**
