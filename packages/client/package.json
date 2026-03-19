@@ -17,9 +17,12 @@
   "dependencies": {
     "@cling-talk/shared": "*",
     "@inkjs/ui": "^2.0.0",
+    "b4a": "^1.8.0",
     "chalk": "^5.6.2",
     "conf": "^15.1.0",
     "figlet": "^1.11.0",
+    "hypercore-crypto": "^3.6.1",
+    "hyperswarm": "^4.17.0",
     "ink": "^6.8.0",
     "nanoid": "^5.1.7",
     "react": "^19",
@@ -28,9 +31,9 @@
     "zod": "^3.24"
   },
   "devDependencies": {
-    "@types/ws": "^8",
     "@types/figlet": "^1",
     "@types/react": "^19",
+    "@types/ws": "^8",
     "tsdown": "^0",
     "typescript": "^5.7",
     "vitest": "^3"
