@@ -33,7 +33,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 ### v1.1 Settings & Cleanup
 
 - [x] **Phase 9: Settings Command** - /settings 명령어로 닉네임 변경, AI CLI 변경, 프로필 확인
-- [ ] **Phase 10: Command Cleanup** - /chat placeholder 명령어 제거
+- [x] **Phase 10: Command Cleanup** - /chat placeholder 명령어 제거 (completed 2026-03-19)
 
 ## Phase Details
 
@@ -73,7 +73,7 @@ Plans:
 | 7. Input UX | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
-| 10. Command Cleanup | v1.1 | 0/? | Not started | - |
+| 10. Command Cleanup | v1.1 | Complete    | 2026-03-19 | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
