@@ -28,6 +28,19 @@ export function clearIdentity(): void {
   appConfig.delete('identity');
 }
 
+export function updateIdentity(updates: { nickname?: string; aiCli?: AiCli }): Identity {
+  const current = loadIdentity();
+  if (!current) throw new Error('No identity to update');
+  const updated: Identity = {
+    ...current,
+    ...(updates.nickname !== undefined ? { nickname: updates.nickname } : {}),
+    ...(updates.aiCli !== undefined ? { aiCli: updates.aiCli } : {}),
+  };
+  identitySchema.parse(updated);
+  appConfig.set('identity', updated);
+  return updated;
+}
+
 export function formatIdentityDisplay(identity: Identity): string {
   return `${identity.nickname}#${identity.tag}`;
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { generateTag, saveIdentity, loadIdentity, clearIdentity, formatIdentityDisplay } from './IdentityManager.js';
+import { generateTag, saveIdentity, loadIdentity, clearIdentity, formatIdentityDisplay, updateIdentity } from './IdentityManager.js';
 import { identitySchema, AI_CLI_OPTIONS } from '@cling-talk/shared';
 
 afterEach(() => {
@@ -78,6 +78,50 @@ describe('nickname validation via identitySchema', () => {
 describe('AI_CLI_OPTIONS', () => {
   it('contains exactly the expected options', () => {
     expect(AI_CLI_OPTIONS).toEqual(['Claude Code', 'Codex', 'Gemini', 'Cursor']);
+  });
+});
+
+describe('updateIdentity', () => {
+  it('updates nickname while preserving tag and other fields', () => {
+    const saved = saveIdentity('oldname', 'Claude Code');
+    const updated = updateIdentity({ nickname: 'newname' });
+    expect(updated.nickname).toBe('newname');
+    expect(updated.tag).toBe(saved.tag);
+    expect(updated.aiCli).toBe('Claude Code');
+    expect(updated.schemaVersion).toBe(1);
+  });
+
+  it('updates aiCli while preserving nickname and tag', () => {
+    const saved = saveIdentity('coder', 'Claude Code');
+    const updated = updateIdentity({ aiCli: 'Codex' });
+    expect(updated.aiCli).toBe('Codex');
+    expect(updated.nickname).toBe('coder');
+    expect(updated.tag).toBe(saved.tag);
+  });
+
+  it('updates both nickname and aiCli while preserving tag', () => {
+    const saved = saveIdentity('old', 'Claude Code');
+    const updated = updateIdentity({ nickname: 'new', aiCli: 'Gemini' });
+    expect(updated.nickname).toBe('new');
+    expect(updated.aiCli).toBe('Gemini');
+    expect(updated.tag).toBe(saved.tag);
+  });
+
+  it('throws when no identity is stored', () => {
+    // clearIdentity called in afterEach, so no identity stored
+    expect(() => updateIdentity({ nickname: 'test' })).toThrow('No identity to update');
+  });
+
+  it('persists the updated identity to config', () => {
+    saveIdentity('coder', 'Claude Code');
+    updateIdentity({ nickname: 'updated' });
+    const loaded = loadIdentity();
+    expect(loaded?.nickname).toBe('updated');
+  });
+
+  it('throws on invalid nickname via schema validation', () => {
+    saveIdentity('coder', 'Claude Code');
+    expect(() => updateIdentity({ nickname: 'INVALID UPPER' })).toThrow();
   });
 });
 
