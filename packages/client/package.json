@@ -10,7 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsx watch src/index.tsx",
+    "dev": "tsx src/index.tsx",
     "build": "tsdown src/index.tsx --format esm --out-dir dist",
     "test": "vitest run"
   },
