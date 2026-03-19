@@ -15,28 +15,107 @@ export function calcCursorX(text: string, prompt: string = PROMPT): number {
 }
 
 /**
- * Returns the visible portion of text that fits within availableWidth columns,
- * showing the rightmost (most recent) content. Uses string-width for CJK-aware
- * column calculation. If a CJK character straddles the boundary, it is excluded.
+ * Calculate the visible window of text that includes the cursor position.
+ * Returns the visible text, the window start index (in char units), and
+ * the cursor's column offset within the visible window.
  */
-export function getVisibleText(text: string, availableWidth: number): string {
+export function getVisibleWindow(
+  text: string,
+  availableWidth: number,
+  cursorPosition: number,
+): { visibleText: string; windowStart: number; cursorOffset: number } {
+  if (availableWidth <= 0) return { visibleText: '', windowStart: 0, cursorOffset: 0 };
+
+  const chars = Array.from(text);
+  const totalWidth = stringWidth(text);
+
+  if (totalWidth <= availableWidth) {
+    // Everything fits — calculate cursor offset
+    const beforeCursor = chars.slice(0, cursorPosition).join('');
+    return {
+      visibleText: text,
+      windowStart: 0,
+      cursorOffset: stringWidth(beforeCursor),
+    };
+  }
+
+  // Clamp cursor position
+  const clampedCursor = Math.max(0, Math.min(chars.length, cursorPosition));
+
+  // Calculate column widths for prefix up to cursor
+  const beforeCursorText = chars.slice(0, clampedCursor).join('');
+  const cursorCol = stringWidth(beforeCursorText);
+
+  // Also calculate width including the char AT cursor (if not at end)
+  // so we ensure the cursor character itself is visible
+  let cursorCharWidth = 0;
+  if (clampedCursor < chars.length) {
+    cursorCharWidth = stringWidth(chars[clampedCursor]!);
+  }
+  const cursorRightEdge = cursorCol + cursorCharWidth;
+
+  // Determine window start: ensure cursor + its character fit in window
+  let windowStartIdx = 0;
+  let windowStartCol = 0;
+
+  // If the right edge of cursor char exceeds available width from start, shift window
+  if (cursorRightEdge > availableWidth) {
+    // We need windowStartCol such that cursorRightEdge - windowStartCol <= availableWidth
+    const minStartCol = cursorRightEdge - availableWidth;
+    let accum = 0;
+    for (let i = 0; i < chars.length; i++) {
+      const cw = stringWidth(chars[i]!);
+      if (accum + cw > minStartCol) {
+        // This char straddles or is past the minimum start column
+        // If we start right after this char, we might overshoot, so start here
+        // unless the accumulated width already exceeds minStartCol
+        if (accum >= minStartCol) {
+          windowStartIdx = i;
+          windowStartCol = accum;
+        } else {
+          // Start at next char to ensure cursor fits
+          windowStartIdx = i + 1;
+          windowStartCol = accum + cw;
+        }
+        break;
+      }
+      accum += cw;
+    }
+  }
+
+  // Now build the visible text from windowStartIdx, fitting availableWidth
+  let visibleChars: string[] = [];
+  let visibleWidth = 0;
+  for (let i = windowStartIdx; i < chars.length; i++) {
+    const cw = stringWidth(chars[i]!);
+    if (visibleWidth + cw > availableWidth) break;
+    visibleChars.push(chars[i]!);
+    visibleWidth += cw;
+  }
+
+  const cursorOffset = cursorCol - windowStartCol;
+
+  return {
+    visibleText: visibleChars.join(''),
+    windowStart: windowStartIdx,
+    cursorOffset,
+  };
+}
+
+/**
+ * Returns the visible portion of text that fits within availableWidth columns.
+ * When cursorPosition is provided, ensures the cursor is within the visible window.
+ * Without cursorPosition, shows the rightmost (most recent) content (backward compat).
+ * Uses string-width for CJK-aware column calculation.
+ */
+export function getVisibleText(text: string, availableWidth: number, cursorPosition?: number): string {
   if (availableWidth <= 0) return '';
   const totalWidth = stringWidth(text);
   if (totalWidth <= availableWidth) return text;
 
-  // Walk backwards from end, accumulating width
   const chars = Array.from(text);
-  let accumulatedWidth = 0;
-  let startIndex = chars.length;
-
-  for (let i = chars.length - 1; i >= 0; i--) {
-    const charWidth = stringWidth(chars[i]!);
-    if (accumulatedWidth + charWidth > availableWidth) break;
-    accumulatedWidth += charWidth;
-    startIndex = i;
-  }
-
-  return chars.slice(startIndex).join('');
+  const pos = cursorPosition ?? chars.length;
+  return getVisibleWindow(text, availableWidth, pos).visibleText;
 }
 
 interface IMETextInputProps {
