@@ -299,13 +299,8 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       );
     }
 
-    // Empty — show block cursor, then dimmed placeholder (no overlap)
-    return (
-      <>
-        <Text inverse> </Text>
-        {placeholder && <Text dimColor>{placeholder}</Text>}
-      </>
-    );
+    // Empty — block cursor only (no placeholder — prevents IME composing overlap)
+    return <Text inverse> </Text>;
   };
 
   return (
