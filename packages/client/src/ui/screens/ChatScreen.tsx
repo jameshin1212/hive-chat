@@ -267,19 +267,6 @@ export function ChatScreen({ identity }: ChatScreenProps) {
 
   return (
     <Box flexDirection="column" height={rows}>
-      <StatusBar
-        identity={identity}
-        connectionStatus={status}
-        radiusKm={radiusKm}
-        nearbyCount={users.length}
-        chatPartner={chatPartner}
-        onlineFriendCount={onlineFriendCount}
-        friendCount={friendCount}
-        transportType={transportType}
-      />
-      <Box>
-        <Text color={theme.ui.separator}>{separator}</Text>
-      </Box>
       {showFriendList && !showUserList && !incomingRequest ? (
         <FriendList
           friends={friendStatuses}
@@ -326,6 +313,19 @@ export function ChatScreen({ identity }: ChatScreenProps) {
           visible={showSuggestions}
         />
       )}
+      <Box>
+        <Text color={theme.ui.separator}>{separator}</Text>
+      </Box>
+      <StatusBar
+        identity={identity}
+        connectionStatus={status}
+        radiusKm={radiusKm}
+        nearbyCount={users.length}
+        chatPartner={chatPartner}
+        onlineFriendCount={onlineFriendCount}
+        friendCount={friendCount}
+        transportType={transportType}
+      />
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>
       </Box>
