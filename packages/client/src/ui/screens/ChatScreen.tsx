@@ -192,7 +192,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         if (isInChat) {
           const partnerName = partner ? `${partner.nickname}#${partner.tag}` : 'chat';
           leaveChat();
-          addSystemMessage(`Left chat with ${partnerName}`);
+          addSystemMessage(`Left chat with ${partnerName}`, 'transition');
         } else {
           addSystemMessage('Not in a chat');
         }

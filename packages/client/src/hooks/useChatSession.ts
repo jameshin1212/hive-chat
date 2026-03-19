@@ -150,7 +150,7 @@ export function useChatSession(
     const handleChatUserOffline = (data: { nickname: string; tag: string }) => {
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} went offline`),
+        createSystemMessage(`${data.nickname}#${data.tag} went offline`, 'transition'),
       ].slice(-MAX_MESSAGES));
       setPartnerLeft(true);
     };
