@@ -109,15 +109,13 @@ export function MessageArea({ messages, myIdentity, availableHeight, columns = D
           );
         }
 
-        const senderKey = `${msg.from.nickname}#${msg.from.tag}`;
-        const colorIndex = getSenderIndex(visibleMessages, senderKey);
-        const color = getUserColor(colorIndex);
         const badgeColor = theme.badge[msg.from.aiCli];
 
         const isOwnMessage = myIdentity
           && msg.from.nickname === myIdentity.nickname
           && msg.from.tag === myIdentity.tag;
-        const nameColor = isOwnMessage ? theme.text.primary : color;
+        // Own = green, partner = yellow (1:1 chat, consistent colors)
+        const nameColor = isOwnMessage ? theme.text.primary : 'yellow';
 
         return (
           <Box key={msg.id}>

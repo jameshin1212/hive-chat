@@ -218,7 +218,7 @@ export function useChatSession(
     setPartnerLeft(false);
     setIncomingRequest(null);
     setChatMessages([
-      createSystemMessage(`Chat started with ${incomingRequest.from.nickname}#${incomingRequest.from.tag}`),
+      createSystemMessage(`Chat started with ${incomingRequest.from.nickname}#${incomingRequest.from.tag}`, 'transition'),
     ]);
   }, [client, incomingRequest]);
 
