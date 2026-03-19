@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: unknown
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-03-19T16:48:27.910Z"
+milestone: v1.1
+milestone_name: settings-cleanup
+status: defining-requirements
+stopped_at: Milestone v1.1 started — defining requirements
+last_updated: "2026-03-20T03:10:00.000Z"
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -19,42 +19,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 08 — visual-polish
+**Current focus:** v1.1 Settings & Cleanup — defining requirements
 
 ## Current Position
 
-Phase: 08 (visual-polish) — EXECUTING
-Plan: 2 of 2 (COMPLETE)
-
-## Performance Metrics
-
-**Velocity:**
-
-- Total plans completed: 3
-- Average duration: 2.0min
-- Total execution time: 0.09 hours
-
-| Phase | Plan | Duration | Tasks | Files |
-|-------|------|----------|-------|-------|
-| 08 | 01 | 32s | 1 | 1 |
-| 08 | 02 | 76s | 2 | 2 |
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-20 — Milestone v1.1 started
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [v1.0]: All v1.0 decisions preserved -- see MILESTONES.md
-- [v1.0.1]: Bug-fix + UX polish milestone -- no new features, focus on stability
-- [v1.0.1]: 3 phases: bugs first (6), then input UX (7), then visual polish (8)
-- [06-01]: Sliding window input with no overflow indicator -- clean UX preferred
-- [Phase 06]: scrollOffset=0 means bottom, fixed height layout for predictable scroll
-- [07-01]: getVisibleWindow for cursor-aware sliding window, cursorPosRef pattern for React batching safety
-- [Phase 07]: onKeyIntercept pattern: IMETextInput delegates key handling to parent via callback, setText as third arg
-- [08-01]: system messages use unicode dash separator with gray italic, own message content green via theme.text.primary
-- [08-02]: /exit replaces /quit, StatusBar relocated between MessageArea and input
+- [v1.1]: /settings 구현 (닉네임 변경, AI CLI 변경, 프로필 확인)
+- [v1.1]: /chat placeholder 제거
 
 ### Pending Todos
 
@@ -62,11 +41,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Bug]: BUG-01 -- input text invisible when text exceeds terminal width
-- [Bug]: BUG-02 -- chat area top messages stuck when scrolling
+None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T16:44:31Z
-Stopped at: Completed 08-02-PLAN.md
-Resume file: .planning/phases/08-visual-polish/08-02-SUMMARY.md
+Last session: 2026-03-20
+Stopped at: Defining requirements for v1.1
+Resume file: —
