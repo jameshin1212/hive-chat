@@ -34,8 +34,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### TUI
 
-- [ ] **TUI-01**: 스플릿 레이아웃 (메시지 영역 + 입력 영역)
-- [ ] **TUI-02**: 한글/CJK IME 조합 정상 처리 — 입력 중 밀림/깨짐 없음
+- [x] **TUI-01**: 스플릿 레이아웃 (메시지 영역 + 입력 영역)
+- [x] **TUI-02**: 한글/CJK IME 조합 정상 처리 — 입력 중 밀림/깨짐 없음
 - [ ] **TUI-03**: 연결 상태 표시 (direct/relay/disconnected)
 - [x] **TUI-04**: Ctrl+C 또는 /quit으로 깔끔한 종료
 
@@ -89,8 +89,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SOCL-02 | Phase 4 | Pending |
 | SOCL-03 | Phase 5 | Pending |
 | SOCL-04 | Phase 3 | Pending |
-| TUI-01 | Phase 1 | Pending |
-| TUI-02 | Phase 1 | Pending |
+| TUI-01 | Phase 1 | Complete |
+| TUI-02 | Phase 1 | Complete |
 | TUI-03 | Phase 5 | Pending |
 | TUI-04 | Phase 1 | Complete |
 | DIST-01 | Phase 1 | Complete |
