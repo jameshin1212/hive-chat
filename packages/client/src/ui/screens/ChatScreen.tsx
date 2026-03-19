@@ -150,12 +150,10 @@ export function ChatScreen({ identity }: ChatScreenProps) {
   // Determine which messages to display
   const displayMessages = isInChat ? chatMessages : messages;
 
-  // Chat info for status bar
-  const chatInfo = isInChat && partner
-    ? `Chatting with ${partner.nickname}#${partner.tag}`
-    : chatStatus === 'requesting' && partner
-      ? `Requesting ${partner.nickname}#${partner.tag}...`
-      : undefined;
+  // Chat partner for status bar
+  const chatPartner = (isInChat || chatStatus === 'requesting') && partner
+    ? { nickname: partner.nickname, tag: partner.tag }
+    : null;
 
   // Input placeholder
   const inputPlaceholder = isInputDisabled
@@ -173,7 +171,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         connectionStatus={status}
         radiusKm={radiusKm}
         nearbyCount={users.length}
-        chatInfo={chatInfo}
+        chatPartner={chatPartner}
       />
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>

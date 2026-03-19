@@ -9,7 +9,7 @@ interface StatusBarProps {
   connectionStatus: ConnectionStatus;
   radiusKm: number;
   nearbyCount: number;
-  chatInfo?: string;
+  chatPartner?: { nickname: string; tag: string } | null;
 }
 
 function connectionColor(status: ConnectionStatus): string {
@@ -37,7 +37,7 @@ function connectionLabel(status: ConnectionStatus): string {
   }
 }
 
-export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, chatInfo }: StatusBarProps) {
+export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, chatPartner }: StatusBarProps) {
   const badgeColor = theme.badge[identity.aiCli];
 
   return (
@@ -49,12 +49,10 @@ export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, c
       <Text color={theme.text.secondary}> | </Text>
       <Text color={theme.text.secondary}>{radiusKm}km</Text>
       <Text color={theme.text.secondary}> | </Text>
-      <Text color={theme.text.secondary}>{nearbyCount} nearby</Text>
-      {chatInfo && (
-        <>
-          <Text color={theme.text.secondary}> | </Text>
-          <Text color={theme.text.info}>{chatInfo}</Text>
-        </>
+      {chatPartner ? (
+        <Text color={theme.text.info}>Chatting: {chatPartner.nickname}#{chatPartner.tag}</Text>
+      ) : (
+        <Text color={theme.text.secondary}>{nearbyCount} nearby</Text>
       )}
     </Box>
   );
