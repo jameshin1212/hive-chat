@@ -62,11 +62,12 @@ Plans:
   2. Messages appear in real-time on both sides, displayed only in the terminal (no persistence)
   3. When connection drops, client auto-reconnects and chat resumes without user intervention
   4. User receives terminal bell/notification when a new message arrives while not focused on chat
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md — Chat protocol schemas (shared), ChatSessionManager, server relay handlers
+- [ ] 03-02-PLAN.md — Client chat hooks, SignalingClient events, ChatRequestOverlay, ChatScreen integration
+- [ ] 03-03-PLAN.md — StatusBar chat info, end-to-end manual verification
 
 ### Phase 4: Friends
 **Goal**: Users can add friends by nick#tag and maintain a persistent contact list independent of location
@@ -106,6 +107,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/3 | In Progress|  |
 | 2. Signaling & Discovery | 0/3 | Not started | - |
-| 3. Relay Chat | 0/2 | Not started | - |
+| 3. Relay Chat | 0/3 | Not started | - |
 | 4. Friends | 0/1 | Not started | - |
 | 5. P2P Upgrade | 0/2 | Not started | - |
