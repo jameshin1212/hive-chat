@@ -9,6 +9,7 @@ import {
 } from '@cling-talk/shared';
 import type { ServerMessage, NearbyUser } from '@cling-talk/shared';
 import { PresenceManager } from './PresenceManager.js';
+import { ChatSessionManager } from './ChatSessionManager.js';
 import { lookupIp, normalizeIp } from './GeoLocationService.js';
 import type { UserRecord } from './types.js';
 
@@ -26,6 +27,7 @@ export class SignalingServer {
   private wss: WebSocketServer | null = null;
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private presenceManager = new PresenceManager();
+  private chatSessionManager = new ChatSessionManager();
   private port: number;
 
   constructor(port: number) {
@@ -114,6 +116,21 @@ export class SignalingServer {
       case MessageType.UPDATE_RADIUS:
         this.handleGetNearby(ws, msg.radiusKm);
         break;
+      case MessageType.CHAT_REQUEST:
+        this.handleChatRequest(ws, msg.targetNickname, msg.targetTag);
+        break;
+      case MessageType.CHAT_ACCEPT:
+        this.handleChatAccept(ws, msg.sessionId);
+        break;
+      case MessageType.CHAT_DECLINE:
+        this.handleChatDecline(ws, msg.sessionId);
+        break;
+      case MessageType.CHAT_MESSAGE:
+        this.handleChatMessage(ws, msg.sessionId, msg.content);
+        break;
+      case MessageType.CHAT_LEAVE:
+        this.handleChatLeave(ws, msg.sessionId);
+        break;
     }
   }
 
@@ -179,11 +196,166 @@ export class SignalingServer {
     });
   }
 
+  // --- Chat relay handlers ---
+
+  private sendToUser(targetUserId: string, message: ServerMessage): boolean {
+    const user = this.presenceManager.getUser(targetUserId);
+    if (!user || user.ws.readyState !== WebSocket.OPEN) return false;
+    this.send(user.ws, message);
+    return true;
+  }
+
+  private handleChatRequest(ws: AliveWebSocket, targetNickname: string, targetTag: string): void {
+    const targetUserId = `${targetNickname}#${targetTag}`;
+    const targetUser = this.presenceManager.getUser(targetUserId);
+
+    if (!targetUser || targetUser.status !== 'online') {
+      this.send(ws, {
+        type: MessageType.CHAT_ERROR,
+        code: 'USER_OFFLINE',
+        message: `User ${targetNickname}#${targetTag} is not online`,
+      });
+      return;
+    }
+
+    if (this.chatSessionManager.isUserBusy(targetUserId)) {
+      this.send(ws, {
+        type: MessageType.CHAT_ERROR,
+        code: 'USER_BUSY',
+        message: `User ${targetNickname}#${targetTag} is already in a chat`,
+      });
+      return;
+    }
+
+    if (this.chatSessionManager.isUserBusy(ws.userId!)) {
+      this.send(ws, {
+        type: MessageType.CHAT_ERROR,
+        code: 'USER_BUSY',
+        message: 'You are already in a chat',
+      });
+      return;
+    }
+
+    const sessionId = this.chatSessionManager.createPendingRequest(ws.userId!, targetUserId);
+    if (!sessionId) {
+      this.send(ws, {
+        type: MessageType.CHAT_ERROR,
+        code: 'USER_BUSY',
+        message: 'Unable to create chat request',
+      });
+      return;
+    }
+
+    const requesterUser = this.presenceManager.getUser(ws.userId!);
+    if (!requesterUser) return;
+
+    const fromUser: NearbyUser = {
+      nickname: requesterUser.nickname,
+      tag: requesterUser.tag,
+      aiCli: requesterUser.aiCli as NearbyUser['aiCli'],
+      distance: 0,
+      status: 'online',
+    };
+
+    this.sendToUser(targetUserId, {
+      type: MessageType.CHAT_REQUESTED,
+      sessionId,
+      from: fromUser,
+    });
+  }
+
+  private handleChatAccept(ws: AliveWebSocket, sessionId: string): void {
+    const pending = this.chatSessionManager.getPendingRequest(sessionId);
+    if (!pending) return;
+
+    const session = this.chatSessionManager.acceptRequest(sessionId);
+    if (!session) return;
+
+    const accepterUser = this.presenceManager.getUser(ws.userId!);
+    if (!accepterUser) return;
+
+    const partnerInfo: NearbyUser = {
+      nickname: accepterUser.nickname,
+      tag: accepterUser.tag,
+      aiCli: accepterUser.aiCli as NearbyUser['aiCli'],
+      distance: 0,
+      status: 'online',
+    };
+
+    this.sendToUser(pending.from, {
+      type: MessageType.CHAT_ACCEPTED,
+      sessionId,
+      partner: partnerInfo,
+    });
+  }
+
+  private handleChatDecline(ws: AliveWebSocket, sessionId: string): void {
+    const pending = this.chatSessionManager.getPendingRequest(sessionId);
+    if (!pending) return;
+
+    this.chatSessionManager.declineRequest(sessionId);
+
+    this.sendToUser(pending.from, {
+      type: MessageType.CHAT_DECLINED,
+      sessionId,
+    });
+  }
+
+  private handleChatMessage(ws: AliveWebSocket, sessionId: string, content: string): void {
+    const session = this.chatSessionManager.getSessionByUser(ws.userId!);
+    if (!session || session.id !== sessionId) return;
+
+    const partnerId = session.userA === ws.userId ? session.userB : session.userA;
+    const senderUser = this.presenceManager.getUser(ws.userId!);
+    if (!senderUser) return;
+
+    this.sendToUser(partnerId, {
+      type: MessageType.CHAT_MSG,
+      sessionId,
+      from: { nickname: senderUser.nickname, tag: senderUser.tag },
+      content,
+      timestamp: Date.now(),
+    });
+  }
+
+  private handleChatLeave(ws: AliveWebSocket, sessionId: string): void {
+    const session = this.chatSessionManager.getSessionByUser(ws.userId!);
+    if (!session || session.id !== sessionId) return;
+
+    const partnerId = session.userA === ws.userId ? session.userB : session.userA;
+    const senderUser = this.presenceManager.getUser(ws.userId!);
+    if (!senderUser) return;
+
+    this.chatSessionManager.removeSession(sessionId);
+
+    this.sendToUser(partnerId, {
+      type: MessageType.CHAT_LEFT,
+      sessionId,
+      nickname: senderUser.nickname,
+      tag: senderUser.tag,
+    });
+  }
+
   private handleClose(ws: AliveWebSocket): void {
     if (!ws.userId) return;
 
     const user = this.presenceManager.getUser(ws.userId);
     if (!user) return;
+
+    // Clean up active chat session
+    const chatSession = this.chatSessionManager.getSessionByUser(ws.userId);
+    if (chatSession) {
+      const partnerId = chatSession.userA === ws.userId ? chatSession.userB : chatSession.userA;
+      this.sendToUser(partnerId, {
+        type: MessageType.CHAT_USER_OFFLINE,
+        nickname: user.nickname,
+        tag: user.tag,
+      });
+      this.chatSessionManager.removeSession(chatSession.id);
+    }
+
+    // Clean up pending requests
+    this.chatSessionManager.removePendingByUser(ws.userId);
 
     this.presenceManager.unregister(ws.userId);
 
