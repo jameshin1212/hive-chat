@@ -37,5 +37,5 @@ export function App() {
     );
   }
 
-  return <ChatScreen identity={identity} />;
+  return <ChatScreen identity={identity} onIdentityChange={setIdentity} />;
 }

@@ -24,6 +24,7 @@ import type { Key } from 'ink';
 
 interface ChatScreenProps {
   identity: Identity;
+  onIdentityChange?: (identity: Identity) => void;
 }
 
 let messageCounter = 0;
@@ -32,7 +33,7 @@ function nextMessageId(): string {
   return `local-${messageCounter}`;
 }
 
-export function ChatScreen({ identity }: ChatScreenProps) {
+export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [showUserList, setShowUserList] = useState(false);
   const [showFriendList, setShowFriendList] = useState(false);
