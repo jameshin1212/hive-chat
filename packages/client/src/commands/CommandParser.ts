@@ -28,6 +28,12 @@ export function parseInput(input: string): ParsedInput {
   return { type: 'message', content: trimmed };
 }
 
+export function filterCommands(prefix: string): Array<{ name: string; description: string }> {
+  return Object.entries(COMMANDS)
+    .filter(([name]) => name.startsWith(prefix))
+    .map(([name, info]) => ({ name, description: info.description }));
+}
+
 export function isKnownCommand(name: string): name is CommandName {
   return name in COMMANDS;
 }
