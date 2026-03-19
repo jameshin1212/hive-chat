@@ -88,6 +88,41 @@ export class SignalingClient extends EventEmitter {
     this.send({ type: MessageType.UPDATE_RADIUS, radiusKm });
   }
 
+  /**
+   * Request a chat session with a target user.
+   */
+  requestChat(targetNickname: string, targetTag: string): void {
+    this.send({ type: MessageType.CHAT_REQUEST, targetNickname, targetTag });
+  }
+
+  /**
+   * Accept an incoming chat request.
+   */
+  acceptChat(sessionId: string): void {
+    this.send({ type: MessageType.CHAT_ACCEPT, sessionId });
+  }
+
+  /**
+   * Decline an incoming chat request.
+   */
+  declineChat(sessionId: string): void {
+    this.send({ type: MessageType.CHAT_DECLINE, sessionId });
+  }
+
+  /**
+   * Send a chat message in an active session.
+   */
+  sendChatMessage(sessionId: string, content: string): void {
+    this.send({ type: MessageType.CHAT_MESSAGE, sessionId, content });
+  }
+
+  /**
+   * Leave an active chat session.
+   */
+  leaveChat(sessionId: string): void {
+    this.send({ type: MessageType.CHAT_LEAVE, sessionId });
+  }
+
   private handleMessage(data: unknown): void {
     let msg: ServerMessage;
     try {
@@ -117,6 +152,27 @@ export class SignalingClient extends EventEmitter {
         break;
       case MessageType.ERROR:
         this.emit('error', { code: msg.code, message: msg.message });
+        break;
+      case MessageType.CHAT_REQUESTED:
+        this.emit('chat_requested', { sessionId: msg.sessionId, from: msg.from });
+        break;
+      case MessageType.CHAT_ACCEPTED:
+        this.emit('chat_accepted', { sessionId: msg.sessionId, partner: msg.partner });
+        break;
+      case MessageType.CHAT_DECLINED:
+        this.emit('chat_declined', { sessionId: msg.sessionId });
+        break;
+      case MessageType.CHAT_MSG:
+        this.emit('chat_msg', { sessionId: msg.sessionId, from: msg.from, content: msg.content, timestamp: msg.timestamp });
+        break;
+      case MessageType.CHAT_LEFT:
+        this.emit('chat_left', { sessionId: msg.sessionId, nickname: msg.nickname, tag: msg.tag });
+        break;
+      case MessageType.CHAT_USER_OFFLINE:
+        this.emit('chat_user_offline', { nickname: msg.nickname, tag: msg.tag });
+        break;
+      case MessageType.CHAT_ERROR:
+        this.emit('chat_error', { code: msg.code, message: msg.message });
         break;
     }
   }

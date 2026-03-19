@@ -8,6 +8,7 @@ export const COMMANDS = {
   '/radius': { description: 'Cycle discovery radius (1/3/5/10km)' },
   '/settings': { description: 'Open settings' },
   '/help': { description: 'Show available commands' },
+  '/leave': { description: 'Leave current chat' },
 } as const;
 
 export type CommandName = keyof typeof COMMANDS;
