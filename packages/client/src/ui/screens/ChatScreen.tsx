@@ -2,16 +2,21 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import type { Identity, ChatMessage } from '@cling-talk/shared';
 import { DEFAULT_TERMINAL_WIDTH } from '@cling-talk/shared';
+import { parseNickTag } from '@cling-talk/shared';
 import { parseInput, isKnownCommand, COMMANDS } from '../../commands/CommandParser.js';
 import { useGracefulExit } from '../../hooks/useGracefulExit.js';
 import { useServerConnection } from '../../hooks/useServerConnection.js';
 import type { ConnectionStatus } from '../../hooks/useServerConnection.js';
 import { useNearbyUsers } from '../../hooks/useNearbyUsers.js';
 import { useChatSession } from '../../hooks/useChatSession.js';
+import { useFriends } from '../../hooks/useFriends.js';
+import type { FriendStatus } from '../../hooks/useFriends.js';
+import { addFriend, removeFriend, isFriend } from '../../friends/FriendManager.js';
 import { StatusBar } from '../components/StatusBar.js';
 import { MessageArea } from '../components/MessageArea.js';
 import { IMETextInput } from '../components/IMETextInput.js';
 import { UserList } from '../components/UserList.js';
+import { FriendList } from '../components/FriendList.js';
 import { ChatRequestOverlay } from '../components/ChatRequestOverlay.js';
 import { theme } from '../theme.js';
 
@@ -28,6 +33,7 @@ function nextMessageId(): string {
 export function ChatScreen({ identity }: ChatScreenProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [showUserList, setShowUserList] = useState(false);
+  const [showFriendList, setShowFriendList] = useState(false);
   const { stdout } = useStdout();
   const rows = stdout?.rows ?? 24;
   const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
@@ -40,6 +46,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     incomingRequest, partnerLeft, requestChat, acceptRequest,
     declineRequest, sendMessage, leaveChat,
   } = useChatSession(client, status);
+  const { friendStatuses, friendCount, onlineFriendCount, refreshFriendStatuses } = useFriends(client, status);
 
   const isInChat = chatStatus === 'active' || chatStatus === 'requesting' || chatStatus === 'disconnected';
   const isInputDisabled = chatStatus === 'disconnected' || chatStatus === 'requesting';
@@ -125,6 +132,55 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         }
         return;
       }
+      if (parsed.name === '/friends') {
+        setShowFriendList(true);
+        refreshFriendStatuses();
+        return;
+      }
+      if (parsed.name === '/addfriend') {
+        if (parsed.args.length === 0) {
+          addSystemMessage('Usage: /addfriend nick#TAG');
+          return;
+        }
+        const nickTag = parsed.args[0]!;
+        const parsedNt = parseNickTag(nickTag);
+        if (!parsedNt) {
+          addSystemMessage('Invalid format. Use: nick#TAG');
+          return;
+        }
+        if (parsedNt.nickname === identity.nickname && parsedNt.tag === identity.tag) {
+          addSystemMessage('Cannot add yourself');
+          return;
+        }
+        if (isFriend(parsedNt.nickname, parsedNt.tag)) {
+          addSystemMessage('Already in friend list');
+          return;
+        }
+        addFriend(parsedNt.nickname, parsedNt.tag);
+        addSystemMessage(`Added ${nickTag} to friends`);
+        refreshFriendStatuses();
+        return;
+      }
+      if (parsed.name === '/removefriend') {
+        if (parsed.args.length === 0) {
+          addSystemMessage('Usage: /removefriend nick#TAG');
+          return;
+        }
+        const nickTag = parsed.args[0]!;
+        const parsedNt = parseNickTag(nickTag);
+        if (!parsedNt) {
+          addSystemMessage('Invalid format. Use: nick#TAG');
+          return;
+        }
+        const removed = removeFriend(parsedNt.nickname, parsedNt.tag);
+        if (removed) {
+          addSystemMessage(`Removed ${nickTag} from friends`);
+          refreshFriendStatuses();
+        } else {
+          addSystemMessage(`${nickTag} is not in your friend list`);
+        }
+        return;
+      }
       if (!isKnownCommand(parsed.name)) {
         addSystemMessage(`Unknown command: ${parsed.name}. Type /help for available commands.`);
         return;
@@ -145,7 +201,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
       };
       setMessages(prev => [...prev, msg]);
     }
-  }, [identity, gracefulExit, addSystemMessage, refreshUsers, cycleRadius, isInChat, chatStatus, partner, sendMessage, leaveChat]);
+  }, [identity, gracefulExit, addSystemMessage, refreshUsers, cycleRadius, isInChat, chatStatus, partner, sendMessage, leaveChat, refreshFriendStatuses]);
 
   // Determine which messages to display
   const displayMessages = isInChat ? chatMessages : messages;
@@ -172,11 +228,27 @@ export function ChatScreen({ identity }: ChatScreenProps) {
         radiusKm={radiusKm}
         nearbyCount={users.length}
         chatPartner={chatPartner}
+        onlineFriendCount={onlineFriendCount}
+        friendCount={friendCount}
       />
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>
       </Box>
-      {showUserList ? (
+      {showFriendList && !showUserList && !incomingRequest ? (
+        <FriendList
+          friends={friendStatuses}
+          visible={showFriendList}
+          onSelect={(friend: FriendStatus) => {
+            if (friend.status === 'online') {
+              requestChat({ nickname: friend.nickname, tag: friend.tag, aiCli: (friend.aiCli ?? 'Claude Code') as Identity['aiCli'], distance: 0, status: 'online' });
+              setShowFriendList(false);
+            } else {
+              addSystemMessage(`${friend.nickname}#${friend.tag} is currently offline`);
+            }
+          }}
+          onClose={() => setShowFriendList(false)}
+        />
+      ) : showUserList ? (
         <UserList
           users={users}
           visible={showUserList}
@@ -202,7 +274,7 @@ export function ChatScreen({ identity }: ChatScreenProps) {
       <IMETextInput
         onSubmit={handleSubmit}
         placeholder={inputPlaceholder}
-        isActive={!isInputDisabled && !showUserList && !incomingRequest}
+        isActive={!isInputDisabled && !showUserList && !showFriendList && !incomingRequest}
       />
     </Box>
   );

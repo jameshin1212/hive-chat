@@ -10,6 +10,8 @@ interface StatusBarProps {
   radiusKm: number;
   nearbyCount: number;
   chatPartner?: { nickname: string; tag: string } | null;
+  onlineFriendCount?: number;
+  friendCount?: number;
 }
 
 function connectionColor(status: ConnectionStatus): string {
@@ -37,7 +39,7 @@ function connectionLabel(status: ConnectionStatus): string {
   }
 }
 
-export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, chatPartner }: StatusBarProps) {
+export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, chatPartner, onlineFriendCount, friendCount }: StatusBarProps) {
   const badgeColor = theme.badge[identity.aiCli];
 
   return (
@@ -53,6 +55,12 @@ export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, c
         <Text color={theme.text.info}>Chatting: {chatPartner.nickname}#{chatPartner.tag}</Text>
       ) : (
         <Text color={theme.text.secondary}>{nearbyCount} nearby</Text>
+      )}
+      {(friendCount ?? 0) > 0 && !chatPartner && (
+        <>
+          <Text color={theme.text.secondary}> | </Text>
+          <Text color={theme.text.secondary}>Friends: {onlineFriendCount ?? 0}/{friendCount} online</Text>
+        </>
       )}
     </Box>
   );
