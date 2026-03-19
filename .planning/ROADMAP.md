@@ -48,7 +48,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
   4. 설정 메뉴에서 현재 닉네임, TAG, AI CLI 등 프로필 정보를 확인할 수 있다
 **Plans:** 2 plans
 Plans:
-- [ ] 09-01-PLAN.md -- updateIdentity() + SettingsOverlay 컴포넌트 + App identity 콜백
+- [x] 09-01-PLAN.md -- updateIdentity() + SettingsOverlay 컴포넌트 + App identity 콜백
 - [ ] 09-02-PLAN.md -- ChatScreen 통합 + /settings 명령어 연결 + 동작 검증
 
 ### Phase 10: Command Cleanup
@@ -72,7 +72,7 @@ Plans:
 | 6. Chat Bug Fixes | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 7. Input UX | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
-| 9. Settings Command | v1.1 | 0/2 | Not started | - |
+| 9. Settings Command | v1.1 | 1/2 | In progress | - |
 | 10. Command Cleanup | v1.1 | 0/? | Not started | - |
 
 ---
