@@ -1,114 +1,30 @@
 # Roadmap: Cling Talk
 
-## Overview
+## Milestones
 
-Cling Talk delivers terminal-native P2P chat in five phases. Phase 1 establishes the project foundation with identity system and TUI shell (validating CJK IME early to avoid costly rewrites). Phase 2 stands up the signaling server with geolocation-based discovery. Phase 3 delivers the core product -- working chat via server relay. Phase 4 adds the friend system for location-independent connections. Phase 5 upgrades to direct P2P messaging with Hyperswarm, adding connection health UI and NAT traversal for remote friends.
+- [x] **v1.0 Cling Talk MVP** — Phases 1-5 (shipped 2026-03-19)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+<details>
+<summary>v1.0 Cling Talk MVP (Phases 1-5) — SHIPPED 2026-03-19</summary>
 
-Decimal phases appear between their surrounding integers in numeric order.
+- [x] Phase 1: Foundation (3/3 plans) — completed 2026-03-19
+- [x] Phase 2: Signaling & Discovery (3/3 plans) — completed 2026-03-19
+- [x] Phase 3: Relay Chat (3/3 plans) — completed 2026-03-19
+- [x] Phase 4: Friends (2/2 plans) — completed 2026-03-19
+- [x] Phase 5: P2P Upgrade (3/3 plans) — completed 2026-03-19
 
-- [ ] **Phase 1: Foundation** - Project scaffolding, identity system, TUI shell with CJK input validation
-- [ ] **Phase 2: Signaling & Discovery** - Signaling server, IP geolocation, nearby user discovery, presence
-- [ ] **Phase 3: Relay Chat** - End-to-end chat via server relay, ephemeral messages, notifications
-- [ ] **Phase 4: Friends** - Friend add/remove by nick#tag, persistent friend list
-- [ ] **Phase 5: P2P Upgrade** - Hyperswarm direct connections, NAT traversal, connection status UI
+Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
-## Phase Details
-
-### Phase 1: Foundation
-**Goal**: Runnable CLI that displays a TUI with working Korean/CJK input, generates and stores nick#tag identity, and is distributable via npx
-**Depends on**: Nothing (first phase)
-**Requirements**: IDEN-01, IDEN-02, TUI-01, TUI-02, TUI-04, DIST-01
-**Success Criteria** (what must be TRUE):
-  1. User runs `npx cling-talk` and sees a TUI with split layout (message area + input area)
-  2. First-time user is prompted for nickname and receives auto-generated nick#tag identity that persists across sessions
-  3. User can select their AI CLI tool (Claude Code, Codex, Gemini, Cursor) and it displays as a badge
-  4. User can type Korean/CJK characters in the input area without composition glitches (no invisible chars, no garbled output)
-  5. User can exit cleanly with Ctrl+C or /quit
-**Plans**: 3 plans
-
-Plans:
-- [ ] 01-01-PLAN.md — Monorepo scaffolding, shared types, identity system, command parser, theme
-- [ ] 01-02-PLAN.md — IME-aware TextInput, TUI components, split layout, onboarding screen
-- [ ] 01-03-PLAN.md — App wiring, screen routing, integration + Korean IME manual verification
-
-### Phase 2: Signaling & Discovery
-**Goal**: Users can discover nearby developers through a signaling server that tracks location and presence
-**Depends on**: Phase 1
-**Requirements**: DISC-01, DISC-02, DISC-03, IDEN-03
-**Success Criteria** (what must be TRUE):
-  1. Client connects to signaling server via WebSocket and registers with nick#tag identity
-  2. Server determines user location from IP address and returns nearby users within selected radius (1/3/5/10km)
-  3. User can change discovery radius and see updated nearby user list
-  4. Online/offline status of other users updates in real-time (within heartbeat interval)
-**Plans**: 3 plans
-
-Plans:
-- [ ] 02-01-PLAN.md — Protocol schemas, server package scaffolding, GeoLocationService, PresenceManager
-- [ ] 02-02-PLAN.md — SignalingServer WebSocket handler, SignalingClient with auto-reconnect, dev scripts
-- [ ] 02-03-PLAN.md — TUI integration: hooks, StatusBar, UserList, ChatScreen wiring, manual verification
-
-### Phase 3: Relay Chat
-**Goal**: Users can chat with nearby users end-to-end, with messages relayed through the signaling server
-**Depends on**: Phase 2
-**Requirements**: MESG-01, MESG-02, MESG-03, SOCL-04
-**Success Criteria** (what must be TRUE):
-  1. User can select a nearby user from the discovery list and start a 1:1 chat session
-  2. Messages appear in real-time on both sides, displayed only in the terminal (no persistence)
-  3. When connection drops, client auto-reconnects and chat resumes without user intervention
-  4. User receives terminal bell/notification when a new message arrives while not focused on chat
-**Plans**: 3 plans
-
-Plans:
-- [ ] 03-01-PLAN.md — Chat protocol schemas (shared), ChatSessionManager, server relay handlers
-- [ ] 03-02-PLAN.md — Client chat hooks, SignalingClient events, ChatRequestOverlay, ChatScreen integration
-- [ ] 03-03-PLAN.md — StatusBar chat info, end-to-end manual verification
-
-### Phase 4: Friends
-**Goal**: Users can add friends by nick#tag and maintain a persistent contact list independent of location
-**Depends on**: Phase 3
-**Requirements**: SOCL-01, SOCL-02
-**Success Criteria** (what must be TRUE):
-  1. User can add a friend by entering their nick#tag, regardless of physical proximity
-  2. User can remove friends from their list
-  3. Friend list persists across sessions (stored in local file)
-  4. Friends' online/offline status is visible in the friend list
-**Plans**: 2 plans
-
-Plans:
-- [ ] 04-01-PLAN.md — Protocol schemas, FriendManager, server friend status handlers, SignalingClient extensions
-- [ ] 04-02-PLAN.md — useFriends hook, FriendList overlay, ChatScreen command routing, StatusBar friend count
-
-### Phase 5: P2P Upgrade
-**Goal**: Chat connections upgrade to direct P2P when possible, with transparent relay fallback and visible connection health
-**Depends on**: Phase 4
-**Requirements**: TUI-03, SOCL-03
-**Success Criteria** (what must be TRUE):
-  1. When two users can establish direct connection, messages flow P2P without server relay
-  2. When NAT traversal fails, chat transparently falls back to relay (user sees status change, not an error)
-  3. Connection status indicator shows current mode: direct / relay / disconnected
-  4. Remote friends (different network/city) can chat via P2P with NAT traversal or relay fallback
-**Plans**: 3 plans
-
-Plans:
-- [ ] 05-01-PLAN.md — P2P protocol schemas, TransportType, server signal relay handler
-- [ ] 05-02-PLAN.md — HyperswarmTransport, ConnectionManager transport abstraction
-- [ ] 05-03-PLAN.md — Client hook wiring, StatusBar transport colors, tsdown external config, manual verification
+</details>
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation | 3/3 | Complete | 2026-03-19 |
-| 2. Signaling & Discovery | 3/3 | Complete | 2026-03-19 |
-| 3. Relay Chat | 3/3 | Complete | 2026-03-19 |
-| 4. Friends | 2/2 | Complete | 2026-03-19 |
-| 5. P2P Upgrade | 3/3 | Complete | 2026-03-19 |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Foundation | v1.0 | 3/3 | Complete | 2026-03-19 |
+| 2. Signaling & Discovery | v1.0 | 3/3 | Complete | 2026-03-19 |
+| 3. Relay Chat | v1.0 | 3/3 | Complete | 2026-03-19 |
+| 4. Friends | v1.0 | 2/2 | Complete | 2026-03-19 |
+| 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
