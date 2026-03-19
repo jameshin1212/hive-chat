@@ -3,18 +3,23 @@
 **Defined:** 2026-03-20
 **Core Value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
 
-## v1.1 Requirements
+## v1.2 Requirements
 
-### Settings
+### Publish
 
-- [x] **SET-01**: /settings 입력 시 설정 메뉴가 표시됨
-- [x] **SET-02**: 설정 메뉴에서 닉네임을 변경할 수 있음 (TAG 유지)
-- [x] **SET-03**: 설정 메뉴에서 AI CLI를 변경할 수 있음
-- [x] **SET-04**: 설정 메뉴에서 현재 프로필 정보를 확인할 수 있음
+- [ ] **PUB-01**: `npm publish` 후 `npx cling-talk`으로 즉시 실행 가능
+- [ ] **PUB-02**: 패키지 크기 1MB 미만 (tsdown 번들)
+- [ ] **PUB-03**: package.json에 bin, files, repository 등 메타데이터 완비
 
-### Cleanup
+### Deploy
 
-- [ ] **CLN-01**: /chat placeholder 명령어가 제거됨
+- [ ] **DEP-01**: Fly.io에 신호 서버 배포 완료 (Dockerfile + fly.toml)
+- [ ] **DEP-02**: DEFAULT_SERVER_URL이 Fly.io 배포 URL로 변경됨
+- [ ] **DEP-03**: 배포 서버에서 WebSocket 연결 + 채팅 정상 동작
+
+### Documentation
+
+- [ ] **DOC-01**: README.md에 설치/실행 방법, 주요 기능, 스크린샷 포함
 
 ## Future Requirements
 
@@ -32,22 +37,25 @@
 | 웹/모바일 클라이언트 | CLI 전용 |
 | 파일 전송 | 텍스트 메시지만 |
 | OAuth/이메일 인증 | 익명 자동생성 |
+| CI/CD 파이프라인 | 수동 배포로 충분 (v1 규모) |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SET-01 | Phase 9 | Complete |
-| SET-02 | Phase 9 | Complete |
-| SET-03 | Phase 9 | Complete |
-| SET-04 | Phase 9 | Complete |
-| CLN-01 | Phase 10 | Pending |
+| PUB-01 | — | Pending |
+| PUB-02 | — | Pending |
+| PUB-03 | — | Pending |
+| DEP-01 | — | Pending |
+| DEP-02 | — | Pending |
+| DEP-03 | — | Pending |
+| DOC-01 | — | Pending |
 
 **Coverage:**
-- v1.1 requirements: 5 total
-- Mapped to phases: 5
-- Unmapped: 0
+- v1.2 requirements: 7 total
+- Mapped to phases: 0
+- Unmapped: 7 ⚠️
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 after roadmap creation*
+*Last updated: 2026-03-20 after initial definition*
