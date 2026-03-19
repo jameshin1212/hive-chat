@@ -135,6 +135,12 @@ export class SignalingServer {
       case MessageType.FRIEND_STATUS_REQUEST:
         this.handleFriendStatusRequest(ws, msg.friends);
         break;
+      case MessageType.P2P_SIGNAL:
+        this.handleP2PSignal(ws, msg.sessionId, msg.topic);
+        break;
+      case MessageType.P2P_STATUS:
+        this.handleP2PStatus(ws, msg.sessionId, msg.transportType);
+        break;
     }
   }
 
@@ -380,6 +386,27 @@ export class SignalingServer {
       },
       ws.userId,
     );
+  }
+
+  // --- P2P signal handlers ---
+
+  private handleP2PSignal(ws: AliveWebSocket, sessionId: string, topic: string): void {
+    const session = this.chatSessionManager.getSessionByUser(ws.userId!);
+    if (!session || session.id !== sessionId) return;
+
+    const partnerId = session.userA === ws.userId ? session.userB : session.userA;
+    this.sendToUser(partnerId, {
+      type: MessageType.P2P_SIGNAL,
+      sessionId,
+      topic,
+    });
+  }
+
+  private handleP2PStatus(ws: AliveWebSocket, sessionId: string, transportType: 'relay' | 'direct'): void {
+    const session = this.chatSessionManager.getSessionByUser(ws.userId!);
+    if (!session || session.id !== sessionId) return;
+
+    this.chatSessionManager.updateTransport(sessionId, transportType);
   }
 
   // --- Friend status handlers ---

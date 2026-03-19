@@ -5,6 +5,7 @@ export interface ChatSession {
   userA: string; // userId (nickname#tag) - the requester
   userB: string; // userId (nickname#tag) - the target
   createdAt: number;
+  transportType?: 'relay' | 'direct';
 }
 
 interface PendingRequest {
@@ -81,6 +82,23 @@ export class ChatSessionManager {
     const sessionId = this.userSessions.get(userId);
     if (!sessionId) return undefined;
     return this.sessions.get(sessionId);
+  }
+
+  /**
+   * Get a session by its sessionId directly.
+   */
+  getSession(sessionId: string): ChatSession | undefined {
+    return this.sessions.get(sessionId);
+  }
+
+  /**
+   * Update the transport type for an active session.
+   */
+  updateTransport(sessionId: string, transportType: 'relay' | 'direct'): void {
+    const session = this.sessions.get(sessionId);
+    if (session) {
+      session.transportType = transportType;
+    }
   }
 
   /**
