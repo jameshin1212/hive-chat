@@ -93,11 +93,12 @@ Plans:
   2. When NAT traversal fails, chat transparently falls back to relay (user sees status change, not an error)
   3. Connection status indicator shows current mode: direct / relay / disconnected
   4. Remote friends (different network/city) can chat via P2P with NAT traversal or relay fallback
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md — P2P protocol schemas, TransportType, server signal relay handler
+- [ ] 05-02-PLAN.md — HyperswarmTransport, ConnectionManager transport abstraction
+- [ ] 05-03-PLAN.md — Client hook wiring, StatusBar transport colors, tsdown external config, manual verification
 
 ## Progress
 
@@ -110,4 +111,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Signaling & Discovery | 3/3 | Complete | 2026-03-19 |
 | 3. Relay Chat | 3/3 | Complete | 2026-03-19 |
 | 4. Friends | 2/2 | Complete | 2026-03-19 |
-| 5. P2P Upgrade | 0/2 | Not started | - |
+| 5. P2P Upgrade | 0/3 | Not started | - |
