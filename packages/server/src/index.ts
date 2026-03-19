@@ -8,9 +8,12 @@ server.start().then((actualPort) => {
   console.log(`Cling Talk signaling server listening on ws://localhost:${actualPort}`);
 });
 
-process.on('SIGINT', () => {
+const shutdown = () => {
+  console.log('\nShutting down...');
   server.stop().then(() => process.exit(0));
-});
-process.on('SIGTERM', () => {
-  server.stop().then(() => process.exit(0));
-});
+  // Force exit after 2 seconds if graceful shutdown hangs
+  setTimeout(() => process.exit(0), 2000).unref();
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
