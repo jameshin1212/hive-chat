@@ -100,9 +100,8 @@ export function ChatScreen({ identity }: ChatScreenProps) {
       case 'connected':
         addSystemMessage('Connected', 'transition');
         addSystemMessage('Cling Talk v0.1.0');
-        addSystemMessage('Tips: /users — browse nearby devs  |  /friends — friend list');
-        addSystemMessage('      /addfriend nick#TAG — add friend  |  /exit — quit');
-        addSystemMessage('      Tab — cycle radius (1/3/5/10km)  |  /help — all commands');
+        addSystemMessage('Tips: Tab — nearby users  |  Shift+Tab — cycle radius');
+        addSystemMessage('      /addfriend nick#TAG — add friend  |  /help — all commands');
         break;
       case 'reconnecting':
         addSystemMessage('Connection lost. Reconnecting...');
@@ -113,13 +112,18 @@ export function ChatScreen({ identity }: ChatScreenProps) {
     }
   }, [status, addSystemMessage]);
 
-  // Wire Ctrl+C to graceful exit, Tab to cycle radius
+  // Wire Ctrl+C to graceful exit, Tab to show users, Shift+Tab to cycle radius
   useInput((_input, key) => {
     if (key.ctrl && _input === 'c') {
       gracefulExit();
     }
-    if (key.tab && !isInChat) {
-      cycleRadius();
+    if (key.tab && !isInChat && !showUserList && !showFriendList) {
+      if (key.shift) {
+        cycleRadius();
+      } else {
+        setShowUserList(true);
+        refreshUsers();
+      }
     }
   });
 
