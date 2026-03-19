@@ -95,6 +95,14 @@ export function MessageArea({ messages, myIdentity, availableHeight, isActive }:
   return (
     <Box flexDirection="column" height={availableHeight} overflow="hidden">
       {visibleMessages.map((msg) => {
+        if (msg.from.nickname === 'system') {
+          return (
+            <Box key={msg.id}>
+              <Text color={theme.text.secondary} italic>{'\u2500'} {msg.content} {'\u2500'}</Text>
+            </Box>
+          );
+        }
+
         const senderKey = `${msg.from.nickname}#${msg.from.tag}`;
         const colorIndex = getSenderIndex(visibleMessages, senderKey);
         const color = getUserColor(colorIndex);
@@ -111,7 +119,7 @@ export function MessageArea({ messages, myIdentity, availableHeight, isActive }:
             <Text color={badgeColor}>[{msg.from.aiCli}]</Text>
             <Text color={nameColor}> {msg.from.nickname}#{msg.from.tag}</Text>
             <Text color={theme.text.secondary}>: </Text>
-            <Text>{msg.content}</Text>
+            <Text color={isOwnMessage ? theme.text.primary : undefined}>{msg.content}</Text>
           </Box>
         );
       })}
