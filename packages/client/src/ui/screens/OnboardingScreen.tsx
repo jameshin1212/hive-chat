@@ -45,6 +45,8 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
         <IMETextInput
           onSubmit={() => setStep('nickname')}
           placeholder=""
+          allowEmpty
+          showCursor={false}
         />
       </Box>
     );

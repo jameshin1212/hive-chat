@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Box, Text, useInput, useCursor } from 'ink';
+import React, { useState } from 'react';
+import { Box, Text, useInput } from 'ink';
 import stringWidth from 'string-width';
 import { theme } from '../theme.js';
 
@@ -16,19 +16,24 @@ export function calcCursorX(text: string, prompt: string = PROMPT): number {
 interface IMETextInputProps {
   onSubmit: (text: string) => void;
   placeholder?: string;
+  /** If true, onSubmit fires even with empty text (for "press Enter" prompts) */
+  allowEmpty?: boolean;
+  /** Show visual cursor indicator. Default true */
+  showCursor?: boolean;
 }
 
-export function IMETextInput({ onSubmit, placeholder }: IMETextInputProps) {
+export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true }: IMETextInputProps) {
   const [text, setText] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const { setCursorPosition } = useCursor();
 
   useInput((input, key) => {
     if (key.return) {
-      if (text.trim()) {
+      if (text.trim() || allowEmpty) {
         onSubmit(text);
-        setHistory(prev => [...prev, text]);
+        if (text.trim()) {
+          setHistory(prev => [...prev, text]);
+        }
       }
       setText('');
       setHistoryIndex(-1);
@@ -65,9 +70,6 @@ export function IMETextInput({ onSubmit, placeholder }: IMETextInputProps) {
     }
   });
 
-  // Critical: use string-width for CJK-correct cursor positioning
-  setCursorPosition({ x: calcCursorX(text), y: 0 });
-
   const showPlaceholder = !text && placeholder;
 
   return (
@@ -78,6 +80,7 @@ export function IMETextInput({ onSubmit, placeholder }: IMETextInputProps) {
       ) : (
         <Text>{text}</Text>
       )}
+      {showCursor ? <Text color={theme.text.primary}>▏</Text> : null}
     </Box>
   );
 }
