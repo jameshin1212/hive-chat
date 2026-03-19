@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 3 all plans executed
-last_updated: "2026-03-19T10:41:28.089Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-19T12:12:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 03 — relay-chat
+**Current focus:** Phase 04 — friends
 
 ## Current Position
 
-Phase: 03 (relay-chat) — EXECUTING
-Plan: 3 of 3
+Phase: 04 (friends) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: 3 of 3
 | Phase 02 P02 | 5min | 2 tasks | 8 files |
 | Phase 03 P01 | 5min | 2 tasks | 7 files |
 | Phase 03 P02 | 4min | 2 tasks | 9 files |
+| Phase 04 P01 | 5min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [03-02]: Chat messages and local messages kept separate (not merged)
 - [03-02]: Auto-decline incoming requests when already in active chat
 - [03-02]: partnerLeft flag keeps chat screen open when partner leaves
+- [04-01]: friendSubscriptions Map keyed by userId for O(1) subscription lookup
+- [04-01]: notifyFriendSubscribers iterates all subscribers on join/leave
+- [04-01]: FriendManager uses simple append (no dedup) -- caller handles duplicate check
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T10:38:40.944Z
-Stopped at: Phase 3 all plans executed
-Resume file: .planning/phases/03-relay-chat/03-03-SUMMARY.md
+Last session: 2026-03-19T12:12:00.000Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: .planning/phases/04-friends/04-01-SUMMARY.md

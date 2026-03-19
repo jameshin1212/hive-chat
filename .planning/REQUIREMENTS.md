@@ -27,8 +27,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Social
 
-- [ ] **SOCL-01**: 고유ID(nick#tag)로 위치 무관 친구추가/삭제
-- [ ] **SOCL-02**: 친구 목록 로컬 파일 저장 (세션 간 유지)
+- [x] **SOCL-01**: 고유ID(nick#tag)로 위치 무관 친구추가/삭제
+- [x] **SOCL-02**: 친구 목록 로컬 파일 저장 (세션 간 유지)
 - [ ] **SOCL-03**: 원격 친구와 P2P 연결 (NAT traversal + relay fallback)
 - [x] **SOCL-04**: 새 메시지 수신 시 터미널 알림 (bell/notification)
 
@@ -85,8 +85,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MESG-01 | Phase 3 | Complete |
 | MESG-02 | Phase 3 | Complete |
 | MESG-03 | Phase 3 | Complete |
-| SOCL-01 | Phase 4 | Pending |
-| SOCL-02 | Phase 4 | Pending |
+| SOCL-01 | Phase 4 | Complete |
+| SOCL-02 | Phase 4 | Complete |
 | SOCL-03 | Phase 5 | Pending |
 | SOCL-04 | Phase 3 | Complete |
 | TUI-01 | Phase 1 | Complete |

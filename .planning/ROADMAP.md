@@ -108,6 +108,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-19 |
 | 2. Signaling & Discovery | 3/3 | Complete | 2026-03-19 |
-| 3. Relay Chat | 1/3 | In Progress | - |
-| 4. Friends | 0/2 | Not started | - |
+| 3. Relay Chat | 3/3 | Complete | 2026-03-19 |
+| 4. Friends | 1/2 | In Progress | - |
 | 5. P2P Upgrade | 0/2 | Not started | - |
