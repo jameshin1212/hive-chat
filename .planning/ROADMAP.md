@@ -67,7 +67,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 08-01-PLAN.md — MessageArea 시스템 메시지 스타일 + 메시지 본문 색상 구분
-- [ ] 08-02-PLAN.md — StatusBar 입력 필드 위로 재배치 + /quit to /exit 변경
+- [x] 08-02-PLAN.md — StatusBar 입력 필드 위로 재배치 + /quit to /exit 변경
 
 ## Progress
 
@@ -80,7 +80,7 @@ Plans:
 | 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 6. Chat Bug Fixes | v1.0.1 | 1/2 | In progress | - |
 | 7. Input UX | 2/2 | Complete   | 2026-03-19 | - |
-| 8. Visual Polish | v1.0.1 | 1/2 | In progress | - |
+| 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 
 ---
 *Created: 2026-03-19 (v1.0)*

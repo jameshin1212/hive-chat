@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-19T16:43:47Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-19T16:44:31Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 08 (visual-polish) — EXECUTING
-Plan: 2 of 2
+Plan: 2 of 2 (COMPLETE)
 
 ## Performance Metrics
 
@@ -37,6 +37,7 @@ Plan: 2 of 2
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 08 | 01 | 32s | 1 | 1 |
+| 08 | 02 | 76s | 2 | 2 |
 
 ## Accumulated Context
 
@@ -53,6 +54,7 @@ Recent decisions affecting current work:
 - [07-01]: getVisibleWindow for cursor-aware sliding window, cursorPosRef pattern for React batching safety
 - [Phase 07]: onKeyIntercept pattern: IMETextInput delegates key handling to parent via callback, setText as third arg
 - [08-01]: system messages use unicode dash separator with gray italic, own message content green via theme.text.primary
+- [08-02]: /exit replaces /quit, StatusBar relocated between MessageArea and input
 
 ### Pending Todos
 
@@ -65,6 +67,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T16:43:47Z
-Stopped at: Completed 08-01-PLAN.md
-Resume file: .planning/phases/08-visual-polish/08-01-SUMMARY.md
+Last session: 2026-03-19T16:44:31Z
+Stopped at: Completed 08-02-PLAN.md
+Resume file: .planning/phases/08-visual-polish/08-02-SUMMARY.md

@@ -20,13 +20,13 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 
 ### Visual UX
 
-- [ ] **VIS-01**: 상태바를 입력 필드 윗 라인으로 이동
+- [x] **VIS-01**: 상태바를 입력 필드 윗 라인으로 이동
 - [x] **VIS-02**: 시스템 메시지가 사용자 메시지와 시각적으로 명확히 구분됨
 - [x] **VIS-03**: 내 메시지와 상대방 메시지의 텍스트 색상이 다르게 표시됨
 
 ### Command
 
-- [ ] **CMD-01**: `/quit` 명령어를 `/exit`로 변경
+- [x] **CMD-01**: `/quit` 명령어를 `/exit`로 변경
 
 ## Future Requirements
 
@@ -56,10 +56,10 @@ Requirements for bug fix & UX polish release. Each maps to roadmap phases.
 | INP-01 | Phase 7 | Complete |
 | INP-02 | Phase 7 | Complete |
 | INP-03 | Phase 7 | Complete |
-| VIS-01 | Phase 8 | Pending |
+| VIS-01 | Phase 8 | Complete |
 | VIS-02 | Phase 8 | Complete |
 | VIS-03 | Phase 8 | Complete |
-| CMD-01 | Phase 8 | Pending |
+| CMD-01 | Phase 8 | Complete |
 
 **Coverage:**
 - v1.0.1 requirements: 9 total
