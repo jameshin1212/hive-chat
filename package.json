@@ -10,9 +10,13 @@
   },
   "scripts": {
     "test": "vitest run",
-    "build": "npm -w packages/client run build"
+    "build": "npm -w packages/client run build",
+    "dev": "concurrently -n server,client -c blue,green \"npm -w packages/server run dev\" \"npm -w packages/client run dev\"",
+    "dev:server": "npm -w packages/server run dev",
+    "dev:client": "npm -w packages/client run dev"
   },
   "devDependencies": {
+    "concurrently": "^9",
     "vitest": "^3"
   }
 }
