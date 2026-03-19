@@ -36,7 +36,10 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
   1. 터미널 폭보다 긴 텍스트를 입력해도 현재 입력 중인 내용이 항상 보인다
   2. 메시지가 50개 이상 쌓여도 채팅 영역이 최신 메시지 방향으로 정상 스크롤된다
   3. 스크롤 후에도 상단에 이전 메시지가 고정되어 남는 현상이 발생하지 않는다
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — IMETextInput sliding window로 긴 입력 텍스트 가시성 보장
+- [ ] 06-02-PLAN.md — MessageArea 스크롤 메커니즘 + ChatScreen 버퍼 제한
 
 ### Phase 7: Input UX
 **Goal**: 입력 필드에서 커서 이동과 명령어 자동완성이 가능하여 빠르고 편리하게 입력할 수 있다
@@ -69,7 +72,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 3. Relay Chat | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 4. Friends | v1.0 | 2/2 | Complete | 2026-03-19 |
 | 5. P2P Upgrade | v1.0 | 3/3 | Complete | 2026-03-19 |
-| 6. Chat Bug Fixes | v1.0.1 | 0/? | Not started | - |
+| 6. Chat Bug Fixes | v1.0.1 | 0/2 | Not started | - |
 | 7. Input UX | v1.0.1 | 0/? | Not started | - |
 | 8. Visual Polish | v1.0.1 | 0/? | Not started | - |
 
