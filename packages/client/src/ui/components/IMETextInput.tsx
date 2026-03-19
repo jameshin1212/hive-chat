@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, useStdout } from 'ink';
 import stringWidth from 'string-width';
+import { DEFAULT_TERMINAL_WIDTH } from '@cling-talk/shared';
 import { theme } from '../theme.js';
 
 const PROMPT = '> ';
@@ -59,6 +60,10 @@ interface IMETextInputProps {
  * the current text value, so Enter always submits the latest accumulated input.
  */
 export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true, isActive = true }: IMETextInputProps) {
+  const { stdout } = useStdout();
+  const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
+  const availableWidth = columns - stringWidth(PROMPT) - 1; // 1 for cursor
+
   const [text, setText] = useState('');
   const textRef = useRef('');
   const [history, setHistory] = useState<string[]>([]);
@@ -137,7 +142,7 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       {showPlaceholder ? (
         <Text dimColor>{!isActive ? (placeholder ?? 'Connection lost...') : placeholder}</Text>
       ) : (
-        <Text>{text}</Text>
+        <Text>{getVisibleText(text, availableWidth)}</Text>
       )}
       {showCursor && isActive && !showPlaceholder ? <Text color={theme.text.primary}>▏</Text> : null}
     </Box>
