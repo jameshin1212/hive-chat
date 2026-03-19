@@ -5,6 +5,7 @@ export const COMMANDS = {
   '/users': { description: 'Show nearby users' },
   '/friends': { description: 'Show friend list' },
   '/chat': { description: 'Start chat with user' },
+  '/radius': { description: 'Cycle discovery radius (1/3/5/10km)' },
   '/settings': { description: 'Open settings' },
   '/help': { description: 'Show available commands' },
 } as const;
