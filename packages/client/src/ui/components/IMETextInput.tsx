@@ -127,6 +127,8 @@ interface IMETextInputProps {
   showCursor?: boolean;
   /** When false, disables input handling. Default true */
   isActive?: boolean;
+  /** Called whenever the input text changes (for autocomplete, etc.) */
+  onTextChange?: (text: string) => void;
 }
 
 /**
@@ -138,13 +140,15 @@ interface IMETextInputProps {
  * Enter handler reads `text`. Solution: use a ref as the source of truth for
  * the current text value, so Enter always submits the latest accumulated input.
  */
-export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true, isActive = true }: IMETextInputProps) {
+export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCursor = true, isActive = true, onTextChange }: IMETextInputProps) {
   const { stdout } = useStdout();
   const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
   const availableWidth = columns - stringWidth(PROMPT) - 1; // 1 for cursor
 
   const [text, setText] = useState('');
   const textRef = useRef('');
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const cursorPosRef = useRef(0);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const historyRef = useRef(history);
@@ -153,6 +157,15 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
   // Keep refs in sync for closure access
   historyRef.current = history;
   historyIndexRef.current = historyIndex;
+
+  /** Update text + cursor, notify onTextChange */
+  const updateText = (newText: string, newCursorPos: number) => {
+    textRef.current = newText;
+    setText(newText);
+    cursorPosRef.current = newCursorPos;
+    setCursorPosition(newCursorPos);
+    onTextChange?.(newText);
+  };
 
   useInput((input, key) => {
     if (key.return) {
@@ -164,18 +177,33 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
           setHistory(prev => [...prev, currentText]);
         }
       }
-      textRef.current = '';
-      setText('');
+      updateText('', 0);
       setHistoryIndex(-1);
       return;
     }
 
-    if (key.backspace || key.delete) {
+    if (key.leftArrow) {
+      const newPos = Math.max(0, cursorPosRef.current - 1);
+      cursorPosRef.current = newPos;
+      setCursorPosition(newPos);
+      return;
+    }
+
+    if (key.rightArrow) {
       const chars = Array.from(textRef.current);
-      chars.pop();
+      const newPos = Math.min(chars.length, cursorPosRef.current + 1);
+      cursorPosRef.current = newPos;
+      setCursorPosition(newPos);
+      return;
+    }
+
+    if (key.backspace || key.delete) {
+      const pos = cursorPosRef.current;
+      if (pos <= 0) return; // Nothing to delete before cursor
+      const chars = Array.from(textRef.current);
+      chars.splice(pos - 1, 1);
       const newText = chars.join('');
-      textRef.current = newText;
-      setText(newText);
+      updateText(newText, pos - 1);
       return;
     }
 
@@ -185,8 +213,8 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       const newIndex = idx < 0 ? hist.length - 1 : Math.max(0, idx - 1);
       setHistoryIndex(newIndex);
       const newText = hist[newIndex] ?? '';
-      textRef.current = newText;
-      setText(newText);
+      const newCursorPos = Array.from(newText).length;
+      updateText(newText, newCursorPos);
       return;
     }
 
@@ -195,35 +223,71 @@ export function IMETextInput({ onSubmit, placeholder, allowEmpty = false, showCu
       const newIndex = historyIndexRef.current + 1;
       if (newIndex >= hist.length) {
         setHistoryIndex(-1);
-        textRef.current = '';
-        setText('');
+        updateText('', 0);
       } else {
         setHistoryIndex(newIndex);
         const newText = hist[newIndex] ?? '';
-        textRef.current = newText;
-        setText(newText);
+        const newCursorPos = Array.from(newText).length;
+        updateText(newText, newCursorPos);
       }
       return;
     }
 
-    // Append any printable input (ASCII, Korean, emoji, etc.)
+    // Insert printable input at cursor position (ASCII, Korean, emoji, etc.)
     if (!key.ctrl && !key.meta && input) {
-      textRef.current += input;
-      setText(textRef.current);
+      const chars = Array.from(textRef.current);
+      const pos = cursorPosRef.current;
+      const inputChars = Array.from(input);
+      chars.splice(pos, 0, ...inputChars);
+      const newText = chars.join('');
+      updateText(newText, pos + inputChars.length);
     }
   }, { isActive });
 
   const showPlaceholder = (!text && placeholder) || !isActive;
 
+  // Render with cursor-aware visible window
+  const renderContent = () => {
+    if (showPlaceholder) {
+      return <Text dimColor>{!isActive ? (placeholder ?? 'Connection lost...') : placeholder}</Text>;
+    }
+
+    const { visibleText, cursorOffset } = getVisibleWindow(text, availableWidth, cursorPosition);
+
+    if (!showCursor || !isActive) {
+      return <Text>{visibleText}</Text>;
+    }
+
+    // Split visible text at cursor offset for cursor rendering
+    // Use string-width to find the character split point
+    const visibleChars = Array.from(visibleText);
+    let accWidth = 0;
+    let splitIdx = 0;
+    for (let i = 0; i < visibleChars.length; i++) {
+      if (accWidth >= cursorOffset) {
+        splitIdx = i;
+        break;
+      }
+      accWidth += stringWidth(visibleChars[i]!);
+      splitIdx = i + 1;
+    }
+
+    const before = visibleChars.slice(0, splitIdx).join('');
+    const after = visibleChars.slice(splitIdx).join('');
+
+    return (
+      <>
+        <Text>{before}</Text>
+        <Text color={theme.text.primary}>▏</Text>
+        <Text>{after}</Text>
+      </>
+    );
+  };
+
   return (
     <Box>
       <Text color={theme.ui.prompt}>{PROMPT}</Text>
-      {showPlaceholder ? (
-        <Text dimColor>{!isActive ? (placeholder ?? 'Connection lost...') : placeholder}</Text>
-      ) : (
-        <Text>{getVisibleText(text, availableWidth)}</Text>
-      )}
-      {showCursor && isActive && !showPlaceholder ? <Text color={theme.text.primary}>▏</Text> : null}
+      {renderContent()}
     </Box>
   );
 }
