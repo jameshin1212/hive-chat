@@ -4,6 +4,11 @@ export const MAX_MESSAGES = 500;
 export const MIN_TERMINAL_WIDTH = 60;
 export const DEFAULT_TERMINAL_WIDTH = 80;
 
+// Breakpoint constants
+export const COMPACT_MAX_WIDTH = 80;
+export const WIDE_MIN_WIDTH = 120;
+export const DEFAULT_TERMINAL_ROWS = 24;
+
 export const THEME_COLORS = {
   primary: 'green',
   separator: 'green',
