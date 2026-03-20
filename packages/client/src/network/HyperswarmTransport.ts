@@ -32,15 +32,21 @@ export class HyperswarmTransport extends EventEmitter {
    * waits for connection, performs handshake, and emits 'connected' on success.
    */
   async connect(sessionId: string, isInitiator: boolean): Promise<void> {
+    // Always create a fresh swarm for each chat session
+    // Reusing a swarm after failed connections causes stale internal state
+    await this.cleanup();
+    if (this.swarm) {
+      await this.swarm.destroy();
+      this.swarm = null;
+    }
+
     this.expectedSessionId = sessionId;
     this.handshakeCompleted = false;
 
-    if (!this.swarm) {
-      this.swarm = new Hyperswarm();
-      this.swarm.on('connection', (conn: any, peerInfo: any) => {
-        this.handleConnection(conn, peerInfo);
-      });
-    }
+    this.swarm = new Hyperswarm();
+    this.swarm.on('connection', (conn: any, peerInfo: any) => {
+      this.handleConnection(conn, peerInfo);
+    });
 
     const topic = HyperswarmTransport.sessionToTopic(sessionId);
     this.currentTopic = topic;
