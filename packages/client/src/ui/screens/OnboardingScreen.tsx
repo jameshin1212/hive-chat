@@ -76,7 +76,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
       <Text color={theme.text.primary}>
         Select your AI CLI tool:
       </Text>
-      <AiCliSelector onSelect={handleAiCliSelect} />
+      <AiCliSelector onSelect={handleAiCliSelect} isActive={step === 'ai-cli'} />
     </Box>
   );
 }
