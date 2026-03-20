@@ -15,9 +15,9 @@
   "author": "Jamie",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jamie-chat/hivechat.git"
+    "url": "git+https://github.com/jameshin1212/hive-chat.git"
   },
-  "homepage": "https://github.com/jamie-chat/hivechat#readme",
+  "homepage": "https://github.com/jameshin1212/hive-chat#readme",
   "type": "module",
   "engines": {
     "node": ">=20"

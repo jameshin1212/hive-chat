@@ -39,7 +39,7 @@ npx hivechat
 Requirements:
 - Node.js 20 or later
 
-On first launch, you will be prompted to set a nickname and select your AI CLI tool. HiveChat automatically connects to the signal server at `wss://hivechat.fly.dev`.
+On first launch, you will be prompted to set a nickname and select your AI CLI tool. HiveChat automatically connects to the signal server at `wss://hivechat-signal.fly.dev`.
 
 ## Commands
 
@@ -88,7 +88,7 @@ packages/
 ## Development
 
 ```bash
-git clone https://github.com/jamie-chat/hivechat.git
+git clone https://github.com/jameshin1212/hive-chat.git
 cd hivechat
 npm install
 npm run dev     # Start client in dev mode
