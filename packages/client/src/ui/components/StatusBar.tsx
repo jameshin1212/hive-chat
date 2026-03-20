@@ -7,7 +7,6 @@ import { theme } from '../theme.js';
 interface StatusBarProps {
   identity: Identity;
   connectionStatus: ConnectionStatus;
-  radiusKm: number;
   nearbyCount: number;
   chatPartner?: { nickname: string; tag: string } | null;
   onlineFriendCount?: number;
@@ -18,7 +17,7 @@ interface StatusBarProps {
 export function connectionColor(status: ConnectionStatus, transportType?: TransportType): string {
   switch (status) {
     case 'connected':
-      return 'green';
+      return transportType === 'direct' ? 'green' : 'yellow';
     case 'connecting':
     case 'reconnecting':
       return 'yellow';
@@ -40,7 +39,7 @@ function connectionLabel(status: ConnectionStatus): string {
   }
 }
 
-export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, chatPartner, onlineFriendCount, friendCount, transportType }: StatusBarProps) {
+export function StatusBar({ identity, connectionStatus, nearbyCount, chatPartner, onlineFriendCount, friendCount, transportType }: StatusBarProps) {
   const badgeColor = theme.badge[identity.aiCli];
 
   return (
@@ -49,8 +48,6 @@ export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, c
       <Text color={theme.text.primary}> {identity.nickname}#{identity.tag}</Text>
       <Text color={theme.text.secondary}> | </Text>
       <Text color={connectionColor(connectionStatus, transportType)}>{connectionLabel(connectionStatus)}</Text>
-      <Text color={theme.text.secondary}> | </Text>
-      <Text color={theme.text.secondary}>{radiusKm}km</Text>
       <Text color={theme.text.secondary}> | </Text>
       {chatPartner ? (
         <Text color={theme.text.info}>Chatting: {chatPartner.nickname}#{chatPartner.tag}</Text>

@@ -45,7 +45,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const gracefulExit = useGracefulExit();
 
   const { status, client, transportType } = useServerConnection(identity);
-  const { users, radiusKm, cycleRadius, refreshUsers } = useNearbyUsers(client);
+  const { users, refreshUsers } = useNearbyUsers(client);
   const {
     chatStatus, partner, sessionId, chatMessages,
     incomingRequest, partnerLeft, requestChat, acceptRequest,
@@ -114,8 +114,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       case 'connected':
         addSystemMessage('Connected', 'transition');
         addSystemMessage('HiveChat v0.1.0');
-        addSystemMessage('Tips: Tab — nearby users  |  Shift+Tab — cycle radius');
-        addSystemMessage('      /addfriend nick#TAG — add friend  |  /help — all commands');
+        addSystemMessage('Tips: Tab — nearby users  |  /addfriend nick#TAG — add friend  |  /help — all commands');
         break;
       case 'reconnecting':
         addSystemMessage('Connection lost. Reconnecting...');
@@ -126,15 +125,13 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     }
   }, [status, addSystemMessage]);
 
-  // Wire Ctrl+C to graceful exit, Tab to show users, Shift+Tab to cycle radius
+  // Wire Ctrl+C to graceful exit, Tab to show users
   useInput((_input, key) => {
     if (key.ctrl && _input === 'c') {
       gracefulExit();
     }
     if (key.tab && !isInChat && !showFriendList) {
-      if (key.shift) {
-        cycleRadius();
-      } else if (showUserList) {
+      if (showUserList) {
         setShowUserList(false);
       } else {
         setShowUserList(true);
@@ -143,13 +140,6 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     }
   });
 
-  // Radius change system message
-  const prevRadiusRef = useRef<number>(radiusKm);
-  useEffect(() => {
-    if (prevRadiusRef.current === radiusKm) return;
-    prevRadiusRef.current = radiusKm;
-    addSystemMessage(`Discovery radius changed to ${radiusKm}km`);
-  }, [radiusKm, addSystemMessage]);
 
   const handleTextChange = useCallback((text: string) => {
     setCurrentInput(text);
@@ -206,10 +196,6 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       if (parsed.name === '/users') {
         setShowUserList(true);
         refreshUsers();
-        return;
-      }
-      if (parsed.name === '/radius') {
-        cycleRadius();
         return;
       }
       if (parsed.name === '/leave') {
@@ -295,7 +281,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       };
       setMessages(prev => [...prev, msg].slice(-MAX_MESSAGES));
     }
-  }, [identity, gracefulExit, addSystemMessage, refreshUsers, cycleRadius, isInChat, chatStatus, partner, sendMessage, leaveChat, refreshFriendStatuses]);
+  }, [identity, gracefulExit, addSystemMessage, refreshUsers, isInChat, chatStatus, partner, sendMessage, leaveChat, refreshFriendStatuses]);
 
   // Determine which messages to display
   const displayMessages = isInChat ? chatMessages : messages;
@@ -380,7 +366,6 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       <StatusBar
         identity={identity}
         connectionStatus={status}
-        radiusKm={radiusKm}
         nearbyCount={users.length}
         chatPartner={chatPartner}
         onlineFriendCount={onlineFriendCount}
