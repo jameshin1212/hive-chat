@@ -4,5 +4,7 @@ node_modules
 .claude
 docs
 *.md
-packages/client
+packages/client/src
+packages/client/bin
+packages/client/dist
 .env*
