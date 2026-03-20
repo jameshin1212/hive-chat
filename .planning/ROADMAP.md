@@ -145,7 +145,7 @@ Plans:
 | 14. Server Optimization | v1.3 | 2/2 | Complete | 2026-03-20 |
 | 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
 | 16. Shared Infrastructure | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
-| 17. Onboarding Polish | 1/1 | Complete   | 2026-03-20 | - |
+| 17. Onboarding Polish | 1/1 | Complete    | 2026-03-20 | - |
 | 18. Welcome Section | v1.4 | 0/? | Not started | - |
 | 19. Slash Command & Responsive Finish | v1.4 | 0/? | Not started | - |
 
