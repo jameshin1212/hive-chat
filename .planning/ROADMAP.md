@@ -51,7 +51,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Goal**: Cling Talk -> HiveChat 리네이밍 + 신호 서버가 Fly.io에 배포되어 클라이언트가 공용 서버에 접속할 수 있다
 **Depends on**: Nothing (기존 서버 코드 기반)
 **Requirements**: DEP-01, DEP-02, DEP-03
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 11-01-PLAN.md -- 코드베이스 리네이밍 (Cling Talk -> HiveChat)
@@ -99,7 +99,7 @@ Plans:
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
 | 10. Command Cleanup | v1.1 | 1/1 | Complete | 2026-03-19 |
-| 11. Server Deploy | v1.2 | 0/3 | Planning | - |
+| 11. Server Deploy | 1/3 | In Progress|  | - |
 | 12. npm Publish | v1.2 | 0/? | Not started | - |
 | 13. Documentation | v1.2 | 0/? | Not started | - |
 

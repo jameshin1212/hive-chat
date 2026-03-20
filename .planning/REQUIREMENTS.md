@@ -14,7 +14,7 @@
 ### Deploy
 
 - [ ] **DEP-01**: Fly.io에 신호 서버 배포 완료 (Dockerfile + fly.toml)
-- [ ] **DEP-02**: DEFAULT_SERVER_URL이 Fly.io 배포 URL로 변경됨
+- [x] **DEP-02**: DEFAULT_SERVER_URL이 Fly.io 배포 URL로 변경됨
 - [ ] **DEP-03**: 배포 서버에서 WebSocket 연결 + 채팅 정상 동작
 
 ### Documentation
@@ -44,7 +44,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DEP-01 | Phase 11 | Pending |
-| DEP-02 | Phase 11 | Pending |
+| DEP-02 | Phase 11 | Complete |
 | DEP-03 | Phase 11 | Pending |
 | PUB-01 | Phase 12 | Pending |
 | PUB-02 | Phase 12 | Pending |
