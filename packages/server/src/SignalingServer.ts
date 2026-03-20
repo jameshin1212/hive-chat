@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import type { IncomingMessage } from 'node:http';
+import { createServer } from 'node:http';
+import type { IncomingMessage, Server as HttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import {
   clientMessageSchema,
@@ -25,6 +26,7 @@ interface AliveWebSocket extends WebSocket {
 
 export class SignalingServer {
   private wss: WebSocketServer | null = null;
+  private httpServer: HttpServer | null = null;
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private presenceManager = new PresenceManager();
   private chatSessionManager = new ChatSessionManager();
@@ -36,20 +38,27 @@ export class SignalingServer {
   }
 
   /**
-   * Start the WebSocket server. Returns the actual port (useful when port=0).
+   * Start the WebSocket server via HTTP upgrade (required for Fly.io proxy).
+   * Returns the actual port (useful when port=0).
    */
   start(): Promise<number> {
     return new Promise((resolve, reject) => {
-      this.wss = new WebSocketServer({ port: this.port, host: '0.0.0.0' });
+      // Create HTTP server for Fly.io proxy compatibility
+      this.httpServer = createServer((_req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('HiveChat signaling server');
+      });
 
-      this.wss.on('listening', () => {
-        const addr = this.wss!.address() as AddressInfo;
+      this.wss = new WebSocketServer({ server: this.httpServer });
+
+      this.httpServer.listen(this.port, '0.0.0.0', () => {
+        const addr = this.httpServer!.address() as AddressInfo;
         this.port = addr.port;
         this.startHeartbeatCheck();
         resolve(this.port);
       });
 
-      this.wss.on('error', reject);
+      this.httpServer.on('error', reject);
 
       this.wss.on('connection', (ws: AliveWebSocket, req: IncomingMessage) => {
         ws.isAlive = true;
@@ -534,7 +543,14 @@ export class SignalingServer {
 
       this.wss.close(() => {
         this.wss = null;
-        resolve();
+        if (this.httpServer) {
+          this.httpServer.close(() => {
+            this.httpServer = null;
+            resolve();
+          });
+        } else {
+          resolve();
+        }
       });
     });
   }
