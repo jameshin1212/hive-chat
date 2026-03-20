@@ -5,7 +5,7 @@ const PORT = parseInt(process.env['PORT'] || String(DEFAULT_SERVER_PORT), 10);
 const server = new SignalingServer(PORT);
 
 server.start().then((actualPort) => {
-  console.log(`Cling Talk signaling server listening on ws://localhost:${actualPort}`);
+  console.log(`HiveChat signaling server listening on ws://localhost:${actualPort}`);
 });
 
 const shutdown = () => {

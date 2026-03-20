@@ -12,7 +12,7 @@ export function useServerConnection(identity: Identity) {
   const clientRef = useRef<ConnectionManager | null>(null);
 
   useEffect(() => {
-    const serverUrl = process.env['CLING_TALK_SERVER'] || DEFAULT_SERVER_URL;
+    const serverUrl = process.env['HIVECHAT_SERVER'] || DEFAULT_SERVER_URL;
     const signalingClient = new SignalingClient(serverUrl, identity);
     const connectionManager = new ConnectionManager(signalingClient, {
       nickname: identity.nickname,

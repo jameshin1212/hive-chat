@@ -6,9 +6,9 @@ import { theme } from '../theme.js';
 // Generate ASCII art at module load time (not runtime)
 let BANNER_TEXT: string;
 try {
-  BANNER_TEXT = figlet.textSync('CLING TALK', { font: 'Standard' });
+  BANNER_TEXT = figlet.textSync('HIVECHAT', { font: 'Standard' });
 } catch {
-  BANNER_TEXT = '=== CLING TALK ===';
+  BANNER_TEXT = '=== HIVECHAT ===';
 }
 
 export function AsciiBanner() {

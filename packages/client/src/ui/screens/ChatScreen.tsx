@@ -113,7 +113,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     switch (status) {
       case 'connected':
         addSystemMessage('Connected', 'transition');
-        addSystemMessage('Cling Talk v0.1.0');
+        addSystemMessage('HiveChat v0.1.0');
         addSystemMessage('Tips: Tab — nearby users  |  Shift+Tab — cycle radius');
         addSystemMessage('      /addfriend nick#TAG — add friend  |  /help — all commands');
         break;

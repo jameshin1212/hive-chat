@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import Conf from 'conf';
 
 // Set test profile before importing FriendManager
-process.env['CLING_TALK_PROFILE'] = `test-friends-${Date.now()}`;
+process.env['HIVECHAT_PROFILE'] = `test-friends-${Date.now()}`;
 
 const { addFriend, removeFriend, getFriends, isFriend } = await import('./FriendManager.js');
 const { appConfig } = await import('../config/AppConfig.js');

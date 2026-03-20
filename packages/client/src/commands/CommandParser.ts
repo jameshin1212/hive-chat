@@ -1,7 +1,7 @@
 import type { ParsedInput } from '@hivechat/shared';
 
 export const COMMANDS = {
-  '/exit': { description: 'Exit Cling Talk' },
+  '/exit': { description: 'Exit HiveChat' },
   '/users': { description: 'Show nearby users' },
   '/friends': { description: 'Show friend list' },
   '/radius': { description: 'Cycle discovery radius (1/3/5/10km)' },

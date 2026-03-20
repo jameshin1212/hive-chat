@@ -40,7 +40,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
     return (
       <Box flexDirection="column">
         <AsciiBanner />
-        <Text color={theme.text.primary}>{'\n'}Welcome to Cling Talk!</Text>
+        <Text color={theme.text.primary}>{'\n'}Welcome to HiveChat!</Text>
         <Text dimColor>Press Enter to continue...</Text>
         <IMETextInput
           onSubmit={() => setStep('nickname')}
