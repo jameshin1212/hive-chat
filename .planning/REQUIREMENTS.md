@@ -31,6 +31,11 @@ Requirements for UI/UX Polish. 온보딩 개선, 웰컴 섹션, 슬래시 명령
 - [ ] **SLSH-01**: Claude Code 스타일 슬래시 명령어 오버레이 UI (명령어명 + 설명, 하이라이트, 정렬)
 - [ ] **SLSH-02**: 오버레이에서 엔터 입력 시 선택된 명령어 즉시 실행
 
+### Chat Request UX
+
+- [ ] **CHAT-01**: 채팅 요청 오버레이가 시각적으로 강조되어 (Box border, 색상 강조) 사용자가 즉시 인지할 수 있다
+- [ ] **CHAT-02**: 수락/거절 액션이 직관적 UI로 표시되어 행동이 명확하다
+
 ### Responsive Layout
 
 - [ ] **RESP-01**: compact(<80)/standard(80-120)/wide(>120) 3단계 breakpoint 시스템
@@ -85,27 +90,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SOPT-03 | Phase 14 | Complete |
 | DPLY-01 | Phase 15 | Complete |
 | DPLY-02 | Phase 15 | Complete |
-| INFR-01 | TBD | Pending |
-| INFR-02 | TBD | Pending |
-| INFR-03 | TBD | Pending |
-| ONBD-01 | TBD | Pending |
-| ONBD-02 | TBD | Pending |
-| ONBD-03 | TBD | Pending |
-| WELC-01 | TBD | Pending |
-| WELC-02 | TBD | Pending |
-| WELC-03 | TBD | Pending |
-| WELC-04 | TBD | Pending |
-| SLSH-01 | TBD | Pending |
-| SLSH-02 | TBD | Pending |
-| RESP-01 | TBD | Pending |
-| RESP-02 | TBD | Pending |
-| RESP-03 | TBD | Pending |
+| INFR-01 | Phase 16 | Pending |
+| INFR-02 | Phase 16 | Pending |
+| INFR-03 | Phase 16 | Pending |
+| RESP-01 | Phase 16 | Pending |
+| ONBD-01 | Phase 17 | Pending |
+| ONBD-02 | Phase 17 | Pending |
+| ONBD-03 | Phase 17 | Pending |
+| WELC-01 | Phase 18 | Pending |
+| WELC-02 | Phase 18 | Pending |
+| WELC-03 | Phase 18 | Pending |
+| WELC-04 | Phase 18 | Pending |
+| SLSH-01 | Phase 19 | Pending |
+| SLSH-02 | Phase 19 | Pending |
+| CHAT-01 | Phase 19 | Pending |
+| CHAT-02 | Phase 19 | Pending |
+| RESP-02 | Phase 19 | Pending |
+| RESP-03 | Phase 19 | Pending |
 
 **Coverage:**
-- v1.4 requirements: 15 total
-- Mapped to phases: 0/15
-- Unmapped: 15
+- v1.4 requirements: 17 total
+- Mapped to phases: 17/17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after v1.4 requirements scoped*
+*Last updated: 2026-03-21 after v1.4 roadmap created*

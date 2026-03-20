@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: UI/UX Polish
-status: defining_requirements
-stopped_at: Defining requirements for v1.4
+status: roadmap_complete
+stopped_at: Roadmap created, ready for plan-phase 16
 last_updated: "2026-03-21"
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -19,14 +19,18 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** v1.4 UI/UX Polish — 온보딩, 웰컴 섹션, 반응형 레이아웃
+**Current focus:** v1.4 UI/UX Polish -- 온보딩, 웰컴 섹션, 슬래시 명령어 UX, 반응형 레이아웃
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-21 — Milestone v1.4 started
+Phase: 16 - Shared Infrastructure (not started)
+Plan: --
+Status: Roadmap complete, ready for planning
+Last activity: 2026-03-21 -- Roadmap created for v1.4
+
+```
+v1.4 Progress: [____] 0/4 phases
+```
 
 ## Accumulated Context
 
@@ -39,8 +43,11 @@ Last activity: 2026-03-21 — Milestone v1.4 started
 - [v1.3]: geohashing 라이브러리 (pure JS, zero deps), precision 5 (~5km cells)
 - [v1.3]: BROADCAST_RADIUS_KM = 10 서버 상수, DEFAULT_RADIUS_KM = 10 클라이언트
 - [v1.3]: P2P DHT announce-first 패턴으로 race condition 해결, 5초 retry, 45초 timeout
-- [v1.3]: 반경 사이클링(1/3/5/10km) 제거 → 10km 고정
+- [v1.3]: 반경 사이클링(1/3/5/10km) 제거 -> 10km 고정
 - [v1.3]: StatusBar 상태 색상 구분 -- relay=노랑, direct=초록
+- [v1.4]: 새 dependency 없이 기존 stack(Ink 6, figlet, chalk)으로 모든 UI 개선 구현
+- [v1.4]: WelcomeSection은 별도 Screen이 아닌 ChatScreen 내부 lobby 상태 조건부 렌더링
+- [v1.4]: @inkjs/ui Ink 6 호환성 런타임 검증 필요 (Ink 5 대상 출시)
 
 ### Pending Todos
 
@@ -48,10 +55,11 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- @inkjs/ui@2.0.0이 Ink 5 대상 출시 -- Ink 6 호환성 Phase 18에서 런타임 검증 필요, 비호환 시 직접 구현
+- ChatScreen.tsx overlayHeight magic number -- Phase 18에서 WelcomeSection 추가 시 height 계산 리팩토링 필요
 
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Defining requirements for v1.4
-Resume with: Continue requirements definition
+Stopped at: Roadmap created for v1.4 (Phases 16-19)
+Resume with: `/gsd:plan-phase 16`
