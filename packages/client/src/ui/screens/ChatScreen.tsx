@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Box, Text, useInput, useStdout } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import type { Identity, ChatMessage } from '@hivechat/shared';
-import { DEFAULT_TERMINAL_WIDTH, MAX_MESSAGES } from '@hivechat/shared';
+import { MAX_MESSAGES } from '@hivechat/shared';
 import { parseNickTag } from '@hivechat/shared';
 import { parseInput, isKnownCommand, COMMANDS, filterCommands } from '../../commands/CommandParser.js';
 import { useGracefulExit } from '../../hooks/useGracefulExit.js';
+import { useTerminalSize } from '../../hooks/useTerminalSize.js';
 import { useServerConnection } from '../../hooks/useServerConnection.js';
 import type { ConnectionStatus } from '../../hooks/useServerConnection.js';
 import { useNearbyUsers } from '../../hooks/useNearbyUsers.js';
@@ -39,9 +40,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const [showUserList, setShowUserList] = useState(false);
   const [showFriendList, setShowFriendList] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const columns = stdout?.columns ?? DEFAULT_TERMINAL_WIDTH;
+  const { rows, columns, breakpoint } = useTerminalSize();
   const gracefulExit = useGracefulExit();
 
   const { status, client, transportType } = useServerConnection(identity);
@@ -113,7 +112,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     switch (status) {
       case 'connected':
         addSystemMessage('Connected', 'transition');
-        addSystemMessage('HiveChat v0.1.0');
+        addSystemMessage(`HiveChat v${__APP_VERSION__}`);
         addSystemMessage('Tips: Tab — nearby users  |  /addfriend nick#TAG — add friend  |  /help — all commands');
         break;
       case 'reconnecting':
