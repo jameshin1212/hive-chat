@@ -17,18 +17,19 @@
   },
   "dependencies": {
     "@hivechat/shared": "*",
-    "ws": "^8.19.0",
+    "geohashing": "^2.0.1",
     "geoip-lite": "^2.0.1",
     "haversine": "^1.1.1",
+    "ws": "^8.19.0",
     "zod": "^3.24"
   },
   "devDependencies": {
-    "@types/ws": "^8",
     "@types/geoip-lite": "^1",
     "@types/haversine": "^1",
-    "typescript": "^5.7",
-    "tsx": "^4",
+    "@types/ws": "^8",
     "tsdown": "^0",
+    "tsx": "^4",
+    "typescript": "^5.7",
     "vitest": "^3"
   }
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PresenceManager } from '../PresenceManager.js';
+import { getGeohashCells, encodeGeohash } from '../GeoLocationService.js';
 import type { UserRecord } from '../types.js';
 
 function makeMockWs() {
@@ -156,6 +157,108 @@ describe('PresenceManager', () => {
 
     it('returns empty array for non-existent origin', () => {
       expect(pm.getNearbyUsers('nobody', 5)).toEqual([]);
+    });
+  });
+
+  describe('geohash spatial index', () => {
+    it('getGeohashCells returns center + 8 neighbors (9 cells)', () => {
+      const cells = getGeohashCells(37.5665, 126.978);
+      expect(cells).toHaveLength(9);
+      // First element is the center cell
+      const center = encodeGeohash(37.5665, 126.978);
+      expect(cells[0]).toBe(center);
+      // All cells should be unique strings
+      const unique = new Set(cells);
+      expect(unique.size).toBe(9);
+    });
+
+    it('register adds user to geohash index', () => {
+      const record = makeRecord({ lat: 37.5665, lon: 126.978 });
+      pm.register('alice#ABCD', record);
+
+      // getUsersInRadius from same location should NOT include self when excluded
+      const result = pm.getUsersInRadius(37.5665, 126.978, 10, 'alice#ABCD');
+      expect(result).toHaveLength(0);
+    });
+
+    it('getUsersInRadius finds nearby users', () => {
+      // User A at Seoul center
+      pm.register('alice#ABCD', makeRecord({
+        nickname: 'alice', tag: 'ABCD',
+        lat: 37.5665, lon: 126.978,
+      }));
+      // User B very close (~0.3km)
+      pm.register('bob#1234', makeRecord({
+        nickname: 'bob', tag: '1234',
+        lat: 37.564, lon: 126.980,
+      }));
+
+      const result = pm.getUsersInRadius(37.5665, 126.978, 10, 'alice#ABCD');
+      expect(result).toHaveLength(1);
+      expect(result).toContain('bob#1234');
+    });
+
+    it('unregister removes user from geohash index', () => {
+      pm.register('alice#ABCD', makeRecord({ lat: 37.5665, lon: 126.978 }));
+      pm.register('bob#1234', makeRecord({
+        nickname: 'bob', tag: '1234',
+        lat: 37.564, lon: 126.980,
+      }));
+
+      pm.unregister('bob#1234');
+
+      const result = pm.getUsersInRadius(37.5665, 126.978, 10, 'alice#ABCD');
+      expect(result).toHaveLength(0);
+    });
+
+    it('far-away user (Busan) is not found in 10km radius from Seoul', () => {
+      pm.register('alice#ABCD', makeRecord({
+        nickname: 'alice', tag: 'ABCD',
+        lat: 37.5665, lon: 126.978,
+      }));
+      // Busan user
+      pm.register('faruser#9999', makeRecord({
+        nickname: 'faruser', tag: '9999',
+        lat: 35.1796, lon: 129.0756,
+      }));
+
+      const result = pm.getUsersInRadius(37.5665, 126.978, 10, 'alice#ABCD');
+      expect(result).toHaveLength(0);
+    });
+
+    it('excludes offline users from getUsersInRadius', () => {
+      pm.register('alice#ABCD', makeRecord({ lat: 37.5665, lon: 126.978 }));
+      pm.register('bob#1234', makeRecord({
+        nickname: 'bob', tag: '1234',
+        lat: 37.564, lon: 126.980,
+        status: 'offline',
+      }));
+
+      const result = pm.getUsersInRadius(37.5665, 126.978, 10, 'alice#ABCD');
+      expect(result).toHaveLength(0);
+    });
+
+    it('getNearbyUsers regression — returns NearbyUser[] with same fields', () => {
+      pm.register('alice#ABCD', makeRecord({
+        nickname: 'alice', tag: 'ABCD',
+        lat: 37.5665, lon: 126.978,
+      }));
+      pm.register('bob#1234', makeRecord({
+        nickname: 'bob', tag: '1234',
+        aiCli: 'Cursor',
+        lat: 37.564, lon: 126.980,
+      }));
+
+      const nearby = pm.getNearbyUsers('alice#ABCD', 5);
+      expect(nearby).toHaveLength(1);
+      expect(nearby[0]).toMatchObject({
+        nickname: 'bob',
+        tag: '1234',
+        aiCli: 'Cursor',
+        status: 'online',
+      });
+      expect(typeof nearby[0]!.distance).toBe('number');
+      expect(nearby[0]!.distance).toBeGreaterThanOrEqual(0);
     });
   });
 
