@@ -8,8 +8,8 @@
 ### Publish
 
 - [ ] **PUB-01**: `npm publish` 후 `npx cling-talk`으로 즉시 실행 가능
-- [ ] **PUB-02**: 패키지 크기 1MB 미만 (tsdown 번들)
-- [ ] **PUB-03**: package.json에 bin, files, repository 등 메타데이터 완비
+- [x] **PUB-02**: 패키지 크기 1MB 미만 (tsdown 번들)
+- [x] **PUB-03**: package.json에 bin, files, repository 등 메타데이터 완비
 
 ### Deploy
 
@@ -47,8 +47,8 @@
 | DEP-02 | Phase 11 | Complete |
 | DEP-03 | Phase 11 | Pending |
 | PUB-01 | Phase 12 | Pending |
-| PUB-02 | Phase 12 | Pending |
-| PUB-03 | Phase 12 | Pending |
+| PUB-02 | Phase 12 | Complete |
+| PUB-03 | Phase 12 | Complete |
 | DOC-01 | Phase 13 | Pending |
 
 **Coverage:**

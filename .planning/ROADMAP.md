@@ -68,7 +68,7 @@ Plans:
 **Goal**: `npx hivechat` 한 줄로 누구나 즉시 실행할 수 있다
 **Depends on**: Phase 11 (배포된 서버 URL이 번들에 포함되어야 함)
 **Requirements**: PUB-01, PUB-02, PUB-03
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 12-01-PLAN.md — package.json 메타데이터 완비 + tsdown config 정리 + 빌드 검증
@@ -105,7 +105,7 @@ Plans:
 | 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
 | 10. Command Cleanup | v1.1 | 1/1 | Complete | 2026-03-19 |
 | 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
-| 12. npm Publish | v1.2 | 0/2 | Planning | - |
+| 12. npm Publish | 1/2 | In Progress|  | - |
 | 13. Documentation | v1.2 | 0/? | Not started | - |
 
 ---
