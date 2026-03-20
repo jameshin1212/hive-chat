@@ -19,4 +19,4 @@ COPY --from=builder /app/packages/server/dist ./dist
 COPY --from=builder /app/packages/server/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 EXPOSE 3456
-CMD ["node", "dist/index.mjs"]
+CMD ["node", "dist/src/index.mjs"]
