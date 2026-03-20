@@ -68,12 +68,17 @@ Plans:
 **Goal**: `npx hivechat` 한 줄로 누구나 즉시 실행할 수 있다
 **Depends on**: Phase 11 (배포된 서버 URL이 번들에 포함되어야 함)
 **Requirements**: PUB-01, PUB-02, PUB-03
+**Plans:** 2 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — package.json 메타데이터 완비 + tsdown config 정리 + 빌드 검증
+- [ ] 12-02-PLAN.md — npm publish + npx hivechat 실행 검증
+
 **Success Criteria** (what must be TRUE):
   1. `npx hivechat` 실행 시 설치 없이 즉시 TUI가 표시된다
   2. 패키지 크기가 1MB 미만이다 (`npm pack` 결과 확인)
   3. package.json의 bin, files, repository, keywords, description이 모두 올바르게 설정되어 있다
   4. npmjs.com 패키지 페이지에서 프로젝트 정보가 정상 표시된다
-**Plans**: TBD
 
 ### Phase 13: Documentation
 **Goal**: 처음 보는 사용자가 README만 읽고 설치부터 채팅까지 할 수 있다
@@ -99,10 +104,10 @@ Plans:
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
 | 10. Command Cleanup | v1.1 | 1/1 | Complete | 2026-03-19 |
-| 11. Server Deploy | 3/3 | Complete    | 2026-03-20 | - |
-| 12. npm Publish | v1.2 | 0/? | Not started | - |
+| 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
+| 12. npm Publish | v1.2 | 0/2 | Planning | - |
 | 13. Documentation | v1.2 | 0/? | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-20 (Phase 11 planned)*
+*Updated: 2026-03-20 (Phase 12 planned)*
