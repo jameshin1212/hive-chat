@@ -21,6 +21,7 @@ import { FriendList } from '../components/FriendList.js';
 import { ChatRequestOverlay } from '../components/ChatRequestOverlay.js';
 import { CommandSuggestions } from '../components/CommandSuggestions.js';
 import { SettingsOverlay } from '../components/SettingsOverlay.js';
+import { getBannerText } from '../components/AsciiBanner.js';
 import { theme } from '../theme.js';
 import type { Key } from 'ink';
 
@@ -111,9 +112,17 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
 
     switch (status) {
       case 'connected':
-        addSystemMessage('Connected', 'transition');
+        addSystemMessage(getBannerText(breakpoint));
+        addSystemMessage(`${identity.nickname}#${identity.tag}  |  ${identity.aiCli}  |  Connected`);
         addSystemMessage(`HiveChat v${__APP_VERSION__}`);
-        addSystemMessage('Tips: Tab — nearby users  |  /addfriend nick#TAG — add friend  |  /help — all commands');
+        addSystemMessage([
+          'Tips:',
+          '  Tab        \u2014 nearby users',
+          '  /addfriend \u2014 add friend (nick#TAG)',
+          '  /friends   \u2014 friend list',
+          '  /help      \u2014 all commands',
+        ].join('\n'));
+        addSystemMessage('Connected', 'transition');
         break;
       case 'reconnecting':
         addSystemMessage('Connection lost. Reconnecting...');

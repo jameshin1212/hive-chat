@@ -18,6 +18,10 @@ interface AsciiBannerProps {
   breakpoint?: Breakpoint;
 }
 
+export function getBannerText(breakpoint?: Breakpoint): string {
+  return breakpoint === 'compact' ? PLAIN_BANNER : FIGLET_BANNER;
+}
+
 export function AsciiBanner({ breakpoint }: AsciiBannerProps) {
   const bannerText = breakpoint === 'compact' ? PLAIN_BANNER : FIGLET_BANNER;
   return <Text color={theme.text.primary}>{bannerText}</Text>;
