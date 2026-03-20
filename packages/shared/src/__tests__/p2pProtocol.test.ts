@@ -15,8 +15,8 @@ const SESSION_ID = '550e8400-e29b-41d4-a716-446655440000';
 const VALID_TOPIC = 'a'.repeat(64); // 64 hex chars (32 bytes)
 
 describe('P2P Protocol Constants', () => {
-  it('should export P2P_CONNECT_TIMEOUT_MS as 15000', () => {
-    expect(P2P_CONNECT_TIMEOUT_MS).toBe(15_000);
+  it('should export P2P_CONNECT_TIMEOUT_MS as 45000', () => {
+    expect(P2P_CONNECT_TIMEOUT_MS).toBe(45_000);
   });
 });
 

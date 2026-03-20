@@ -198,23 +198,30 @@ export class ConnectionManager extends EventEmitter {
 
   /**
    * Connect P2P — mandatory for chat. Not an "upgrade", it's the only way.
+   *
+   * Flow:
+   * - Initiator: announce to DHT first → THEN send signal → acceptor finds us
+   * - Acceptor: receive signal → lookup DHT → connect to initiator
    */
   private async connectP2P(sessionId: string, isInitiator: boolean): Promise<void> {
     if (this.isConnecting) return;
     this.isConnecting = true;
     this.emit('p2p_connecting');
 
-    if (isInitiator) {
-      const topic = HyperswarmTransport.sessionToTopic(sessionId);
-      const topicHex = HyperswarmTransport.topicToHex(topic);
-      this.signalingClient.sendP2PSignal(sessionId, topicHex);
-    }
-
     try {
-      await this.p2pTransport.connect(sessionId, isInitiator);
+      if (isInitiator) {
+        // Step 1: Announce to DHT and wait for flushed
+        await this.p2pTransport.announceAndWait(sessionId);
+        // Step 2: AFTER announce complete, tell acceptor to start looking
+        const topic = HyperswarmTransport.sessionToTopic(sessionId);
+        const topicHex = HyperswarmTransport.topicToHex(topic);
+        this.signalingClient.sendP2PSignal(sessionId, topicHex);
+      } else {
+        // Acceptor: initiator is already announced, connect to them
+        await this.p2pTransport.connect(sessionId);
+      }
     } catch {
       this.isConnecting = false;
-      // Notify server to clean up session
       this.signalingClient.leaveChat(sessionId);
       this.cleanupP2P();
       this.emit('p2p_failed', { reason: 'Connection error' });
@@ -225,13 +232,12 @@ export class ConnectionManager extends EventEmitter {
     this.connectTimer = setTimeout(() => {
       if (!this.p2pTransport.isConnected) {
         this.isConnecting = false;
-        // Notify server to clean up session
         if (this.currentSessionId) {
           this.signalingClient.leaveChat(this.currentSessionId);
         }
         this.p2pTransport.cleanup();
         this.cleanupP2P();
-        this.emit('p2p_failed', { reason: 'Connection timed out (NAT/firewall may be blocking)' });
+        this.emit('p2p_failed', { reason: 'Connection timed out (45s). DHT bootstrap or NAT may be blocking.' });
       }
     }, P2P_CONNECT_TIMEOUT_MS);
   }

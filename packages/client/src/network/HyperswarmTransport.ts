@@ -7,6 +7,8 @@ export class HyperswarmTransport extends EventEmitter {
   private swarm: Hyperswarm | null = null;
   private connection: any | null = null; // Duplex stream
   private currentTopic: Buffer | null = null;
+  private currentDiscovery: any | null = null;
+  private retryTimer: ReturnType<typeof setInterval> | null = null;
   private identity: { nickname: string; tag: string };
   private handshakeCompleted = false;
   private expectedSessionId: string | null = null;
@@ -27,13 +29,10 @@ export class HyperswarmTransport extends EventEmitter {
   }
 
   /**
-   * Attempt P2P connection for a given session.
-   * Joins the topic (server or client mode based on role),
-   * waits for connection, performs handshake, and emits 'connected' on success.
+   * Announce to DHT and wait for flushed.
+   * Called by initiator BEFORE sending P2P_SIGNAL, so acceptor can find us.
    */
-  async connect(sessionId: string, isInitiator: boolean): Promise<void> {
-    // Always create a fresh swarm for each chat session
-    // Reusing a swarm after failed connections causes stale internal state
+  async announceAndWait(sessionId: string): Promise<void> {
     await this.cleanup();
     if (this.swarm) {
       await this.swarm.destroy();
@@ -44,26 +43,57 @@ export class HyperswarmTransport extends EventEmitter {
     this.handshakeCompleted = false;
 
     this.swarm = new Hyperswarm();
-    this.swarm.on('connection', (conn: any, peerInfo: any) => {
-      this.emit('debug', `Peer found (${isInitiator ? 'initiator' : 'acceptor'})`);
-      this.handleConnection(conn, peerInfo);
+    this.swarm.on('connection', (conn: any, _peerInfo: any) => {
+      this.emit('debug', 'Peer found (initiator)');
+      this.handleConnection(conn, _peerInfo);
     });
 
     const topic = HyperswarmTransport.sessionToTopic(sessionId);
     this.currentTopic = topic;
     const topicHex = b4a.toString(topic, 'hex').slice(0, 8);
-    this.emit('debug', `Joining topic ${topicHex}... (session: ${sessionId.slice(0, 8)})`);
+    this.emit('debug', `Announcing topic ${topicHex}...`);
 
-    // Both sides join as server AND client for reliable local discovery
-    this.swarm.join(topic, {
-      server: true,
-      client: true,
+    // Join as server+client, announce to DHT
+    this.currentDiscovery = this.swarm.join(topic, { server: true, client: true });
+    await this.currentDiscovery.flushed();
+    this.emit('debug', 'DHT announce complete, waiting for acceptor...');
+
+    // Start retry loop — re-lookup periodically in case acceptor joins later
+    this.startRetryLoop();
+  }
+
+  /**
+   * Connect to an existing topic (acceptor side).
+   * Called by acceptor AFTER receiving P2P_SIGNAL — initiator is already announced.
+   */
+  async connect(sessionId: string): Promise<void> {
+    await this.cleanup();
+    if (this.swarm) {
+      await this.swarm.destroy();
+      this.swarm = null;
+    }
+
+    this.expectedSessionId = sessionId;
+    this.handshakeCompleted = false;
+
+    this.swarm = new Hyperswarm();
+    this.swarm.on('connection', (conn: any, _peerInfo: any) => {
+      this.emit('debug', 'Peer found (acceptor)');
+      this.handleConnection(conn, _peerInfo);
     });
 
-    // Flush to ensure discovery starts
-    this.emit('debug', 'Searching for peer...');
-    await this.swarm.flush();
-    this.emit('debug', 'Search complete, waiting for connection...');
+    const topic = HyperswarmTransport.sessionToTopic(sessionId);
+    this.currentTopic = topic;
+    const topicHex = b4a.toString(topic, 'hex').slice(0, 8);
+    this.emit('debug', `Joining topic ${topicHex} (looking for initiator)...`);
+
+    // Join as server+client, lookup DHT for initiator
+    this.currentDiscovery = this.swarm.join(topic, { server: true, client: true });
+    await this.currentDiscovery.flushed();
+    this.emit('debug', 'DHT lookup complete, waiting for connection...');
+
+    // Start retry loop — re-lookup periodically
+    this.startRetryLoop();
   }
 
   /** Send a chat message over P2P */
@@ -73,10 +103,12 @@ export class HyperswarmTransport extends EventEmitter {
     this.connection.write(msg + '\n');
   }
 
-  /** Clean up: leave topic, destroy connection */
+  /** Clean up: leave topic, destroy connection, stop retries */
   async cleanup(): Promise<void> {
+    this.stopRetryLoop();
     this.handshakeCompleted = false;
     this.expectedSessionId = null;
+    this.currentDiscovery = null;
 
     if (this.connection) {
       this.connection.destroy();
@@ -100,6 +132,29 @@ export class HyperswarmTransport extends EventEmitter {
 
   get isConnected(): boolean {
     return this.handshakeCompleted && this.connection !== null;
+  }
+
+  private startRetryLoop(): void {
+    this.stopRetryLoop();
+    this.retryTimer = setInterval(async () => {
+      if (this.handshakeCompleted || !this.swarm || !this.currentDiscovery) {
+        this.stopRetryLoop();
+        return;
+      }
+      this.emit('debug', 'Retrying peer discovery...');
+      try {
+        await this.currentDiscovery.refresh({ client: true, server: true });
+      } catch {
+        // ignore refresh errors
+      }
+    }, 5_000);
+  }
+
+  private stopRetryLoop(): void {
+    if (this.retryTimer) {
+      clearInterval(this.retryTimer);
+      this.retryTimer = null;
+    }
   }
 
   private handleConnection(conn: any, _peerInfo: any): void {
@@ -159,6 +214,7 @@ export class HyperswarmTransport extends EventEmitter {
         return;
       }
       this.handshakeCompleted = true;
+      this.stopRetryLoop();
       this.emit('debug', `Handshake OK: ${msg.nickname}#${msg.tag}`);
       this.emit('connected', {
         nickname: msg.nickname,
