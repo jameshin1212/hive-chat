@@ -15,8 +15,12 @@ RUN npm -w packages/server run build
 FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production
+# Copy built server
 COPY --from=builder /app/packages/server/dist ./dist
 COPY --from=builder /app/packages/server/package.json ./
+# Copy node_modules (external deps: ws, geoip-lite, etc.)
 COPY --from=builder /app/node_modules ./node_modules
+# Copy shared package (workspace symlinks don't work in production)
+COPY --from=builder /app/packages/shared ./node_modules/@hivechat/shared
 EXPOSE 3456
 CMD ["node", "dist/index.mjs"]
