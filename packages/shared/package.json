@@ -4,10 +4,20 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./src/index.ts"
+      "import": {
+        "types": "./src/index.ts",
+        "default": "./dist/index.mjs"
+      }
     }
   },
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --out-dir dist"
+  },
   "files": [
-    "src"
-  ]
+    "src",
+    "dist"
+  ],
+  "dependencies": {
+    "zod": "^3.24"
+  }
 }

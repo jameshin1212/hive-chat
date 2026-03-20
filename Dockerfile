@@ -8,7 +8,8 @@ COPY packages/client/package.json packages/client/
 RUN npm ci --workspace=packages/server --workspace=packages/shared --include-workspace-root
 COPY packages/shared/ packages/shared/
 COPY packages/server/ packages/server/
-RUN npm -w packages/server run build
+# Build shared first (generates dist/index.mjs), then server
+RUN npm -w packages/shared run build && npm -w packages/server run build
 
 # Stage 2: Production — keep full workspace so @hivechat/shared resolves
 FROM node:20-slim
