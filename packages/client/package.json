@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "dev": "tsx src/index.tsx",
-    "build": "tsdown src/index.tsx --format esm --out-dir dist --external hyperswarm --external b4a --external hypercore-crypto --external sodium-native --external sodium-universal --external hyperdht --external dht-rpc --external @hyperswarm/dht",
+    "build": "tsdown",
     "test": "vitest run"
   },
   "dependencies": {
