@@ -77,7 +77,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     }
     if (showSuggestions) {
       const filtered = filterCommands(currentInput);
-      return Math.min(filtered.length, 8) + (filtered.length > 8 ? 2 : 0);
+      return Math.min(filtered.length, 8) + (filtered.length > 8 ? 2 : 0) + 2; // +2 for Box border
     }
     return 0;
   })();
@@ -159,32 +159,6 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       setShowSuggestions(false);
     }
   }, []);
-
-  const handleKeyIntercept = useCallback((_input: string, key: Key, setText: (t: string) => void): boolean => {
-    if (!showSuggestions) return false;
-    const filtered = filterCommands(currentInput);
-    if (key.upArrow) {
-      setSuggestionIndex(prev => prev <= 0 ? filtered.length - 1 : prev - 1);
-      return true;
-    }
-    if (key.downArrow) {
-      setSuggestionIndex(prev => prev >= filtered.length - 1 ? 0 : prev + 1);
-      return true;
-    }
-    if (key.return && filtered.length > 0) {
-      const selected = filtered[suggestionIndex];
-      if (selected) {
-        setText(selected.name + ' ');
-        setShowSuggestions(false);
-      }
-      return true;
-    }
-    if (key.escape) {
-      setShowSuggestions(false);
-      return true;
-    }
-    return false;
-  }, [showSuggestions, currentInput, suggestionIndex]);
 
   const handleSubmit = useCallback((text: string) => {
     const parsed = parseInput(text);
@@ -290,6 +264,33 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       setMessages(prev => [...prev, msg].slice(-MAX_MESSAGES));
     }
   }, [identity, gracefulExit, addSystemMessage, refreshUsers, isInChat, chatStatus, partner, sendMessage, leaveChat, refreshFriendStatuses]);
+
+  const handleKeyIntercept = useCallback((_input: string, key: Key, setText: (t: string) => void): boolean => {
+    if (!showSuggestions) return false;
+    const filtered = filterCommands(currentInput);
+    if (key.upArrow) {
+      setSuggestionIndex(prev => prev <= 0 ? filtered.length - 1 : prev - 1);
+      return true;
+    }
+    if (key.downArrow) {
+      setSuggestionIndex(prev => prev >= filtered.length - 1 ? 0 : prev + 1);
+      return true;
+    }
+    if (key.return && filtered.length > 0) {
+      const selected = filtered[suggestionIndex];
+      if (selected) {
+        setText('');
+        setShowSuggestions(false);
+        handleSubmit(selected.name);
+      }
+      return true;
+    }
+    if (key.escape) {
+      setShowSuggestions(false);
+      return true;
+    }
+    return false;
+  }, [showSuggestions, currentInput, suggestionIndex, handleSubmit]);
 
   // Determine which messages to display
   const displayMessages = isInChat ? chatMessages : messages;
