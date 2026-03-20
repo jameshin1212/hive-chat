@@ -52,7 +52,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 ### v1.3 Infrastructure Optimization
 
 - [x] **Phase 14: Server Optimization** - getNearbyUsers 공간 인덱싱 + broadcastToRegistered 지역 기반 전송 + notifyFriendSubscribers 역 인덱스 (completed 2026-03-20)
-- [ ] **Phase 15: Deploy & Verification** - 최적화된 서버 Fly.io 배포 + 크로스 네트워크 P2P 테스트
+- [x] **Phase 15: Deploy & Verification** - 최적화된 서버 Fly.io 배포 + 크로스 네트워크 P2P 테스트 (completed 2026-03-21)
 
 ## Phase Details
 
@@ -101,9 +101,9 @@ Plans:
 | 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
 | 12. npm Publish | v1.2 | 2/2 | Complete | 2026-03-20 |
 | 13. Documentation | v1.2 | 1/1 | Complete | 2026-03-20 |
-| 14. Server Optimization | 2/2 | Complete    | 2026-03-20 | - |
-| 15. Deploy & Verification | v1.3 | 0/? | Not started | - |
+| 14. Server Optimization | v1.3 | 2/2 | Complete | 2026-03-20 |
+| 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-21 (v1.3 Phase 14 planned)*
+*Updated: 2026-03-21 (v1.3 complete)*

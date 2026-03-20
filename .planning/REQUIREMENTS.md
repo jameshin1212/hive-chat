@@ -61,8 +61,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SOPT-01 | Phase 14 | Complete |
 | SOPT-02 | Phase 14 | Complete |
 | SOPT-03 | Phase 14 | Complete |
-| DPLY-01 | Phase 15 | Pending |
-| DPLY-02 | Phase 15 | Pending |
+| DPLY-01 | Phase 15 | Complete |
+| DPLY-02 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 5 total
@@ -71,4 +71,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after roadmap creation*
+*Last updated: 2026-03-21 after v1.3 complete*
