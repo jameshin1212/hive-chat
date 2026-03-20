@@ -81,7 +81,10 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     }
     return 0;
   })();
-  const messageAreaHeight = Math.max(1, rows - 4 - overlayHeight);
+  // Cap overlay height so input area is always visible (at least messageArea 1 row)
+  const maxOverlayHeight = Math.max(0, rows - 5);
+  const effectiveOverlayHeight = Math.min(overlayHeight, maxOverlayHeight);
+  const messageAreaHeight = Math.max(1, rows - 4 - effectiveOverlayHeight);
 
   const addSystemMessage = useCallback((content: string, kind?: 'transition') => {
     const sysMsg: ChatMessage = {
@@ -380,6 +383,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         onlineFriendCount={onlineFriendCount}
         friendCount={friendCount}
         transportType={transportType}
+        breakpoint={breakpoint}
       />
       <Box>
         <Text color={theme.ui.separator}>{separator}</Text>
