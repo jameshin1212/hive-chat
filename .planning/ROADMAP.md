@@ -60,7 +60,11 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Goal**: 서버의 broadcast/presence/friend-notify가 전체 순회(O(N)) 없이 지역 기반으로 동작하여 10K-1M 사용자 규모에서도 효율적이다
 **Depends on**: Nothing (기존 서버 코드 기반)
 **Requirements**: SOPT-01, SOPT-02, SOPT-03
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 14-01-PLAN.md -- Geohash 공간 인덱스 + 친구 역 인덱스
+- [ ] 14-02-PLAN.md -- 지역 기반 broadcast (broadcastToNearby)
 
 **Success Criteria** (what must be TRUE):
   1. getNearbyUsers가 geohash 기반 공간 인덱스를 사용하여 전체 Map 순회 없이 반경 내 사용자를 반환한다
@@ -97,9 +101,9 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
 | 12. npm Publish | v1.2 | 2/2 | Complete | 2026-03-20 |
 | 13. Documentation | v1.2 | 1/1 | Complete | 2026-03-20 |
-| 14. Server Optimization | v1.3 | 0/? | Not started | - |
+| 14. Server Optimization | v1.3 | 0/2 | Not started | - |
 | 15. Deploy & Verification | v1.3 | 0/? | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-21 (v1.3 roadmap added)*
+*Updated: 2026-03-21 (v1.3 Phase 14 planned)*
