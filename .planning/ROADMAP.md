@@ -87,7 +87,10 @@ Plans:
 **Goal**: 첫 실행 사용자가 닉네임/AI CLI 설정 과정에서 현재 위치와 전체 진행 상태를 명확히 인지하며, 터미널 크기에 관계없이 깔끔한 UI를 본다
 **Depends on**: Phase 16 (useTerminalSize로 배너 적응형 표시, useInput isActive로 step 전환 안전성)
 **Requirements**: ONBD-01, ONBD-02, ONBD-03
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 17-01-PLAN.md — AsciiBanner 적응형 렌더링 + OnboardingScreen 통합 개선
 
 **Success Criteria** (what must be TRUE):
   1. 온보딩 각 단계에서 "Step 1/2", "Step 2/2" 형태의 진행 indicator가 표시된다
@@ -142,10 +145,10 @@ Plans:
 | 14. Server Optimization | v1.3 | 2/2 | Complete | 2026-03-20 |
 | 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
 | 16. Shared Infrastructure | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
-| 17. Onboarding Polish | v1.4 | 0/? | Not started | - |
+| 17. Onboarding Polish | v1.4 | 0/1 | Planning | - |
 | 18. Welcome Section | v1.4 | 0/? | Not started | - |
 | 19. Slash Command & Responsive Finish | v1.4 | 0/? | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-21 (v1.4 Phase 16 planned)*
+*Updated: 2026-03-21 (v1.4 Phase 17 planned)*
