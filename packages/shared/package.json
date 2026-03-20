@@ -1,5 +1,5 @@
 {
-  "name": "@cling-talk/shared",
+  "name": "@hivechat/shared",
   "version": "0.1.0",
   "type": "module",
   "exports": {

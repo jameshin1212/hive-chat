@@ -1,5 +1,5 @@
 {
-  "name": "cling-talk-monorepo",
+  "name": "hivechat-monorepo",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -14,7 +14,7 @@
     "dev": "npm -w packages/server run dev & sleep 1 && npm -w packages/client run dev",
     "dev:server": "npm -w packages/server run dev",
     "dev:client": "npm -w packages/client run dev",
-    "dev:client2": "CLING_TALK_PROFILE=test2 npm -w packages/client run dev"
+    "dev:client2": "HIVECHAT_PROFILE=test2 npm -w packages/client run dev"
   },
   "devDependencies": {
     "concurrently": "^9",

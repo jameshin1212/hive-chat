@@ -1,9 +1,9 @@
 {
-  "name": "cling-talk",
+  "name": "hivechat",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "cling-talk": "./bin/cling-talk.js"
+    "hivechat": "./bin/hivechat.js"
   },
   "files": [
     "bin",
@@ -15,7 +15,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@cling-talk/shared": "*",
+    "@hivechat/shared": "*",
     "@inkjs/ui": "^2.0.0",
     "b4a": "^1.8.0",
     "chalk": "^5.6.2",
