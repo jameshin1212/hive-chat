@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Deploy & Publish
 status: unknown
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-03-20T03:49:37.576Z"
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-03-20T03:54:53.836Z"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 11 (server-deploy) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Accumulated Context
 
@@ -35,6 +35,8 @@ Plan: 2 of 3
 - [v1.2]: Phase 순서: Deploy(11) -> Publish(12) -> Docs(13) -- 서버 URL 확정 후 번들에 포함
 - [Phase 11]: DEFAULT_SERVER_URL changed to wss://hivechat.fly.dev (production WebSocket endpoint)
 - [Phase 11]: Package scope: @hivechat/* for all workspace packages
+- [Phase 11]: Multi-stage Dockerfile: Node.js 20 build + minimal production image with geoip-lite runtime deps
+- [Phase 11]: Fly.io: auto_stop_machines=stop, shared-cpu-1x/256mb, nrt primary region
 
 ### Pending Todos
 
@@ -46,6 +48,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T03:49:37.567Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-20T03:54:53.828Z
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None
