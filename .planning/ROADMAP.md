@@ -71,7 +71,11 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Goal**: 나머지 모든 UI 작업의 기반이 되는 반응형 hook, 키 이벤트 안전성, 빌드 상수가 준비되어 모든 컴포넌트가 터미널 크기에 반응할 수 있다
 **Depends on**: Nothing (v1.3 완료 기반)
 **Requirements**: INFR-01, INFR-02, INFR-03, RESP-01
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — useTerminalSize hook + breakpoint 상수 + ChatScreen 통합
+- [ ] 16-02-PLAN.md — AiCliSelector isActive 수정 + 빌드타임 버전 주입
 
 **Success Criteria** (what must be TRUE):
   1. 터미널 크기 변경 시 모든 화면이 compact(<80)/standard(80-120)/wide(>120) breakpoint에 따라 즉시 반응한다
@@ -137,11 +141,11 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 13. Documentation | v1.2 | 1/1 | Complete | 2026-03-20 |
 | 14. Server Optimization | v1.3 | 2/2 | Complete | 2026-03-20 |
 | 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
-| 16. Shared Infrastructure | v1.4 | 0/? | Not started | - |
+| 16. Shared Infrastructure | v1.4 | 0/2 | Not started | - |
 | 17. Onboarding Polish | v1.4 | 0/? | Not started | - |
 | 18. Welcome Section | v1.4 | 0/? | Not started | - |
 | 19. Slash Command & Responsive Finish | v1.4 | 0/? | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-21 (v1.4 roadmap added)*
+*Updated: 2026-03-21 (v1.4 Phase 16 planned)*
