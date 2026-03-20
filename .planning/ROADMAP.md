@@ -61,7 +61,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 ### v1.4 UI/UX Polish
 
 - [x] **Phase 16: Shared Infrastructure** - useTerminalSize hook, useInput 충돌 방어, 빌드타임 버전 주입, breakpoint 시스템 (completed 2026-03-20)
-- [ ] **Phase 17: Onboarding Polish** - step indicator, 시각 개선, 적응형 ASCII 배너
+- [x] **Phase 17: Onboarding Polish** - step indicator, 시각 개선, 적응형 ASCII 배너 (completed 2026-03-20)
 - [ ] **Phase 18: Welcome Section** - 프로필 카드, 버전/ASCII 배너, Tips, 자동 dismiss
 - [ ] **Phase 19: Slash Command & Responsive Finish** - 슬래시 명령어 오버레이, 채팅 요청 UX, 입력 영역 최소 높이, StatusBar 축약
 
@@ -95,7 +95,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. 온보딩 각 단계에서 "Step 1/2", "Step 2/2" 형태의 진행 indicator가 표시된다
   2. 닉네임 입력, AI CLI 선택 영역이 Box border로 시각적으로 구분되어 입력 영역이 명확하다
-  3. 넓은 터미널(>=75col)에서 figlet ASCII 배너가 표시되고, 좁은 터미널(<50col)에서 plain text로 graceful degradation된다
+  3. 넓은 터미널(>=80col)에서 figlet ASCII 배너가 표시되고, 좁은 터미널(<80col)에서 plain text로 graceful degradation된다
   4. 한글 IME 조합(ㅎ+ㅏ+ㄴ=한)이 온보딩 UI 변경 후에도 정상 동작한다 (regression 없음)
 
 ### Phase 18: Welcome Section
@@ -145,7 +145,7 @@ Plans:
 | 14. Server Optimization | v1.3 | 2/2 | Complete | 2026-03-20 |
 | 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
 | 16. Shared Infrastructure | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
-| 17. Onboarding Polish | v1.4 | 0/1 | Planning | - |
+| 17. Onboarding Polish | 1/1 | Complete   | 2026-03-20 | - |
 | 18. Welcome Section | v1.4 | 0/? | Not started | - |
 | 19. Slash Command & Responsive Finish | v1.4 | 0/? | Not started | - |
 

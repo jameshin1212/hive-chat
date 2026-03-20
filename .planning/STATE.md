@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: UI/UX Polish
 status: unknown
-stopped_at: Phase 17 context gathered
-last_updated: "2026-03-20T19:13:42.397Z"
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-03-20T19:28:53.554Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 16 — shared-infrastructure
+**Current focus:** Phase 17 — onboarding-polish
 
 ## Current Position
 
-Phase: 16 (shared-infrastructure) — EXECUTING
-Plan: 2 of 2 (complete)
+Phase: 17 (onboarding-polish) — COMPLETE
+Plan: 1 of 1 (all complete)
 
 ## Accumulated Context
 
@@ -45,6 +45,9 @@ Plan: 2 of 2 (complete)
 - [v1.4]: AiCliSelector isActive default true for backward compatibility
 - [v1.4]: readFileSync + import.meta.url로 tsdown define에서 package.json 버전 주입
 - [v1.4]: Breakpoint 3단계 -- compact(<80), standard(80-120), wide(>=120), getBreakpoint 유틸 함수 export
+- [v1.4]: welcome step 제거, 첫 화면에서 바로 닉네임 입력 가능하도록 온보딩 통합
+- [v1.4]: Box borderStyle single + cyan으로 온보딩 입력 영역 시각 구분
+- [v1.4]: 메인 화면 배너 적용은 Phase 18로 이관
 
 ### Pending Todos
 
@@ -57,6 +60,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T19:13:42.395Z
-Stopped at: Phase 17 context gathered
-Resume with: `/gsd:execute-phase 17`
+Last session: 2026-03-20T19:28:53.552Z
+Stopped at: Completed 17-01-PLAN.md
+Resume with: `/gsd:plan-phase 18`

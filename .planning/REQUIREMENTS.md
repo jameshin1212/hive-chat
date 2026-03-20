@@ -15,9 +15,9 @@ Requirements for UI/UX Polish. 온보딩 개선, 웰컴 섹션, 슬래시 명령
 
 ### Onboarding Polish
 
-- [ ] **ONBD-01**: 온보딩 화면에 step indicator 표시 (1/2, 2/2)
-- [ ] **ONBD-02**: 온보딩 화면 Box border/style 시각 개선
-- [ ] **ONBD-03**: 터미널 폭에 따라 ASCII 배너 적응형 표시 (축소/숨김)
+- [x] **ONBD-01**: 온보딩 화면에 step indicator 표시 (1/2, 2/2)
+- [x] **ONBD-02**: 온보딩 화면 Box border/style 시각 개선
+- [x] **ONBD-03**: 터미널 폭에 따라 ASCII 배너 적응형 표시 (축소/숨김)
 
 ### Welcome Section
 
@@ -94,9 +94,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFR-02 | Phase 16 | Complete |
 | INFR-03 | Phase 16 | Complete |
 | RESP-01 | Phase 16 | Complete |
-| ONBD-01 | Phase 17 | Pending |
-| ONBD-02 | Phase 17 | Pending |
-| ONBD-03 | Phase 17 | Pending |
+| ONBD-01 | Phase 17 | Complete |
+| ONBD-02 | Phase 17 | Complete |
+| ONBD-03 | Phase 17 | Complete |
 | WELC-01 | Phase 18 | Pending |
 | WELC-02 | Phase 18 | Pending |
 | WELC-03 | Phase 18 | Pending |
