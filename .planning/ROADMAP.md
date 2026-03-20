@@ -75,7 +75,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 Plans:
 - [ ] 16-01-PLAN.md — useTerminalSize hook + breakpoint 상수 + ChatScreen 통합
-- [ ] 16-02-PLAN.md — AiCliSelector isActive 수정 + 빌드타임 버전 주입
+- [x] 16-02-PLAN.md — AiCliSelector isActive 수정 + 빌드타임 버전 주입
 
 **Success Criteria** (what must be TRUE):
   1. 터미널 크기 변경 시 모든 화면이 compact(<80)/standard(80-120)/wide(>120) breakpoint에 따라 즉시 반응한다
@@ -141,7 +141,7 @@ Plans:
 | 13. Documentation | v1.2 | 1/1 | Complete | 2026-03-20 |
 | 14. Server Optimization | v1.3 | 2/2 | Complete | 2026-03-20 |
 | 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
-| 16. Shared Infrastructure | v1.4 | 0/2 | Not started | - |
+| 16. Shared Infrastructure | v1.4 | 2/2 | Complete | 2026-03-20 |
 | 17. Onboarding Polish | v1.4 | 0/? | Not started | - |
 | 18. Welcome Section | v1.4 | 0/? | Not started | - |
 | 19. Slash Command & Responsive Finish | v1.4 | 0/? | Not started | - |

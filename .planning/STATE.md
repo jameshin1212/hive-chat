@@ -2,15 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: UI/UX Polish
-status: planning
-stopped_at: Phase 16 context gathered
-last_updated: "2026-03-20T18:48:04.672Z"
-last_activity: 2026-03-21 -- Roadmap created for v1.4
+status: executing
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-03-20T18:58:17Z"
 progress:
   total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # Project State
@@ -20,18 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** v1.4 UI/UX Polish -- 온보딩, 웰컴 섹션, 슬래시 명령어 UX, 반응형 레이아웃
+**Current focus:** Phase 16 — shared-infrastructure
 
 ## Current Position
 
-Phase: 16 - Shared Infrastructure (not started)
-Plan: --
-Status: Roadmap complete, ready for planning
-Last activity: 2026-03-21 -- Roadmap created for v1.4
-
-```
-v1.4 Progress: [____] 0/4 phases
-```
+Phase: 16 (shared-infrastructure) — EXECUTING
+Plan: 2 of 2 (complete)
 
 ## Accumulated Context
 
@@ -49,6 +42,8 @@ v1.4 Progress: [____] 0/4 phases
 - [v1.4]: 새 dependency 없이 기존 stack(Ink 6, figlet, chalk)으로 모든 UI 개선 구현
 - [v1.4]: WelcomeSection은 별도 Screen이 아닌 ChatScreen 내부 lobby 상태 조건부 렌더링
 - [v1.4]: @inkjs/ui Ink 6 호환성 런타임 검증 필요 (Ink 5 대상 출시)
+- [v1.4]: AiCliSelector isActive default true for backward compatibility
+- [v1.4]: readFileSync + import.meta.url로 tsdown define에서 package.json 버전 주입
 
 ### Pending Todos
 
@@ -61,6 +56,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T18:48:04.671Z
-Stopped at: Phase 16 context gathered
-Resume with: `/gsd:plan-phase 16`
+Last session: 2026-03-20T18:58:17Z
+Stopped at: Completed 16-02-PLAN.md
+Resume with: `/gsd:execute-phase 17`
