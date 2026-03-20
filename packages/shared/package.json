@@ -4,10 +4,7 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": {
-        "types": "./src/index.ts",
-        "default": "./dist/index.mjs"
-      }
+      "import": "./src/index.ts"
     }
   },
   "scripts": {

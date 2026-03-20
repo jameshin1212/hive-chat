@@ -8,17 +8,20 @@ COPY packages/client/package.json packages/client/
 RUN npm ci --workspace=packages/server --workspace=packages/shared --include-workspace-root
 COPY packages/shared/ packages/shared/
 COPY packages/server/ packages/server/
-# Build shared first (generates dist/index.mjs), then server
-RUN npm -w packages/shared run build && npm -w packages/server run build
+# Build shared (generates dist/index.mjs), then patch exports for production
+RUN npm -w packages/shared run build \
+    && node -e "const p=JSON.parse(require('fs').readFileSync('packages/shared/package.json','utf8')); p.exports={'.':{'import':'./dist/index.mjs'}}; require('fs').writeFileSync('packages/shared/package.json',JSON.stringify(p,null,2));"
+# Build server
+RUN npm -w packages/server run build
 
-# Stage 2: Production — keep full workspace so @hivechat/shared resolves
+# Stage 2: Production
 FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production
-# Copy everything needed for workspace resolution
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/package.json
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/server/package.json ./packages/server/
 EXPOSE 3456
