@@ -42,7 +42,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 ### v1.2 Deploy & Publish
 
 - [x] **Phase 11: Server Deploy** - HiveChat 리네이밍 + Fly.io 배포 + DEFAULT_SERVER_URL 변경 + 동작 검증 (completed 2026-03-20)
-- [ ] **Phase 12: npm Publish** - 패키지 메타데이터 완비 + 번들 크기 최적화 + npm publish
+- [x] **Phase 12: npm Publish** - 패키지 메타데이터 완비 + 번들 크기 최적화 + npm publish (completed 2026-03-20)
 - [ ] **Phase 13: Documentation** - README.md 작성 (설치/실행/기능/스크린샷)
 
 ## Phase Details
@@ -68,7 +68,7 @@ Plans:
 **Goal**: `npx hivechat` 한 줄로 누구나 즉시 실행할 수 있다
 **Depends on**: Phase 11 (배포된 서버 URL이 번들에 포함되어야 함)
 **Requirements**: PUB-01, PUB-02, PUB-03
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 12-01-PLAN.md — package.json 메타데이터 완비 + tsdown config 정리 + 빌드 검증
@@ -105,7 +105,7 @@ Plans:
 | 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
 | 10. Command Cleanup | v1.1 | 1/1 | Complete | 2026-03-19 |
 | 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
-| 12. npm Publish | 1/2 | In Progress|  | - |
+| 12. npm Publish | 2/2 | Complete    | 2026-03-20 | - |
 | 13. Documentation | v1.2 | 0/? | Not started | - |
 
 ---
