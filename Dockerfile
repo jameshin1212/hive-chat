@@ -1,7 +1,7 @@
 # Stage 1: Build
 FROM node:20-slim AS builder
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json tsconfig.json ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/server/package.json packages/server/
 # client package.json needed for workspace resolution but not installed
