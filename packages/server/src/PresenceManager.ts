@@ -1,5 +1,5 @@
-import { STALE_TIMEOUT_MS } from '@cling-talk/shared';
-import type { NearbyUser } from '@cling-talk/shared';
+import { STALE_TIMEOUT_MS } from '@hivechat/shared';
+import type { NearbyUser } from '@hivechat/shared';
 import type { UserRecord } from './types.js';
 import { findNearbyUsers } from './GeoLocationService.js';
 

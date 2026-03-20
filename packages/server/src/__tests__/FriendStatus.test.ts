@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { WebSocket } from 'ws';
 import { SignalingServer } from '../SignalingServer.js';
-import { MessageType, PROTOCOL_VERSION } from '@cling-talk/shared';
-import type { ServerMessage } from '@cling-talk/shared';
+import { MessageType, PROTOCOL_VERSION } from '@hivechat/shared';
+import type { ServerMessage } from '@hivechat/shared';
 
 // --- Helpers ---
 

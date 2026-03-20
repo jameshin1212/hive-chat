@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { NearbyUser } from '@cling-talk/shared';
-import { RADIUS_OPTIONS, DEFAULT_RADIUS_KM } from '@cling-talk/shared';
+import type { NearbyUser } from '@hivechat/shared';
+import { RADIUS_OPTIONS, DEFAULT_RADIUS_KM } from '@hivechat/shared';
 import type { ConnectionManager } from '../network/ConnectionManager.js';
 
 export function useNearbyUsers(client: ConnectionManager | null) {

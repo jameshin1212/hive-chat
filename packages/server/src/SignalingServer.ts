@@ -6,8 +6,8 @@ import {
   MessageType,
   HEARTBEAT_INTERVAL_MS,
   DEFAULT_RADIUS_KM,
-} from '@cling-talk/shared';
-import type { ServerMessage, NearbyUser } from '@cling-talk/shared';
+} from '@hivechat/shared';
+import type { ServerMessage, NearbyUser } from '@hivechat/shared';
 import { PresenceManager } from './PresenceManager.js';
 import { ChatSessionManager } from './ChatSessionManager.js';
 import { lookupIp, normalizeIp } from './GeoLocationService.js';

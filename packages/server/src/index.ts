@@ -1,5 +1,5 @@
 import { SignalingServer } from './SignalingServer.js';
-import { DEFAULT_SERVER_PORT } from '@cling-talk/shared';
+import { DEFAULT_SERVER_PORT } from '@hivechat/shared';
 
 const PORT = parseInt(process.env['PORT'] || String(DEFAULT_SERVER_PORT), 10);
 const server = new SignalingServer(PORT);

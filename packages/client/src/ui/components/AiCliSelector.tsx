@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { AI_CLI_OPTIONS, type AiCli } from '@cling-talk/shared';
+import { AI_CLI_OPTIONS, type AiCli } from '@hivechat/shared';
 import { theme } from '../theme.js';
 
 interface AiCliSelectorProps {

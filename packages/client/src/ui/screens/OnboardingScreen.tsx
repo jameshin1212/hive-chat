@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Text } from 'ink';
-import type { Identity, AiCli } from '@cling-talk/shared';
-import { NICKNAME_REGEX } from '@cling-talk/shared';
+import type { Identity, AiCli } from '@hivechat/shared';
+import { NICKNAME_REGEX } from '@hivechat/shared';
 import { saveIdentity } from '../../identity/IdentityManager.js';
 import { AsciiBanner } from '../components/AsciiBanner.js';
 import { IMETextInput } from '../components/IMETextInput.js';

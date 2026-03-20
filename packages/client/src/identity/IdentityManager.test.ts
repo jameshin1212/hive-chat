@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { generateTag, saveIdentity, loadIdentity, clearIdentity, formatIdentityDisplay, updateIdentity } from './IdentityManager.js';
-import { identitySchema, AI_CLI_OPTIONS } from '@cling-talk/shared';
+import { identitySchema, AI_CLI_OPTIONS } from '@hivechat/shared';
 
 afterEach(() => {
   clearIdentity();

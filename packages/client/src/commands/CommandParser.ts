@@ -1,4 +1,4 @@
-import type { ParsedInput } from '@cling-talk/shared';
+import type { ParsedInput } from '@hivechat/shared';
 
 export const COMMANDS = {
   '/exit': { description: 'Exit Cling Talk' },

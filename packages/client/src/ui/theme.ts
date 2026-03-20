@@ -1,4 +1,4 @@
-import { USER_COLORS, THEME_COLORS } from '@cling-talk/shared';
+import { USER_COLORS, THEME_COLORS } from '@hivechat/shared';
 
 export const theme = {
   text: {

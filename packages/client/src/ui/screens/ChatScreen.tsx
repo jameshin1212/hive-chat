@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
-import type { Identity, ChatMessage } from '@cling-talk/shared';
-import { DEFAULT_TERMINAL_WIDTH, MAX_MESSAGES } from '@cling-talk/shared';
-import { parseNickTag } from '@cling-talk/shared';
+import type { Identity, ChatMessage } from '@hivechat/shared';
+import { DEFAULT_TERMINAL_WIDTH, MAX_MESSAGES } from '@hivechat/shared';
+import { parseNickTag } from '@hivechat/shared';
 import { parseInput, isKnownCommand, COMMANDS, filterCommands } from '../../commands/CommandParser.js';
 import { useGracefulExit } from '../../hooks/useGracefulExit.js';
 import { useServerConnection } from '../../hooks/useServerConnection.js';

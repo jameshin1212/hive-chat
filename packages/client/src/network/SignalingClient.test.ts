@@ -5,8 +5,8 @@ import {
   PROTOCOL_VERSION,
   RECONNECT_BASE_DELAY_MS,
   RECONNECT_MAX_DELAY_MS,
-} from '@cling-talk/shared';
-import type { Identity } from '@cling-talk/shared';
+} from '@hivechat/shared';
+import type { Identity } from '@hivechat/shared';
 
 // Mock WebSocket before importing SignalingClient
 class MockWebSocket extends EventEmitter {

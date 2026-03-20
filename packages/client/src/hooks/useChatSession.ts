@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ConnectionManager } from '../network/ConnectionManager.js';
-import type { NearbyUser } from '@cling-talk/shared';
-import type { ChatSessionStatus, ChatMessage, Identity } from '@cling-talk/shared';
-import { CHAT_REQUEST_TIMEOUT_MS, MAX_MESSAGES } from '@cling-talk/shared';
+import type { NearbyUser } from '@hivechat/shared';
+import type { ChatSessionStatus, ChatMessage, Identity } from '@hivechat/shared';
+import { CHAT_REQUEST_TIMEOUT_MS, MAX_MESSAGES } from '@hivechat/shared';
 
 export interface IncomingRequest {
   sessionId: string;

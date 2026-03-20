@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { identitySchema, type Identity, type AiCli } from '@cling-talk/shared';
+import { identitySchema, type Identity, type AiCli } from '@hivechat/shared';
 import { appConfig } from '../config/AppConfig.js';
 
 export function generateTag(): string {

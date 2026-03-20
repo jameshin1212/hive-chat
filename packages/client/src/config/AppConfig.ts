@@ -1,5 +1,5 @@
 import Conf from 'conf';
-import type { Identity, FriendRecord } from '@cling-talk/shared';
+import type { Identity, FriendRecord } from '@hivechat/shared';
 
 // CLING_TALK_PROFILE env allows multiple identities for testing
 // Usage: CLING_TALK_PROFILE=test2 npm run dev:client

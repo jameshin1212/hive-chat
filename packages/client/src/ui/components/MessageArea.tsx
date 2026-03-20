@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import stringWidth from 'string-width';
-import type { ChatMessage, Identity } from '@cling-talk/shared';
-import { DEFAULT_TERMINAL_WIDTH } from '@cling-talk/shared';
+import type { ChatMessage, Identity } from '@hivechat/shared';
+import { DEFAULT_TERMINAL_WIDTH } from '@hivechat/shared';
 import { theme, getUserColor } from '../theme.js';
 import { TransitionLine } from './TransitionLine.js';
 

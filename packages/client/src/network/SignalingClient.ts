@@ -6,8 +6,8 @@ import {
   HEARTBEAT_INTERVAL_MS,
   RECONNECT_BASE_DELAY_MS,
   RECONNECT_MAX_DELAY_MS,
-} from '@cling-talk/shared';
-import type { Identity, ClientMessage, ServerMessage } from '@cling-talk/shared';
+} from '@hivechat/shared';
+import type { Identity, ClientMessage, ServerMessage } from '@hivechat/shared';
 
 export class SignalingClient extends EventEmitter {
   private ws: WebSocket | null = null;

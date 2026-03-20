@@ -1,5 +1,5 @@
 import { appConfig } from '../config/AppConfig.js';
-import type { FriendRecord } from '@cling-talk/shared';
+import type { FriendRecord } from '@hivechat/shared';
 
 export function getFriends(): FriendRecord[] {
   return appConfig.get('friends') ?? [];

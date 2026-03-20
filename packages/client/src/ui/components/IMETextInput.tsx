@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import type { Key } from 'ink';
 import stringWidth from 'string-width';
-import { DEFAULT_TERMINAL_WIDTH } from '@cling-talk/shared';
+import { DEFAULT_TERMINAL_WIDTH } from '@hivechat/shared';
 import { theme } from '../theme.js';
 
 const PROMPT = '> ';

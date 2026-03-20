@@ -4,7 +4,7 @@ import { loadIdentity, formatIdentityDisplay } from '../identity/IdentityManager
 import { OnboardingScreen } from './screens/OnboardingScreen.js';
 import { ChatScreen } from './screens/ChatScreen.js';
 import { AsciiBanner } from './components/AsciiBanner.js';
-import type { Identity } from '@cling-talk/shared';
+import type { Identity } from '@hivechat/shared';
 import { theme } from './theme.js';
 
 export function App() {

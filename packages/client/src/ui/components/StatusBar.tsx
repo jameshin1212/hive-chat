@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { Identity, TransportType } from '@cling-talk/shared';
+import type { Identity, TransportType } from '@hivechat/shared';
 import type { ConnectionStatus } from '../../hooks/useServerConnection.js';
 import { theme } from '../theme.js';
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
-import type { NearbyUser } from '@cling-talk/shared';
+import type { NearbyUser } from '@hivechat/shared';
 import { theme } from '../theme.js';
 
 interface UserListProps {

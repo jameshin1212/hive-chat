@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events';
 import type { SignalingClient } from './SignalingClient.js';
 import { HyperswarmTransport } from './HyperswarmTransport.js';
-import type { TransportType } from '@cling-talk/shared';
-import { P2P_UPGRADE_TIMEOUT_MS } from '@cling-talk/shared';
+import type { TransportType } from '@hivechat/shared';
+import { P2P_UPGRADE_TIMEOUT_MS } from '@hivechat/shared';
 
 export class ConnectionManager extends EventEmitter {
   private signalingClient: SignalingClient;

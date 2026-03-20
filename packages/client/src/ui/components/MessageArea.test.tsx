@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calcVisibleMessages } from './MessageArea.js';
-import type { ChatMessage } from '@cling-talk/shared';
+import type { ChatMessage } from '@hivechat/shared';
 
 function makeMsgs(count: number): ChatMessage[] {
   return Array.from({ length: count }, (_, i) => ({

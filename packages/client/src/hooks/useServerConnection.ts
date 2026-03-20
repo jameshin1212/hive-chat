@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import type { Identity, TransportType } from '@cling-talk/shared';
-import { DEFAULT_SERVER_URL } from '@cling-talk/shared';
+import type { Identity, TransportType } from '@hivechat/shared';
+import { DEFAULT_SERVER_URL } from '@hivechat/shared';
 import { SignalingClient } from '../network/SignalingClient.js';
 import { ConnectionManager } from '../network/ConnectionManager.js';
 
