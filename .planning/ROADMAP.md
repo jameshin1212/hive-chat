@@ -84,11 +84,15 @@ Plans:
 **Goal**: 처음 보는 사용자가 README만 읽고 설치부터 채팅까지 할 수 있다
 **Depends on**: Phase 11, Phase 12 (설치 명령어와 서버 정보가 확정되어야 함)
 **Requirements**: DOC-01
+**Plans:** 1 plan
+
+Plans:
+- [ ] 13-01-PLAN.md -- README.md 작성 (설치/실행/기능/스크린샷 placeholder)
+
 **Success Criteria** (what must be TRUE):
   1. README에 `npx hivechat` 설치/실행 방법이 명시되어 있다
   2. 주요 기능(근처 사용자 발견, 1:1 채팅, 친구 추가, P2P)이 설명되어 있다
   3. 실제 동작 스크린샷 또는 GIF가 포함되어 있다
-**Plans**: TBD
 
 ## Progress
 
@@ -105,9 +109,9 @@ Plans:
 | 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
 | 10. Command Cleanup | v1.1 | 1/1 | Complete | 2026-03-19 |
 | 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
-| 12. npm Publish | 2/2 | Complete    | 2026-03-20 | - |
-| 13. Documentation | v1.2 | 0/? | Not started | - |
+| 12. npm Publish | v1.2 | 2/2 | Complete | 2026-03-20 |
+| 13. Documentation | v1.2 | 0/1 | Not started | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*
-*Updated: 2026-03-20 (Phase 12 planned)*
+*Updated: 2026-03-20 (Phase 13 planned)*
