@@ -18,7 +18,7 @@ interface StatusBarProps {
 export function connectionColor(status: ConnectionStatus, transportType?: TransportType): string {
   switch (status) {
     case 'connected':
-      return transportType === 'direct' ? 'green' : 'yellow';
+      return 'green';
     case 'connecting':
     case 'reconnecting':
       return 'yellow';

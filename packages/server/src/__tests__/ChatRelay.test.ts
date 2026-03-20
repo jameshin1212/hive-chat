@@ -239,33 +239,8 @@ describe('SignalingServer Chat Relay', () => {
     }
   });
 
-  it('should relay CHAT_MESSAGE as CHAT_MSG to partner', async () => {
-    const ws1 = await registerUser('alice', 'AA11');
-    const ws2 = await registerUser('bob', 'BB22');
-    await waitForMessageOfType(ws1, MessageType.USER_JOINED);
-
-    // Establish chat session
-    const requestedPromise = waitForMessageOfType(ws2, MessageType.CHAT_REQUESTED);
-    sendJson(ws1, { type: MessageType.CHAT_REQUEST, targetNickname: 'bob', targetTag: 'BB22' });
-    const requested = await requestedPromise;
-    const sessionId = (requested as { sessionId: string }).sessionId;
-
-    const acceptedPromise = waitForMessageOfType(ws1, MessageType.CHAT_ACCEPTED);
-    sendJson(ws2, { type: MessageType.CHAT_ACCEPT, sessionId });
-    await acceptedPromise;
-
-    // Alice sends message
-    const msgPromise = waitForMessageOfType(ws2, MessageType.CHAT_MSG);
-    sendJson(ws1, { type: MessageType.CHAT_MESSAGE, sessionId, content: 'Hello Bob!' });
-
-    const chatMsg = await msgPromise;
-    expect(chatMsg.type).toBe(MessageType.CHAT_MSG);
-    if (chatMsg.type === MessageType.CHAT_MSG) {
-      expect(chatMsg.from.nickname).toBe('alice');
-      expect(chatMsg.content).toBe('Hello Bob!');
-      expect(chatMsg.timestamp).toBeGreaterThan(0);
-    }
-  });
+  // CHAT_MESSAGE relay removed — P2P only architecture.
+  // Messages are exchanged directly between peers via Hyperswarm.
 
   it('should send CHAT_DECLINED when target declines', async () => {
     const ws1 = await registerUser('alice', 'AA11');
@@ -359,33 +334,5 @@ describe('SignalingServer Chat Relay', () => {
     }
   });
 
-  it('should NOT log message content', async () => {
-    const ws1 = await registerUser('alice', 'AA11');
-    const ws2 = await registerUser('bob', 'BB22');
-    await waitForMessageOfType(ws1, MessageType.USER_JOINED);
-
-    // Establish session
-    const requestedPromise = waitForMessageOfType(ws2, MessageType.CHAT_REQUESTED);
-    sendJson(ws1, { type: MessageType.CHAT_REQUEST, targetNickname: 'bob', targetTag: 'BB22' });
-    const requested = await requestedPromise;
-    const sessionId = (requested as { sessionId: string }).sessionId;
-
-    const acceptedPromise = waitForMessageOfType(ws1, MessageType.CHAT_ACCEPTED);
-    sendJson(ws2, { type: MessageType.CHAT_ACCEPT, sessionId });
-    await acceptedPromise;
-
-    // Spy on console.log
-    const logSpy = vi.spyOn(console, 'log');
-
-    const msgPromise = waitForMessageOfType(ws2, MessageType.CHAT_MSG);
-    sendJson(ws1, { type: MessageType.CHAT_MESSAGE, sessionId, content: 'SECRET_MESSAGE_123' });
-    await msgPromise;
-
-    // Verify no console.log contained the message content
-    for (const call of logSpy.mock.calls) {
-      const logStr = call.map(String).join(' ');
-      expect(logStr).not.toContain('SECRET_MESSAGE_123');
-    }
-    logSpy.mockRestore();
-  });
+  // "should NOT log message content" test removed — server no longer handles messages at all (P2P only)
 });

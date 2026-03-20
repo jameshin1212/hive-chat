@@ -155,16 +155,57 @@ export function useChatSession(
       setPartnerLeft(true);
     };
 
-    const handleChatError = (data: { code: string; message: string }) => {
-      if (data.code === 'USER_OFFLINE' || data.code === 'USER_BUSY') {
+    const handleChatError = (data: { code?: string; message?: string; error?: string }) => {
+      const code = data.code;
+      const message = data.message || data.error || 'Unknown error';
+      if (code === 'USER_OFFLINE' || code === 'USER_BUSY') {
         setChatMessages(msgs => [
           ...msgs,
-          createSystemMessage(data.message),
+          createSystemMessage(message),
         ].slice(-MAX_MESSAGES));
         setChatStatus('idle');
         setPartner(null);
         setSessionId(null);
+      } else {
+        // P2P send error etc.
+        setChatMessages(msgs => [
+          ...msgs,
+          createSystemMessage(message),
+        ].slice(-MAX_MESSAGES));
       }
+    };
+
+    // P2P events
+    const handleP2PConnecting = () => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage('Establishing P2P connection...'),
+      ].slice(-MAX_MESSAGES));
+    };
+
+    const handleP2PConnected = () => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage('P2P connected — messages are direct and encrypted', 'transition'),
+      ].slice(-MAX_MESSAGES));
+    };
+
+    const handleP2PFailed = (data: { reason: string }) => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage(`P2P connection failed: ${data.reason}`),
+      ].slice(-MAX_MESSAGES));
+      setChatStatus('idle');
+      setPartner(null);
+      setSessionId(null);
+    };
+
+    const handleP2PDisconnected = () => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage('P2P connection lost', 'transition'),
+      ].slice(-MAX_MESSAGES));
+      setPartnerLeft(true);
     };
 
     client.on('chat_requested', handleChatRequested);
@@ -174,6 +215,10 @@ export function useChatSession(
     client.on('chat_left', handleChatLeft);
     client.on('chat_user_offline', handleChatUserOffline);
     client.on('chat_error', handleChatError);
+    client.on('p2p_connecting', handleP2PConnecting);
+    client.on('p2p_connected', handleP2PConnected);
+    client.on('p2p_failed', handleP2PFailed);
+    client.on('p2p_disconnected', handleP2PDisconnected);
 
     return () => {
       client.off('chat_requested', handleChatRequested);
@@ -183,6 +228,10 @@ export function useChatSession(
       client.off('chat_left', handleChatLeft);
       client.off('chat_user_offline', handleChatUserOffline);
       client.off('chat_error', handleChatError);
+      client.off('p2p_connecting', handleP2PConnecting);
+      client.off('p2p_connected', handleP2PConnected);
+      client.off('p2p_failed', handleP2PFailed);
+      client.off('p2p_disconnected', handleP2PDisconnected);
     };
   }, [client, chatStatus]);
 

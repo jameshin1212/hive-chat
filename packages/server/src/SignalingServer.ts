@@ -135,9 +135,7 @@ export class SignalingServer {
       case MessageType.CHAT_DECLINE:
         this.handleChatDecline(ws, msg.sessionId);
         break;
-      case MessageType.CHAT_MESSAGE:
-        this.handleChatMessage(ws, msg.sessionId, msg.content);
-        break;
+      // CHAT_MESSAGE removed — P2P only architecture. Server does not relay messages.
       case MessageType.CHAT_LEAVE:
         this.handleChatLeave(ws, msg.sessionId);
         break;
@@ -323,22 +321,7 @@ export class SignalingServer {
     });
   }
 
-  private handleChatMessage(ws: AliveWebSocket, sessionId: string, content: string): void {
-    const session = this.chatSessionManager.getSessionByUser(ws.userId!);
-    if (!session || session.id !== sessionId) return;
-
-    const partnerId = session.userA === ws.userId ? session.userB : session.userA;
-    const senderUser = this.presenceManager.getUser(ws.userId!);
-    if (!senderUser) return;
-
-    this.sendToUser(partnerId, {
-      type: MessageType.CHAT_MSG,
-      sessionId,
-      from: { nickname: senderUser.nickname, tag: senderUser.tag },
-      content,
-      timestamp: Date.now(),
-    });
-  }
+  // handleChatMessage removed — P2P only architecture
 
   private handleChatLeave(ws: AliveWebSocket, sessionId: string): void {
     const session = this.chatSessionManager.getSessionByUser(ws.userId!);

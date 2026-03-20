@@ -8,15 +8,15 @@ import {
   serverMessageSchema,
 } from '../protocol.js';
 
-import { P2P_UPGRADE_TIMEOUT_MS } from '../constants.js';
+import { P2P_CONNECT_TIMEOUT_MS } from '../constants.js';
 import type { TransportType } from '../types.js';
 
 const SESSION_ID = '550e8400-e29b-41d4-a716-446655440000';
 const VALID_TOPIC = 'a'.repeat(64); // 64 hex chars (32 bytes)
 
 describe('P2P Protocol Constants', () => {
-  it('should export P2P_UPGRADE_TIMEOUT_MS as 3000', () => {
-    expect(P2P_UPGRADE_TIMEOUT_MS).toBe(3_000);
+  it('should export P2P_CONNECT_TIMEOUT_MS as 15000', () => {
+    expect(P2P_CONNECT_TIMEOUT_MS).toBe(15_000);
   });
 });
 

@@ -30,4 +30,4 @@ export const CHAT_REQUEST_TIMEOUT_MS = 30_000;
 export const MAX_CHAT_MESSAGE_LENGTH = 2000;
 
 // P2P constants
-export const P2P_UPGRADE_TIMEOUT_MS = 3_000;
+export const P2P_CONNECT_TIMEOUT_MS = 15_000;

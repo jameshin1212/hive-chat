@@ -83,12 +83,13 @@ describe('ConnectionManager', () => {
       expect(handler).toHaveBeenCalledWith(users);
     });
 
-    it('proxies chat_msg event from SignalingClient', () => {
+    it('ignores chat_msg from SignalingClient (P2P only)', () => {
       const handler = vi.fn();
       manager.on('chat_msg', handler);
       const data = { sessionId: 's1', from: { nickname: 'u', tag: 't' }, content: 'hi', timestamp: 123 };
       signalingClient.emit('chat_msg', data);
-      expect(handler).toHaveBeenCalledWith(data);
+      // chat_msg from server is intentionally ignored in P2P-only architecture
+      expect(handler).not.toHaveBeenCalled();
     });
 
     it('proxies chat_requested event from SignalingClient', () => {
@@ -122,9 +123,11 @@ describe('ConnectionManager', () => {
   });
 
   describe('sendChatMessage routing', () => {
-    it('routes through relay by default', () => {
+    it('emits error when P2P not connected', () => {
+      const handler = vi.fn();
+      manager.on('chat_error', handler);
       manager.sendChatMessage('session-1', 'hello');
-      expect(signalingClient.sendChatMessage).toHaveBeenCalledWith('session-1', 'hello');
+      expect(handler).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('P2P') }));
       expect(mockP2PTransport.send).not.toHaveBeenCalled();
     });
 
