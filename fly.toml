@@ -1,4 +1,4 @@
-app = 'hivechat'
+app = 'hivechat-signal'
 primary_region = 'nrt'
 
 [build]

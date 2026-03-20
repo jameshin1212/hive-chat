@@ -16,7 +16,7 @@ export const USER_COLORS = [
 
 // Server constants
 export const DEFAULT_SERVER_PORT = 3456;
-export const DEFAULT_SERVER_URL = 'wss://hivechat.fly.dev';
+export const DEFAULT_SERVER_URL = 'wss://hivechat-signal.fly.dev';
 export const HEARTBEAT_INTERVAL_MS = 30_000;
 export const STALE_TIMEOUT_MS = 60_000;
 export const RADIUS_OPTIONS = [1, 3, 5, 10] as const;
