@@ -40,7 +40,7 @@ export class SignalingServer {
    */
   start(): Promise<number> {
     return new Promise((resolve, reject) => {
-      this.wss = new WebSocketServer({ port: this.port });
+      this.wss = new WebSocketServer({ port: this.port, host: '0.0.0.0' });
 
       this.wss.on('listening', () => {
         const addr = this.wss!.address() as AddressInfo;
