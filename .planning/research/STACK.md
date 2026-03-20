@@ -1,161 +1,250 @@
-# Stack Research
+# Stack Research: v1.4 UI/UX Polish
 
-**Domain:** CLI P2P chat tool with location-based discovery
-**Researched:** 2026-03-19
-**Confidence:** MEDIUM-HIGH
+**Domain:** CLI TUI onboarding, welcome screen, responsive layout
+**Researched:** 2026-03-21
+**Confidence:** HIGH
 
-## Recommended Stack
+## Scope
 
-### Core Technologies
+v1.4 milestone 전용 stack 조사. 기존 validated stack (Ink 6, React 19, Hyperswarm, ws, string-width, conf, tsdown)은 재조사 대상 아님.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Node.js | >=20 LTS | Runtime | LTS with stable WebSocket API, ESM support, required for npm distribution |
-| TypeScript | ^5.7 | Type safety | CLI 도구에서 프로토콜 메시지 타입 정의 필수. strict mode 사용 |
-| Ink | ^6.8.0 | TUI framework (React for terminal) | CJK IME 지원을 위한 `useCursor` hook 내장. Flexbox 레이아웃으로 채팅 UI 구성 용이. string-width로 wide character 폭 계산 가능 |
-| Hyperswarm | ^4.16.0 | P2P 연결 (NAT traversal + encrypted streams) | Noise protocol 기반 E2E 암호화 내장, UDP hole-punching으로 NAT 뒤 피어 연결 해결, topic 기반 피어 발견 |
-| ws | ^8.19.0 | Signaling server WebSocket | 경량, 빠름, Node.js 생태계 표준. 시그널링 서버에서 클라이언트-서버 통신용 |
+**Focus:** 온보딩 UI 개선, 웰컴 섹션 (ASCII art, 버전 표시, Tips), 반응형 터미널 레이아웃에 필요한 추가/변경 사항.
 
-**Confidence:** HIGH - Ink, Hyperswarm, ws 모두 활발히 유지보수 중이며 npm 다운로드 수가 안정적
+## Key Finding: 새 dependency 추가 불필요
 
-### Supporting Libraries
+v1.4에 필요한 모든 기능은 **기존 dependency로 구현 가능**하다. 새 npm package 추가 없이 진행할 것을 권장한다.
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| geoip-lite | latest | IP 기반 위치 파악 (내장 MaxMind GeoLite DB) | 시그널링 서버에서 클라이언트 IP로 위치 조회. 외부 API 호출 없이 로컬 DB 조회로 빠름 |
-| string-width | ^7.0 | 멀티바이트 문자 폭 계산 | Ink TUI에서 CJK/이모지 문자의 실제 표시 폭 계산. 커서 위치 정확도에 필수 |
-| ink-text-input | latest | 텍스트 입력 컴포넌트 | 채팅 메시지 입력 필드. Ink 생태계의 표준 입력 컴포넌트 |
-| conf | latest | 로컬 설정 파일 저장 | 닉네임, 고유ID, 친구 목록 등 세션 간 유지 데이터 저장. XDG 규약 준수 |
-| nanoid | ^5.0 | 고유 태그 생성 | 닉네임#태그에서 태그 부분 생성. UUID보다 짧고 URL-safe |
-| chalk | ^5.0 | 터미널 색상 | 메시지, 상태 표시, UI 요소에 색상 적용. Ink와 함께 사용 가능 |
-| zod | ^3.24 | 메시지 스키마 검증 | P2P 프로토콜 메시지 유효성 검증. 악의적 피어 방어 |
-| protomux | latest | 프로토콜 멀티플렉싱 | Hyperswarm stream 위에서 여러 채널(채팅, 상태, 제어) 다중화 |
-| b4a | latest | Buffer/Uint8Array 유틸리티 | Hyperswarm topic buffer 생성 시 사용. Holepunch 생태계 표준 유틸 |
-| haversine | latest | 거리 계산 | 두 좌표 간 거리 계산 (km). 근처 사용자 필터링용 |
+---
 
-**Confidence:** HIGH (geoip-lite, string-width, nanoid) / MEDIUM (protomux - Hyperswarm 생태계 내 표준이나 문서가 빈약할 수 있음)
+## 기존 Stack 활용 분석
 
-### Development Tools
+### 1. ASCII Art / Banner: figlet (이미 설치됨)
 
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| tsdown | TypeScript 번들러 | tsup 후속. Rolldown 기반으로 빠름. ESM + CJS 동시 출력. `--isolated-declarations`로 타입 생성 |
-| vitest | 테스트 | TypeScript 네이티브 지원, ESM 친화적. 빠른 실행 |
-| eslint + @typescript-eslint | 린트 | TypeScript 코드 품질 보장 |
-| prettier | 포매팅 | 코드 스타일 일관성 |
-| tsx | 개발 시 실행 | TypeScript 파일 직접 실행. 개발 중 빠른 피드백 |
+| 항목 | 상세 |
+|------|------|
+| Package | `figlet` |
+| 설치 버전 | 1.11.0 (최신) |
+| Types | `@types/figlet@^1` (이미 devDependencies) |
+| 현재 사용 | `AsciiBanner.tsx` -- `figlet.textSync('HIVECHAT', { font: 'Standard' })` |
 
-## Architecture Decision: Why Hyperswarm + Custom Signaling Server
+**v1.4 활용 방법:**
+- `figlet.fontsSync()`로 사용 가능한 300+ 폰트 목록 조회 가능
+- 웰컴 화면에서 폰트 변경만으로 시각적 개선 가능 (예: `ANSI Shadow`, `Slant`, `Big`)
+- `textSync`는 동기 호출 -- 초기 화면 즉시 표시에 적합
+- 폰트별 출력 폭이 다르므로 `string-width`로 폭 확인 후 터미널 크기 초과 시 fallback 폰트 사용
 
-프로젝트는 두 가지 네트워킹 레이어가 필요:
+**주의:** figlet 출력이 터미널 폭을 초과하면 줄바꿈으로 깨진다. 반응형 로직에서 반드시 폭 체크 필요.
 
-1. **Signaling Server (ws)**: 위치 기반 발견, 사용자 레지스트리, 온라인 상태 관리
-2. **P2P Layer (Hyperswarm)**: 실제 메시지 전달, E2E 암호화
+### 2. 터미널 크기 감지 / 반응형: Ink useStdout (이미 사용 중)
 
-### Flow
+| 항목 | 상세 |
+|------|------|
+| Hook | `useStdout()` from `ink` |
+| 현재 사용 | `ChatScreen.tsx:42-44` -- `stdout?.columns`, `stdout?.rows` |
+| Resize 동작 | Ink 내부에서 `stdout.on('resize', ...)` 리스닝 + 자동 re-render |
 
-```
-Client A → ws → Signaling Server ← ws ← Client B
-  (위치 등록, 근처 유저 조회, 친구 IP 교환)
+**v1.4 활용 방법:**
+- Ink는 터미널 resize 시 자동으로 Yoga layout 재계산 + React re-render 수행
+- `useStdout()` 반환값의 `stdout.columns`/`stdout.rows`는 Node.js가 resize 시 자동 업데이트
+- Ink가 re-render를 트리거하므로 컴포넌트에서 fresh 값을 읽을 수 있음
+- **별도의 `ink-use-stdout-dimensions` 패키지 불필요** -- `useStdout()`로 충분
 
-Client A ←→ Hyperswarm (topic join) ←→ Client B
-  (실제 채팅 메시지, Noise 암호화)
+**반응형 breakpoint 전략 (권장):**
+```typescript
+const { stdout } = useStdout();
+const columns = stdout?.columns ?? 80;
+
+// Breakpoints
+const isNarrow = columns < 60;   // 최소 지원 -- graceful degradation
+const isWide = columns >= 100;   // 사이드 패널 표시 가능
+const isUltraWide = columns >= 140; // 확장 정보 표시
 ```
 
-### Why Not Pure Hyperswarm?
+### 3. 색상 / 스타일: chalk (이미 설치됨)
 
-Hyperswarm의 DHT discovery는 topic 기반이지만 **위치 기반 필터링**이 없음. 시그널링 서버가 IP geolocation으로 위치를 파악하고 거리 기반 매칭을 해야 하므로, 커스텀 서버가 필수.
+| 항목 | 상세 |
+|------|------|
+| Package | `chalk` |
+| 설치 버전 | ^5.6.2 |
+| 현재 사용 | theme.ts, 각종 컴포넌트 |
 
-### Why Not Pure WebSocket?
+**v1.4 활용 방법:**
+- 웰컴 섹션의 프로필 정보, Tips 영역 스타일링
+- `chalk.hex('#color')` 조합으로 Claude Code 스타일 UI 구현
+- Ink의 `<Text color="..." bold dimColor>` 속성과 조합
 
-WebSocket만으로 P2P 채팅을 구현하면 모든 메시지가 서버를 경유. 프로젝트 요구사항인 "서버는 발견만, 메시지는 P2P" 위반.
+### 4. 버전 표시: package.json 직접 참조
 
-### Why Not Raw TCP?
-
-NAT traversal을 직접 구현하는 것은 비현실적. Hyperswarm이 UDP hole-punching, DHT 기반 릴레이를 제공하므로 이를 활용.
-
-## Installation
-
-```bash
-# Core
-npm install ink react hyperswarm ws geoip-lite
-
-# Supporting
-npm install string-width ink-text-input conf nanoid chalk zod b4a
-
-# Dev dependencies
-npm install -D typescript @types/react @types/ws tsdown vitest eslint prettier tsx
+**구현 방법:**
+```typescript
+// client/src/version.ts
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { version } = require('../../package.json');
+export const APP_VERSION = version;
 ```
 
-## Alternatives Considered
+또는 tsdown 빌드 시 `define` 옵션으로 주입:
+```typescript
+// tsdown.config.ts
+export default {
+  define: {
+    '__APP_VERSION__': JSON.stringify(require('./package.json').version),
+  },
+};
+```
 
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| Ink (React TUI) | blessed/neo-blessed | 절대 사용하지 말 것 (아래 "What NOT to Use" 참조) |
-| Ink (React TUI) | terminal-kit | React 패러다임 불필요하고 저수준 제어가 필요한 경우. 하지만 CJK 지원이 Ink보다 불확실 |
-| Hyperswarm | libp2p | 더 세밀한 프로토콜 제어가 필요하거나 브라우저 호환이 필요한 경우. 하지만 설정이 훨씬 복잡 |
-| Hyperswarm | PeerJS (WebRTC) | 브라우저 P2P에 최적화. CLI 전용 프로젝트에서는 오버스펙 |
-| geoip-lite | ipinfo API | 더 정확한 위치 필요 시. 하지만 외부 API 의존성 + rate limit 존재 |
-| ws | socket.io | 자동 재연결, room 기능 필요 시. 하지만 시그널링에 불필요한 추상화가 많고 오버헤드 |
-| tsdown | tsup | tsup이 익숙하다면 아직 사용 가능. 하지만 유지보수 중단되어 장기적으로 tsdown 권장 |
-| conf | configstore | 거의 동일한 기능. conf가 더 활발히 유지보수 중 |
+**권장:** tsdown `define` 방식. 빌드 타임에 문자열로 치환되어 런타임 파일 읽기 불필요.
+
+### 5. TUI 컴포넌트: Ink + @inkjs/ui (이미 설치됨)
+
+| 항목 | 상세 |
+|------|------|
+| Package | `@inkjs/ui` |
+| 설치 버전 | ^2.0.0 |
+| 현재 사용 | **미사용** (dependency에만 존재) |
+
+**v1.4 활용 가능 컴포넌트:**
+- `<Spinner>` -- 연결 상태 표시, 로딩 인디케이터
+- `<Badge>` -- AI CLI 뱃지 표시
+- `<StatusMessage>` -- 시스템 메시지 (info/success/warning/error)
+
+**주의:** 현재 미사용 중이므로, 실제 사용 시 Ink 6 + React 19 호환성 확인 필요. `@inkjs/ui@2.0.0`은 Ink 5 대상일 수 있음.
+
+### 6. Box Drawing / 레이아웃 문자: 직접 구현
+
+Unicode box-drawing 문자 (`\u2500`, `\u2502`, `\u250C`, `\u2510` 등)는 이미 사용 중.
+`is-unicode-supported` 같은 패키지 없이, 현재 코드에서 `\u2500`을 직접 사용하고 있음.
+
+**v1.4 권장:** CLAUDE.md 규칙대로 `is-unicode-supported`로 지원 여부 확인하되, 이는 선택적. 현재 대상 터미널(iTerm2, Terminal.app, Windows Terminal, GNOME Terminal)은 모두 Unicode 지원.
+
+---
+
+## 추가 검토 후 제외한 라이브러리
+
+### gradient-string -- 제외
+
+| 항목 | 상세 |
+|------|------|
+| Package | `gradient-string@3.0.0` |
+| 특징 | ESM, pure JS, chalk ^5 의존 |
+| 번들 크기 | ~15KB + tinygradient + tinycolor2 |
+
+**제외 이유:**
+- ASCII 배너에 gradient 효과를 줄 수 있으나, 시각적 장식에 불과
+- dependency chain 추가 (gradient-string -> tinygradient -> tinycolor2)
+- `chalk.hex()`로 단색/2색 조합이면 충분
+- native dependency 없으므로 기술적으로는 사용 가능하나, 1MB 미만 번들 목표에서 불필요한 증가
+
+### ink-use-stdout-dimensions -- 제외
+
+| 항목 | 상세 |
+|------|------|
+| Package | `ink-use-stdout-dimensions` |
+| 주간 다운로드 | ~140K |
+
+**제외 이유:**
+- Ink가 내부적으로 `stdout.on('resize')` 리스닝 + 자동 re-render 수행
+- `useStdout()`의 `stdout.columns`/`stdout.rows`로 동일 기능 달성
+- 현재 `ChatScreen.tsx`에서 이미 이 패턴 사용 중
+- 불필요한 dependency 추가
+
+### fullscreen-ink -- 제외
+
+| 항목 | 상세 |
+|------|------|
+| Package | `fullscreen-ink` |
+| 용도 | 전체화면 터미널 앱 |
+
+**제외 이유:**
+- HiveChat은 이미 `<Box height={rows}>` 패턴으로 전체 터미널 활용 중
+- alternate screen buffer 전환이 필요할 경우에만 고려
+
+---
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| blessed / neo-blessed | 사실상 유지보수 중단. CJK IME composition 지원 미흡. 최근 Node.js 버전과 호환성 문제 | Ink ^6.8.0 |
-| socket.io | 시그널링에 불필요한 추상화 (room, namespace, 자동 재연결). 바이너리 크기 증가. ws가 훨씬 경량 | ws ^8.19.0 |
-| WebRTC (node-webrtc/wrtc) | Node.js에서 WebRTC native 바인딩은 불안정하고 설치 문제 빈번. CLI 환경에서 브라우저 API 래핑은 오버스펙 | Hyperswarm ^4.16.0 |
-| tsup | 유지보수 중단 공식 선언. tsdown 이전 권장 | tsdown |
-| MaxMind GeoIP2 (유료) | 무료 프로젝트에 유료 라이선스 불필요. geoip-lite의 GeoLite DB로 충분 (도시 수준 정확도) | geoip-lite |
-| fs 직접 사용 (설정 저장) | XDG 경로 처리, JSON 직렬화 등을 직접 구현하면 플랫폼 호환 이슈 | conf |
+| `ink-use-stdout-dimensions` | Ink 자체 resize re-render로 충분 | `useStdout()` + `stdout.columns/rows` |
+| `gradient-string` | 불필요한 dependency chain, 장식적 효과 | `chalk.hex()` 단색/조합 |
+| `blessed` / `neo-blessed` | CLAUDE.md 금지 -- abandoned, CJK 깨짐 | Ink 6 |
+| `boxen` | Ink `<Box>` 컴포넌트가 동일 기능 | `<Box borderStyle="round">` |
+| `terminal-link` | Ink `<Text>` + `\x1b]8;;` ANSI escape로 가능 | 직접 구현 |
+| `cfonts` | figlet 대비 장점 없음, 번들 크기 큼 | `figlet` (이미 설치) |
 
-## Stack Patterns by Variant
-
-**If NAT traversal이 불가능한 네트워크 환경 (기업 방화벽 등):**
-- Hyperswarm의 릴레이 모드 활용 또는 시그널링 서버를 메시지 릴레이로 fallback
-- 시그널링 서버에 간단한 메시지 프록시 기능 추가
-
-**If 배포를 `npx`로만 한다면:**
-- postinstall에서 geoip-lite DB 다운로드 시간 고려 (첫 실행 느릴 수 있음)
-- 대안: 시그널링 서버에서 IP geolocation 처리 (클라이언트에 geoip-lite 불필요)
-
-**If 그룹 채팅을 지원한다면:**
-- Hyperswarm topic을 그룹 ID로 사용
-- 같은 topic에 join한 모든 피어가 메시지 수신
-- protomux로 1:1/그룹 채널 분리
+---
 
 ## Version Compatibility
 
-| Package A | Compatible With | Notes |
-|-----------|-----------------|-------|
-| ink@^6.8.0 | react@^18.0.0 | Ink 6.x는 React 18 필요 |
-| hyperswarm@^4.16.0 | b4a@latest, protomux@latest | Holepunch 생태계 패키지는 상호 호환 |
-| geoip-lite | Node.js >=20 | IPv4 도시 수준 조회 지원. IPv6는 도시 정보 미포함 |
-| tsdown | TypeScript ^5.5 | isolated declarations 기능에 TS 5.5+ 필요 |
-| ink@^6.8.0 | string-width@^7.0 | ESM only. package.json에 `"type": "module"` 필수 |
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| `figlet@1.11.0` | Node >=20, ESM (CJS wrapper) | `textSync` 동기 호출, ESM에서 default import 사용 |
+| `@inkjs/ui@2.0.0` | Ink 5 대상으로 출시 | Ink 6 + React 19 호환성 직접 확인 필요 |
+| `chalk@5.x` | ESM-only, Node >=12.17 | Ink 6과 완벽 호환 |
+| `ink@6.8.0` | React 18/19 | resize 자동 re-render 내장 |
 
-## Key Risks and Mitigations
+---
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Ink CJK IME composition 불완전 | 한글 입력 시 조합 중 문자 안 보이는 현상 | `useCursor` + `string-width` 조합 사용. Claude Code, Gemini CLI에서도 같은 문제 겪고 있어 Ink 쪽 개선 가능성 있음. 최악의 경우 커스텀 input 컴포넌트 구현 |
-| Hyperswarm NAT traversal 실패 | 일부 네트워크에서 피어 연결 불가 | 시그널링 서버를 fallback 릴레이로 사용 |
-| geoip-lite 정확도 한계 | IP 위치가 실제와 수 km~수십 km 차이 | 프로젝트 특성상 "대략적 위치"가 목적이므로 수용 가능. VPN 사용자는 비정확할 수 있음을 UI에 안내 |
-| ESM-only 패키지 혼재 | CJS/ESM 충돌 | 프로젝트 전체를 ESM (`"type": "module"`)으로 통일 |
+## 구현에 필요한 Custom Hooks / Utilities
+
+기존 dependency만으로 v1.4 구현 시, 아래 custom 코드가 필요:
+
+### useTerminalDimensions (custom hook)
+```typescript
+// Ink useStdout() wrapper -- 편의 + 기본값 + breakpoint 계산
+function useTerminalDimensions() {
+  const { stdout } = useStdout();
+  const columns = stdout?.columns ?? 80;
+  const rows = stdout?.rows ?? 24;
+  return {
+    columns, rows,
+    isNarrow: columns < 60,
+    isWide: columns >= 100,
+    isUltraWide: columns >= 140,
+  };
+}
+```
+
+### responsiveBanner (utility)
+```typescript
+// 터미널 폭에 따라 figlet 폰트/텍스트 자동 조정
+function getResponsiveBanner(columns: number): string {
+  if (columns >= 80) return figlet.textSync('HIVECHAT', { font: 'ANSI Shadow' });
+  if (columns >= 60) return figlet.textSync('HIVECHAT', { font: 'Standard' });
+  return '=== HIVECHAT ===';  // 최소 폭 fallback
+}
+```
+
+---
+
+## Installation
+
+**새로운 패키지 설치 불필요.** 기존 dependency만으로 v1.4 구현 가능.
+
+```bash
+# 기존 dependency 확인만
+npm ls figlet chalk ink @inkjs/ui string-width
+```
+
+`@inkjs/ui`가 Ink 6과 호환 문제가 있을 경우에만:
+```bash
+# @inkjs/ui 제거 후 필요한 컴포넌트 직접 구현
+npm uninstall @inkjs/ui
+```
+
+---
 
 ## Sources
 
-- [Ink GitHub](https://github.com/vadimdemedes/ink) -- useCursor, CJK IME example 확인 (HIGH confidence)
-- [Hyperswarm GitHub](https://github.com/holepunchto/hyperswarm) -- NAT traversal, topic 기반 발견, Noise 암호화 확인 (HIGH confidence)
-- [ws npm](https://www.npmjs.com/package/ws) -- v8.19.0 확인 (HIGH confidence)
-- [geoip-lite npm](https://www.npmjs.com/package/geoip-lite) -- GeoLite DB 정확도, IPv4/IPv6 차이 확인 (HIGH confidence)
-- [tsdown official site](https://tsdown.dev/) -- tsup 대체, Rolldown 기반 확인 (MEDIUM confidence - 비교적 새로운 도구)
-- [Claude Code Korean IME issues](https://github.com/anthropics/claude-code/issues/22732) -- Ink 기반 앱의 한글 IME 문제 실제 사례 확인 (HIGH confidence)
-- [Gemini CLI Korean IME issues](https://github.com/google-gemini/gemini-cli/issues/3014) -- 터미널 IME 문제가 Ink 특정이 아닌 범용 문제임을 확인 (HIGH confidence)
-- [PCChat (Hyperswarm chat)](https://github.com/Niximkk/PCChat) -- Hyperswarm 기반 P2P 채팅 실제 구현 사례 (MEDIUM confidence)
+- Ink GitHub repository -- resize 동작, useStdout hook 확인 ([GitHub](https://github.com/vadimdemedes/ink))
+- Ink 소스코드 직접 확인 (`node_modules/ink/build/ink.js:188-214`) -- resize event listener + re-render 확인
+- figlet npm -- v1.11.0 최신, 300+ 폰트 ([npm](https://www.npmjs.com/package/figlet))
+- gradient-string -- ESM, pure JS, chalk ^5 의존 ([GitHub](https://github.com/bokub/gradient-string))
+- ink-use-stdout-dimensions -- 140K weekly downloads ([npm](https://www.npmjs.com/package/ink-use-stdout-dimensions))
+- Ink TUI expandable layouts guide ([Blog](https://combray.prose.sh/2025-11-28-ink-tui-expandable-layout))
+- @inkjs/ui -- v2.0.0 stable ([npm](https://www.npmjs.com/package/@inkjs/ui))
 
 ---
-*Stack research for: Double Talk - CLI P2P chat tool with location-based discovery*
-*Researched: 2026-03-19*
+*Stack research for: v1.4 UI/UX Polish milestone*
+*Researched: 2026-03-21*

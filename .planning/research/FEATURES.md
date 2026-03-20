@@ -1,207 +1,204 @@
-# Feature Research
+# Feature Research: v1.4 UI/UX Polish
 
-**Domain:** CLI P2P Chat with Location-Based Discovery (Developer-Focused)
-**Researched:** 2026-03-19
-**Confidence:** MEDIUM-HIGH
+**Domain:** CLI onboarding, welcome screens, responsive terminal layouts
+**Researched:** 2026-03-21
+**Confidence:** HIGH (existing codebase + well-documented Ink patterns)
 
 ## Feature Landscape
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist. Missing these = product feels incomplete.
+Features users assume exist when a CLI tool has "polish." Missing = product feels unfinished.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Nickname + unique ID | Every chat tool has identity. Discord-style `nick#tag` is intuitive | LOW | Auto-generated tag on first run, stored locally in config file |
-| 1:1 direct messaging | Core chat functionality. Without it, it's not a chat tool | MEDIUM | P2P connection via signaling server for IP exchange |
-| Online/offline presence | Users need to know who's available before starting a chat | LOW | Heartbeat to signaling server, propagated to peers |
-| Nearby user discovery | Core value proposition. Without this, it's just another chat tool | MEDIUM | IP geolocation on signaling server, return users within radius |
-| Configurable discovery radius | Location-based apps always let you set range (1/3/5/10km) | LOW | Client-side filter on server response, or server-side query param |
-| TUI with split layout | Terminal chat without proper UI is unusable. Message area + input area minimum | MEDIUM | 80/20 vertical split is standard. termchat, weechat all do this |
-| Message input with multibyte support | Korean/Japanese/emoji input must work. Broken IME = unusable for CJK users | HIGH | TUI library selection is critical. Must handle IME composition correctly |
-| Graceful connection handling | Users expect clean disconnect/reconnect, not crashes on network issues | MEDIUM | Connection state machine, auto-reconnect logic |
-| Clear exit mechanism | Ctrl+C or `/quit` must work cleanly without orphan processes | LOW | Signal handlers, cleanup on exit |
-| npx instant execution | Project constraint. Zero-install experience is expected for npm CLI tools | LOW | Package must be self-contained, no native dependencies ideally |
+| **Version display on startup** | Every polished CLI shows version. Users need it for bug reports and updates. | LOW | `package.json` version -> welcome section. Currently hardcoded as `v0.1.0` in system message -- needs dynamic version. |
+| **Profile summary on connect** | After setup, users expect to see their identity confirmed. Claude Code shows model info + context on startup. | LOW | Show `nickname#tag`, AI CLI badge, connection status. Data already available in `StatusBar`. |
+| **Terminal resize reflow** | Ink 3+ auto-rerenders on resize. Users expect layout to adapt without restart. | MEDIUM | `useStdout()` already used in `ChatScreen.tsx:43-44` for rows/columns. Separator already reflows. Main gap: no breakpoint-based layout changes. |
+| **Minimum terminal size handling** | Tools shouldn't crash or render garbage on small terminals. CLAUDE.md specifies min 60 columns. | LOW | Show warning/degraded layout below threshold. Currently no guard. |
+| **Onboarding step indicator** | Multi-step setup without progress indication feels uncertain. Users don't know how many steps remain. | LOW | Current flow: welcome -> nickname -> ai-cli (3 steps). Add `Step 1/2` or progress dots. |
+| **Input validation feedback** | Immediate, clear error for invalid input. | LOW | Already exists for nickname (`OnboardingScreen.tsx:24-26`). Polish: inline hint style improvement. |
+| **Keyboard shortcut hints in context** | Users need to know Tab=users, /help=commands without memorizing docs. | LOW | Currently shown once as system message on connect (`ChatScreen.tsx:117`). Should be persistent in welcome section. |
 
 ### Differentiators (Competitive Advantage)
 
-Features that set Double Talk apart from generic terminal chat tools.
+Features that elevate HiveChat from "functional" to "delightful." Inspired by Claude Code, lazygit, gh CLI.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| AI CLI tool badge | Show which AI CLI (Claude Code, Codex, Gemini, Cursor) each user uses. Creates tribal identity and conversation starters among developers | LOW | Selection during onboarding, displayed next to nickname |
-| Ephemeral-by-design messaging | No message history, no logs, no persistence. Privacy as a feature, not a bug. Reduces legal/privacy concerns. Like Snapchat for devs | LOW | Simply don't implement storage. Document as intentional design |
-| Friend system with remote P2P | Add friends by `nick#tag` regardless of location. Signaling server brokers the connection. Combines location discovery + social graph | HIGH | NAT traversal is the hard part. Need STUN/TURN fallback for firewalled users |
-| Group chat (ad-hoc) | Create temporary group from nearby users or friends. No channels, no persistence, just quick coordination | HIGH | Multi-party P2P is significantly harder than 1:1. Consider mesh or relay topology |
-| Developer-specific context | Unlike generic location apps (Vicinity, Kiki), Double Talk targets AI CLI users specifically. The terminal-native experience IS the filter | LOW | Branding, onboarding flow, tool selection |
-| Terminal bell / notification on message | weechat and termchat both support this. Crucial for background tab usage pattern | LOW | Terminal bell character `\x07` or OS notification via node-notifier |
-| Color themes | WeeChat supports 256 colors, custom themes. Developer audience expects customization | MEDIUM | Theme config file with presets (dark, light, hacker green) |
-| Connection status indicator | Visual indicator showing P2P connection health (direct, relayed, disconnected) | LOW | Map WebRTC/connection state to TUI status bar icon |
+| **Claude Code-style welcome section** | Rich info panel on startup: ASCII art + version + profile + tips. Sets professional tone, matches target audience's mental model (they use Claude Code daily). | MEDIUM | Replace current 1.5s "Welcome back" setTimeout screen (`App.tsx:17`) with persistent welcome section in message area. Show until first interaction or connection established. |
+| **Contextual tips rotation** | Tips that change each session or rotate periodically. "Did you know? Tab shows nearby users" style. Teaches features progressively without reading docs. | LOW | Array of tip strings, random selection per session. Low effort, high discovery value. |
+| **Animated connection state** | Spinner/dots during "connecting..." instead of static text. Visual feedback that something is happening. | LOW | Ink `ink-spinner` package. Subtle but polished. |
+| **Responsive side panel (wide terminals)** | On terminals >120 cols, show side panel with recent activity, tips, or friend list. Claude Code does this with context panel. | HIGH | Requires flex layout rework. Only valuable on wide terminals. |
+| **Onboarding with visual flair** | Styled step transitions, color-coded sections, box-drawing borders around input fields. | MEDIUM | Use Ink `<Box borderStyle="round">` for input sections. `TransitionLine.tsx` already exists -- extend pattern. |
+| **Adaptive ASCII banner** | Smaller/simpler banner on narrow terminals, full banner on wide. | LOW | Check columns in `AsciiBanner.tsx`, use figlet `Standard` for wide, plain text for narrow (<80 cols). |
+| **Welcome section dismiss on first message** | Welcome info stays visible until user sends first message or starts chat, then fades to make room for conversation. | LOW | State flag in ChatScreen, clear welcome section on first `handleSubmit`. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
-Features that seem good but create problems for Double Talk specifically.
-
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Message history / persistence | "I want to see what I missed" | Contradicts ephemeral design. Adds storage complexity, privacy liability. If you store messages, you need encryption-at-rest, retention policies, GDPR compliance | Keep ephemeral. Show session-only scrollback in TUI buffer. Clearly communicate "messages vanish when you close" |
-| File transfer | "Let me share code snippets" | P2P file transfer is complex (chunking, resume, progress). Significant attack surface. v1 scope creep | For v1, text-only. Users can share gist URLs. Consider v2 with clipboard/paste sharing |
-| Voice/video calls | termchat has streaming, Tox has voice/video | Massive complexity. WebRTC media in terminal is unusual. Audio capture/playback from CLI is non-trivial | Stay text-only. The terminal IS the constraint and the charm |
-| End-to-end encryption | "Messages should be encrypted" | P2P connections are already direct (no server relay). Adding E2E properly requires key exchange, verification, trust model. Half-baked crypto is worse than none | v1: TLS on P2P connections for transport security. Clearly document threat model. v2: consider NaCl/libsodium key exchange if demand exists |
-| OAuth / email authentication | "I want to keep my identity across devices" | Adds server complexity, account management, password reset flows. Kills the zero-friction onboarding | Keep anonymous auto-generated identity. Allow export/import of identity file for device portability |
-| Channel / room system | "Like IRC/Discord channels" | Adds persistence expectations, moderation needs, topic management. Scope explosion | Ad-hoc groups are sufficient. No permanent rooms. Create, chat, done |
-| Rich text / markdown rendering | "Format my messages" | Terminal rendering of markdown is fragile across terminals. Adds parsing complexity | Plain text with maybe basic color codes. Code blocks via backtick detection at most |
-| GPS-precise location | "IP geolocation is inaccurate" | CLI tools run on desktops without GPS. Requesting precise location is creepy for a dev chat tool. IP geolocation gives city-level which is sufficient for "nearby" | IP geolocation is intentionally approximate. "Nearby" means same city/area, not same building |
-| Web/mobile client | "I want to chat from my phone too" | Splits focus, doubles maintenance. CLI-native IS the identity | Stay CLI-only. If demand proves out, consider a separate project |
+| **Full-screen animated splash** | "Looks cool" like neofetch/fastfetch | Delays time-to-interactive. CLI users hate waiting. Current 1.5s setTimeout already too long for power users. | Instant welcome section integrated into main layout, no blocking animation. |
+| **Mouse-driven onboarding** | GUI habits carry over | CLAUDE.md: "mouse events for core features forbidden." Terminal mouse support inconsistent. Breaks tmux/screen. | Keyboard-only with clear arrow/enter indicators. |
+| **Persistent tutorial overlay** | "Users need to learn features" | Covers actual content. Power users dismiss immediately. Feels patronizing after first run. | Contextual tips in welcome section + `/help` command (already exists). |
+| **Custom theme/color picker in onboarding** | Personalization desire | Scope creep. 2 input steps is already optimal for onboarding. Theme config adds complexity. | Defer to `/settings` or future milestone. |
+| **Auto-playing demo/walkthrough** | "Show what the app can do" | Terminal animations are janky. Can't be skipped cleanly. Feels like a website tutorial. | Static tips + first-use hints that appear contextually. |
+| **Multi-page onboarding with back/forward** | "Let users review choices" | Over-engineering for 2 input steps (nickname + AI CLI). Navigation adds state complexity. | `/settings` already allows changing any choice post-onboarding. |
+| **Rich media in terminal (images/links)** | "Modern terminals support it" | iTerm2-only for images. Links inconsistent across terminals. Violates cross-terminal compat requirement. | ASCII art + text-only. URLs as plain text (terminal auto-detects clickability). |
 
 ## Feature Dependencies
 
 ```
-[Signaling Server]
-    └──requires──> [Identity System (nick#tag)]
-                       └──enables──> [Presence (online/offline)]
-                       └──enables──> [Nearby Discovery]
-                       └──enables──> [Friend System]
+[Version display] (standalone, no deps)
 
-[1:1 Chat]
-    └──requires──> [Signaling Server] (for peer discovery / IP exchange)
-    └──requires──> [P2P Connection Layer] (NAT traversal, direct connection)
-    └──requires──> [TUI] (message display + input)
+[Terminal resize detection]
+    |-- already exists (useStdout)
+    |
+    +--requires--> [Responsive breakpoints]
+                       |
+                       +--enables--> [Adaptive ASCII banner]
+                       +--enables--> [Side panel (wide terminals)]
+                       +--enables--> [Minimum terminal size warning]
 
-[Group Chat]
-    └──requires──> [1:1 Chat] (extends P2P connection model)
-    └──requires──> [Nearby Discovery] OR [Friend System] (to select participants)
+[Welcome section]
+    |
+    +--requires--> [Version display]
+    +--requires--> [Profile summary]
+    +--enhances--> [Tips rotation]
+    +--requires--> [Welcome dismiss on interaction]
 
-[Friend System]
-    └──requires──> [Identity System]
-    └──requires──> [Signaling Server] (to resolve nick#tag to IP)
-    └──enhances──> [1:1 Chat] (chat with remote friends)
-    └──enhances──> [Group Chat] (create friend-based groups)
+[Onboarding UI polish]
+    |
+    +--requires--> [Step indicator]
+    +--enhances--> [Adaptive ASCII banner]
+    +--independent-of--> [Welcome section] (different screens)
 
-[TUI]
-    └──requires──> [Multibyte Input Support] (IME handling)
-    └──enhances──> [1:1 Chat] (split pane, scrollback)
-    └──enhances──> [Presence] (status indicators in UI)
-
-[Nearby Discovery]
-    └──requires──> [Signaling Server]
-    └──requires──> [IP Geolocation]
-    └──enhances──> [Group Chat] (nearby group creation)
+[Animated connection state]
+    |-- independent, can add anytime
 ```
 
 ### Dependency Notes
 
-- **1:1 Chat requires Signaling Server + P2P Layer + TUI:** All three must exist before any chat happens. This is the critical path.
-- **Group Chat requires 1:1 Chat:** Multi-party builds on the P2P connection model. Don't attempt group before 1:1 is solid.
-- **Friend System requires Identity + Signaling:** Friends are resolved through the signaling server. The identity system must be stable before friends make sense.
-- **TUI requires Multibyte Support:** If Korean/CJK input is broken, the TUI is fundamentally broken for the target audience. Library selection is gating.
-- **Nearby Discovery requires IP Geolocation:** The signaling server must integrate a geolocation service before discovery works.
+- **Welcome section requires version display:** Version is a core element of the welcome panel. Must read from package.json dynamically.
+- **Responsive breakpoints require resize detection:** Already have `useStdout` -- need to define breakpoint constants (narrow <80, normal 80-120, wide >120).
+- **Onboarding is independent of welcome section:** Onboarding = first-run only (`OnboardingScreen.tsx`). Welcome section = every launch (`ChatScreen.tsx`/`App.tsx`). Different code paths, can be built in parallel.
+- **Side panel conflicts with overlay system:** Current overlays (UserList, FriendList, Settings) use height subtraction from MessageArea (`ChatScreen.tsx:66-83`). Side panel would need horizontal split, requiring layout rearchitecture. Defer to v1.5+.
 
-## MVP Definition
+## MVP Definition (v1.4 Scope)
 
-### Launch With (v1)
+### Must Have (v1.4)
 
-Minimum viable product -- what's needed to validate the concept.
+- [ ] **Welcome section with version + profile + tips** -- Core deliverable, replaces empty message area on startup
+- [ ] **Dynamic version display** -- Replace hardcoded `v0.1.0` with actual package version
+- [ ] **Responsive breakpoints** -- Define narrow/normal/wide constants, adapt layout per breakpoint
+- [ ] **Minimum terminal size warning** -- Guard for <60 col terminals per CLAUDE.md spec
+- [ ] **Adaptive ASCII banner** -- Full figlet on wide, simplified on narrow
+- [ ] **Onboarding step indicator** -- Step 1/2 or progress dots
 
-- [ ] Identity system (nickname + auto-generated tag, local storage) -- foundation for everything
-- [ ] Signaling server (user registration, presence, IP exchange) -- enables peer discovery
-- [ ] IP geolocation on signaling server -- enables "nearby" core value
-- [ ] Nearby user list with radius selection -- the core differentiator
-- [ ] P2P 1:1 chat connection -- the core functionality
-- [ ] TUI with split layout (messages + input) -- minimum usable interface
-- [ ] Multibyte character support (Korean, Japanese, emoji) -- non-negotiable for target audience
-- [ ] AI CLI tool badge display -- low-cost differentiator, adds developer identity
-- [ ] Online/offline presence -- users need to know who's available
-- [ ] Ephemeral messages (session-only, no persistence) -- intentional design, not missing feature
+### Add If Time Permits (v1.4)
 
-### Add After Validation (v1.x)
+- [ ] **Onboarding visual polish** -- Box borders around input fields, colored step headers
+- [ ] **Contextual tips rotation** -- Random tip per session from curated list
+- [ ] **Welcome dismiss on first interaction** -- Welcome section clears when user engages
+- [ ] **Animated connection spinner** -- ink-spinner during connecting/reconnecting states
 
-Features to add once core is working and users are chatting.
+### Defer (v1.5+)
 
-- [ ] Friend system (add/remove by nick#tag) -- add when users want to reconnect with people they met nearby
-- [ ] Remote friend P2P connection (NAT traversal) -- add when friend system proves valuable
-- [ ] Terminal notification on new message -- add when users report missing messages in background tabs
-- [ ] Color themes / customization -- add when users request personalization
-- [ ] Connection health indicator in status bar -- add when users report confusion about connection state
-
-### Future Consideration (v2+)
-
-Features to defer until product-market fit is established.
-
-- [ ] Group chat -- significant complexity. Defer until 1:1 chat is proven and users explicitly request it
-- [ ] Code snippet sharing (paste-bin style) -- only if text-only feels too limiting
-- [ ] Identity export/import -- only if users want to use Double Talk across machines
-- [ ] Plugin/extension system -- only if a developer community forms around the tool
+- [ ] **Responsive side panel** -- HIGH complexity layout rework, only benefits wide terminal users
+- [ ] **Onboarding animations/transitions** -- Diminishing returns on a 2-step flow
+- [ ] **Theme customization** -- Out of scope for this milestone
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Identity system (nick#tag) | HIGH | LOW | P1 |
-| Signaling server | HIGH | MEDIUM | P1 |
-| IP geolocation | HIGH | LOW | P1 |
-| Nearby user discovery | HIGH | MEDIUM | P1 |
-| P2P 1:1 chat | HIGH | HIGH | P1 |
-| TUI (split layout) | HIGH | MEDIUM | P1 |
-| Multibyte input | HIGH | MEDIUM | P1 |
-| Online/offline presence | HIGH | LOW | P1 |
-| AI CLI badge | MEDIUM | LOW | P1 |
-| Ephemeral messaging | HIGH | LOW (don't build storage) | P1 |
-| Friend system | MEDIUM | MEDIUM | P2 |
-| NAT traversal for friends | MEDIUM | HIGH | P2 |
-| Terminal notifications | MEDIUM | LOW | P2 |
-| Color themes | LOW | MEDIUM | P2 |
-| Connection health UI | LOW | LOW | P2 |
-| Group chat | MEDIUM | HIGH | P3 |
-| Code snippet sharing | LOW | MEDIUM | P3 |
-| Identity export/import | LOW | LOW | P3 |
+| Welcome section (version/profile/tips) | HIGH | MEDIUM | P1 |
+| Dynamic version display | HIGH | LOW | P1 |
+| Responsive breakpoints | HIGH | MEDIUM | P1 |
+| Minimum terminal size warning | MEDIUM | LOW | P1 |
+| Adaptive ASCII banner | MEDIUM | LOW | P1 |
+| Onboarding step indicator | MEDIUM | LOW | P1 |
+| Contextual tips rotation | MEDIUM | LOW | P2 |
+| Onboarding visual polish (borders) | MEDIUM | MEDIUM | P2 |
+| Welcome dismiss on interaction | LOW | LOW | P2 |
+| Animated connection spinner | LOW | LOW | P2 |
+| Responsive side panel | MEDIUM | HIGH | P3 |
 
 **Priority key:**
-- P1: Must have for launch
-- P2: Should have, add when possible
-- P3: Nice to have, future consideration
+- P1: Must have -- core deliverables of v1.4
+- P2: Should have -- polish that enhances v1.4 if time permits
+- P3: Nice to have -- defer to future milestone
 
 ## Competitor Feature Analysis
 
-| Feature | WeeChat/Irssi (IRC) | termchat (LAN) | Briar (P2P) | Location Apps (Vicinity etc.) | Double Talk |
-|---------|---------------------|----------------|-------------|-------------------------------|-------------|
-| Discovery | Server/channel list | Multicast LAN auto-discovery | Contact exchange (QR/link) | GPS-based map | IP geolocation + signaling server |
-| Identity | Nick registration on server | Username flag | Cryptographic identity | Account (email/phone) | Anonymous nick#tag auto-generated |
-| Messaging | Server-relayed | LAN direct | P2P encrypted | Server-relayed | P2P direct via signaling |
-| Group chat | Channels (persistent) | Broadcast to all LAN peers | Private groups | Chatrooms by location | Ad-hoc groups (ephemeral) |
-| Persistence | Server-side logs, client logs | None | Encrypted local storage | Server-stored | None (intentional) |
-| File transfer | DCC | Built-in broadcast | Not in base | Photos via server | Not in v1 |
-| Notifications | Terminal bell, desktop | Terminal bell | Push notifications | Push notifications | Terminal bell |
-| Themes/colors | Extensive (256 color, scripts) | Light/dark + custom colors | N/A (mobile) | N/A (mobile) | Planned for v1.x |
-| NAT traversal | N/A (server-based) | N/A (LAN only) | Tor network | N/A (server-based) | STUN/TURN needed for remote friends |
-| Scope | IRC protocol, any network | Single LAN | Global, Tor-based | City/radius | Nearby + remote friends |
-| Platform | Terminal (any OS) | Terminal (any OS) | Android (desktop experimental) | iOS/Android | Terminal (any OS via npm) |
+| Feature | Claude Code | gh CLI | lazygit | HiveChat (current) | HiveChat (v1.4 target) |
+|---------|-------------|--------|---------|---------------------|------------------------|
+| Version on startup | Yes, model + version | `gh --version` only | Yes, in status bar | Hardcoded `v0.1.0` in system msg | Dynamic version in welcome section |
+| ASCII art/branding | Gradient banner | None | None | figlet `HIVECHAT` | Adaptive figlet (wide/narrow) |
+| Profile info on start | Model, context, project | Logged-in user | Git repo info | 1.5s "Welcome back" flash | Persistent profile panel |
+| Tips/shortcuts | Contextual help panel | `--help` flag | Keybinding cheat sheet | System message on connect | Rotating tips in welcome section |
+| Onboarding | API key setup wizard | `gh auth login` (interactive) | N/A | 3-step (welcome/nick/cli) | Polished 2-step with progress indicator |
+| Responsive layout | Adapts to terminal width | Fixed width output | Panel-based, responsive | Fixed layout, separator reflows | Breakpoint-based adaptation |
+| Min terminal guard | Graceful degradation | N/A | Warning on small terminals | None | Warning + degraded layout |
 
-## Key Insights
+## Implementation Notes
 
-1. **No direct competitor exists** in the "CLI + location-based + developer-focused" intersection. termchat is LAN-only, IRC clients need servers/channels, location apps are mobile-only. Double Talk occupies a unique niche.
+### Existing Code Touchpoints
 
-2. **The hardest technical challenge is NAT traversal for remote friends.** LAN-only tools (termchat) avoid this entirely. Server-based tools (IRC, location apps) route through servers. True P2P across the internet requires STUN/TURN infrastructure. Consider a TURN relay fallback when direct P2P fails.
+1. **`App.tsx:15-27`** -- Welcome back screen with 1.5s setTimeout: Replace with proper welcome section that persists until dismissed
+2. **`OnboardingScreen.tsx`** -- Add step indicator, visual borders around input
+3. **`ChatScreen.tsx:43-44`** -- Already reads `rows`/`columns` via useStdout: Add breakpoint logic
+4. **`ChatScreen.tsx:113-117`** -- Hardcoded version string and tips in system message: Move to welcome section component
+5. **`AsciiBanner.tsx`** -- Add columns parameter for adaptive sizing (figlet vs plain text)
+6. **`StatusBar.tsx`** -- Already has all profile data needed for welcome section (identity, connection, transport)
+7. **`theme.ts`** -- May need additional color tokens for welcome section borders/headers
 
-3. **Ephemeral messaging is both a feature and a marketing angle.** In an era of data retention anxiety, "we literally cannot show your messages to anyone because we don't store them" is compelling. Lean into this.
+### Breakpoint Definitions (Recommended)
 
-4. **The AI CLI badge is a surprisingly strong differentiator.** It creates tribal identity ("oh, another Claude Code user nearby!") and immediate conversation context. Low implementation cost, high social value.
+```
+NARROW:  < 80 columns  -- Hide ASCII banner, compact tips, single-line status
+NORMAL:  80-120 columns -- Full ASCII banner, tips section, standard layout
+WIDE:    > 120 columns  -- Side panel space available (v1.5+)
 
-5. **Group chat should be deferred aggressively.** Multi-party P2P is an order of magnitude harder than 1:1. Every existing tool that does group chat either uses a server relay or LAN broadcast. For P2P group chat across the internet, you'd need a mesh topology or a temporary relay. Save this for v2.
+MIN_HEIGHT: 16 rows    -- Minimum usable height
+MIN_WIDTH:  60 columns -- Per CLAUDE.md specification
+```
+
+### Version Resolution Strategy
+
+Read version from `package.json` at build time via tsdown `define` plugin or environment variable injection. Avoids filesystem reads at runtime and works correctly with bundled CLI distribution. Alternative: `createRequire` to read package.json, but build-time is cleaner for a single-file bundle.
+
+### Welcome Section Structure (Recommended)
+
+```
++------------------------------------------+
+|  HIVECHAT                    v1.4.0       |
+|                                           |
+|  jamie#a3f2  [Claude Code]  connected     |
+|  3 nearby  |  Friends: 1/2 online         |
+|                                           |
+|  Tip: Press Tab to see nearby users       |
++------------------------------------------+
+```
+
+On narrow terminals (<80 cols), collapse to:
+
+```
+HIVECHAT v1.4.0
+jamie#a3f2 [Claude Code] connected
+Tip: Tab = nearby users
+```
 
 ## Sources
 
-- [WeeChat vs Irssi comparison - Slant](https://www.slant.co/versus/4383/4384/~weechat_vs_irssi)
-- [termchat - Terminal LAN chat](https://github.com/lemunozm/termchat)
-- [Briar Project](https://briarproject.org/how-it-works/)
-- [Vicinity - Proximity Chat App](https://apps.apple.com/us/app/vicinity-proximity-chat/id1536080128)
-- [BitChat - P2P BLE Messaging](https://bitchat.free/)
-- [Awesome Decentralized Apps List](https://github.com/croqaz/awesome-decentralized)
-- [Top 5 Decentralized Messaging Apps 2025](https://blog.usro.net/2024/10/top-5-decentralized-messaging-apps-to-protect-your-privacy-in-2025/)
-- [P2P NAT Traversal Guide](https://itnext.io/p2p-nat-traversal-how-to-punch-a-hole-9abc8ffa758e)
-- [Nearblink - Nearby User Discovery](https://nearblink.com/)
-- [@dskuldeep/terminal-chat on npm](https://www.npmjs.com/package/@dskuldeep/terminal-chat)
+- [Ink GitHub - React for CLI apps](https://github.com/vadimdemedes/ink) -- useStdout, flexbox layout, auto-rerender on resize
+- [UX patterns for CLI tools](https://www.lucasfcosta.com/blog/ux-patterns-cli-tools) -- onboarding, color usage, progressive disclosure
+- [Ink TUI: Building Expandable Layouts](https://combray.prose.sh/2025-11-28-ink-tui-expandable-layout) -- fixed footer patterns, layout metrics
+- [Creating responsive CLI layouts](https://app.studyraid.com/en/read/11921/379932/creating-responsive-cli-layouts) -- useStdoutDimensions, breakpoint patterns
+- [ink-use-stdout-dimensions](https://www.npmjs.com/package/ink-use-stdout-dimensions) -- terminal resize hook
+- [3 steps to create awesome CLI UX](https://opensource.com/article/22/7/awesome-ux-cli-application) -- onboarding best practices
+- Existing codebase analysis: `OnboardingScreen.tsx`, `App.tsx`, `ChatScreen.tsx`, `AsciiBanner.tsx`, `StatusBar.tsx`
 
 ---
-*Feature research for: CLI P2P Chat with Location-Based Discovery*
-*Researched: 2026-03-19*
+*Feature research for: v1.4 UI/UX Polish*
+*Researched: 2026-03-21*

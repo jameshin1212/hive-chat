@@ -1,277 +1,208 @@
-# Pitfalls Research
+# Domain Pitfalls
 
-**Domain:** CLI P2P Chat Tool (Terminal-based, npm distribution, IP geolocation)
-**Researched:** 2026-03-19
-**Confidence:** HIGH
+**Domain:** UI/UX Polish for Ink 6 TUI -- onboarding, welcome screen, responsive layout
+**Project:** HiveChat v1.4
+**Researched:** 2026-03-21
+**Confidence:** HIGH (codebase 직접 분석 + Ink 공식 문서 + 커뮤니티 이슈 기반)
+
+---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Korean/CJK IME Composition Invisible in Raw Mode TUI
+### Pitfall 1: setTimeout in App.tsx Welcome Screen -- setState on Unmounted Component
 
-**What goes wrong:**
-Terminal raw mode (`setRawMode(true)`) bypasses the OS IME composition layer. Korean input requires multi-keystroke composition (e.g., `ㅎ` + `ㅏ` + `ㄴ` = `한`), but raw mode delivers individual bytes without IME composition events. Result: characters are completely invisible during composition. Users type blind and only see output after pressing Enter/Space. This is a documented issue in Ink-based TUI applications (claude-code issue #22732, opencode issue #2920).
-
-**Why it happens:**
-Raw mode gives byte-level STDIN access for real-time key handling (required for TUI), but this fundamentally conflicts with IME's multi-stage character formation. Ink's TextInput processes keystrokes individually without understanding composition state. Additionally, Ink hides the real terminal cursor and renders a visual cursor via ANSI styles, so the IME candidate window appears at screen bottom-left instead of at the cursor position.
-
-**How to avoid:**
-- Do NOT use raw mode for the chat input field. Use a hybrid approach: raw mode for TUI navigation/commands, but switch to cooked/line mode for message composition.
-- Alternatively, implement a composition buffer that detects IME state heuristically from raw byte sequences, maintaining a separate pre-edit buffer with visual underline indicator.
-- If using Ink, leverage `string-width` for calculating cursor positions with wide characters and check their `examples/cursor-ime` reference implementation.
-- If using blessed, enable the `fullUnicode` option for East Asian double-width character rendering.
-- Test with actual Korean IME on macOS (Hangul input) and Linux (ibus/fcitx) from day one.
-
-**Warning signs:**
-- Input field appears empty while typing Korean/Japanese/Chinese
-- IME candidate window appears in wrong position (bottom-left corner)
-- Double-width characters cause cursor misalignment
-- Works fine in English, breaks with any CJK input
-
-**Phase to address:**
-Phase 1 (TUI foundation). This must be validated before building any chat features on top. A chat app where Korean users cannot type is DOA.
+**What goes wrong:** 현재 `App.tsx:17`에서 `setTimeout(() => setShowWelcomeBack(false), 1500)`이 cleanup 없이 사용됨. 사용자가 빠르게 Ctrl+C로 종료하면 unmounted component에 setState가 호출되어 React warning 또는 예측 불가 동작 발생.
+**Why it happens:** setTimeout이 component lifecycle과 분리되어 동작. Ink에서 `process.exit()` 호출 시 React unmount와 timer cancel이 동기화되지 않음.
+**Consequences:** React "setState on unmounted component" warning. 극단적 케이스에서 exit 지연 또는 orphaned process.
+**Prevention:**
+- `useEffect` 내에서 setTimeout 호출하고 cleanup에서 `clearTimeout` 반환
+- 패턴: `useEffect(() => { const t = setTimeout(...); return () => clearTimeout(t); }, []);`
+- welcome screen을 별도 component로 분리하여 lifecycle 관리 명확화
+**Detection:** Ctrl+C 빠르게 누를 때 console warning 확인
 
 ---
 
-### Pitfall 2: P2P NAT Traversal Fails for 15-30% of Users
+### Pitfall 2: useInput 충돌 -- 온보딩/웰컴/채팅 화면 간 Input Focus 경합
 
-**What goes wrong:**
-Direct P2P connections via TCP/UDP hole punching fail silently when users are behind symmetric NATs, corporate firewalls, or carrier-grade NAT (CGNAT). Symmetric NATs assign different external ports for each destination, making hole punching fundamentally unreliable. Research shows TCP hole punching achieves ~70-86% success rate under ideal conditions. In practice, with diverse ISP configurations, 15-30% of connection attempts will fail. Users see "connecting..." forever with no fallback.
-
-**Why it happens:**
-Developers test on local networks or simple NAT configurations where hole punching works perfectly. Symmetric NAT (common in corporate/university networks and mobile carriers) creates unique mappings per destination, so the public endpoint discovered via signaling server differs from the one needed for the actual peer connection. CGNAT (increasingly common as IPv4 addresses exhaust) adds another layer of NAT that compounds the problem.
-
-**How to avoid:**
-- Design the architecture with a TURN-like relay fallback from the start. Never assume direct P2P will always work.
-- Implement ICE-like negotiation: try direct connection first (STUN), fall back to relay (TURN) within 3-5 seconds.
-- The signaling server should double as a lightweight message relay for fallback cases. Since messages are ephemeral text (not video/audio), relay bandwidth is minimal.
-- Use multiple STUN servers in ICE configuration for resilience.
-- Detect NAT type during initial connection setup and skip hole punching entirely for known-symmetric NATs.
-
-**Warning signs:**
-- "Works on my machine" but users report connection failures
-- Connection success rate drops when testing across different networks
-- Users on mobile data or corporate WiFi can never connect
-- Connection attempts hang without timeout
-
-**Phase to address:**
-Phase 2 (P2P networking). The relay fallback architecture must be designed alongside the P2P layer, not bolted on later. If the signaling server is designed only for discovery, adding relay capability later requires protocol changes.
+**What goes wrong:** Ink의 `useInput`은 모든 rendered component에서 동시에 키 이벤트를 수신. 온보딩 화면에 새 interactive component(예: step indicator, 추가 selector)를 추가하면 기존 `AiCliSelector`의 useInput과 충돌하여 Enter/Arrow 키가 중복 처리됨.
+**Why it happens:** Ink의 useInput은 글로벌 stdin listener. `isActive` 옵션을 명시적으로 전달하지 않으면 모든 component가 동일 키 이벤트를 받음. **현재 `AiCliSelector.tsx`는 `isActive` 없이 useInput 사용 중** -- 이것이 v1.4에서 새 interactive component 추가 시 반드시 충돌하는 지뢰.
+**Consequences:** 화살표 키가 여러 component를 동시 조작. Enter 키 중복 submit. 온보딩 step 건너뛰기.
+**Prevention:**
+- 모든 useInput 호출에 `{ isActive: boolean }` 옵션 필수 전달
+- `AiCliSelector`에 `isActive` prop 추가: `useInput(handler, { isActive })`
+- 새로운 interactive component도 반드시 `isActive` guard 적용
+- 화면 전환 시 이전 화면의 input handler가 확실히 비활성화되는지 테스트
+**Detection:** 온보딩 flow에서 Enter 한 번에 여러 step이 동시 진행되는지 확인
 
 ---
 
-### Pitfall 3: IP Geolocation Gives Wrong City for 25-60% of Users
+### Pitfall 3: CJK/IME 입력 Regression -- 온보딩 닉네임 필드에서 한글 조합 깨짐
 
-**What goes wrong:**
-The "nearby users" feature relies on IP geolocation to determine user location within 1-10km radius. But IP geolocation city-level accuracy is only 40-75% depending on the provider and region. Strict accuracy (within 10km) drops to 15-35%. Users in suburbs get mapped to the nearest ISP hub (often 20-50km away in a different city). Mobile users get mapped to their carrier's routing hub (potentially hundreds of km away). VPN users get mapped to their VPN server location (potentially a different country). The "nearby" feature becomes meaningless when 1 in 4 users appears in the wrong location.
-
+**What goes wrong:** 온보딩 화면 UI 변경(애니메이션, 레이아웃 변경, 새 component 추가) 후 `IMETextInput`의 한글 조합이 깨짐. 특히 component가 re-render되면 IME 조합 중인 문자가 초기화됨.
 **Why it happens:**
-IP geolocation databases map IP ranges to locations based on ISP registration data, not actual user position. ISPs allocate IP blocks at regional hubs, not per-neighborhood. Mobile carriers route through centralized hubs. VPN/proxy traffic exits at server locations. Different geolocation databases disagree on the same IP address. There is no standardized IP-to-location mapping.
-
-**How to avoid:**
-- Set minimum radius to 10km (not 1km) and default to a larger radius. Be honest in UX that "nearby" means "same metro area."
-- Detect VPN/proxy/datacenter IPs (MaxMind provides this classification) and show a warning: "VPN detected - location may be inaccurate."
-- Use multiple geolocation sources and cross-reference. If they disagree by >50km, flag uncertainty.
-- Allow users to optionally set their city manually as an override.
-- Design the UX around discovery radius being approximate: "Users near Seoul" not "Users within 3km."
-- Consider falling back to country/region level if city data has low confidence score (MaxMind provides confidence percentages).
-
-**Warning signs:**
-- Users report seeing no nearby users despite being in a dense city
-- Users report appearing in wrong cities
-- Mobile users consistently appear far from their actual location
-- "1km radius" returns zero results in populated areas
-
-**Phase to address:**
-Phase 1-2 (signaling server + location). Choose the geolocation provider and validate accuracy against real IPs before building the discovery UX. The UI labels and radius options should reflect actual accuracy, not aspirational accuracy.
+1. 부모 component의 불필요한 re-render가 IMETextInput까지 전파되어 내부 state(textRef, cursorPosRef) 리셋
+2. 온보딩에 animation/timer 추가 시 frequent re-render 유발
+3. Ink의 raw mode에서 IME composition event가 byte 단위로 처리되므로 re-render 타이밍에 민감
+4. `IMETextInput`이 `textRef`로 React batching 문제를 우회하는 정교한 구현인데, 외부에서 forced re-render 시 이 메커니즘이 깨질 수 있음
+**Consequences:** 한글 조합 중 "ㅎㅏㄴ" 이 "한"으로 합쳐지지 않고 개별 자모로 표시. 닉네임에 깨진 문자 저장.
+**Prevention:**
+- IMETextInput을 `React.memo`로 감싸서 불필요한 re-render 차단
+- 온보딩 화면에서 timer/animation이 IMETextInput 포함 component를 re-render하지 않도록 state 분리
+- 모든 UI 변경 후 한글 조합 테스트 필수: ㅎ+ㅏ+ㄴ=한, ㄱ+ㅏ+ㄹ+ㄱ+ㅗ+ㅈ+ㅣ=갈곳이
+- 테스트 자동화: IMETextInput.test.tsx에 re-render 중 조합 유지 테스트 추가
+**Detection:** 닉네임 입력 필드에서 한글 타이핑 시 조합 문자가 보이지 않거나 깨지는 현상
 
 ---
 
-### Pitfall 4: npx Cold Start Takes 10-30 Seconds, Users Abandon
+### Pitfall 4: ASCII Banner가 좁은 터미널에서 레이아웃 파괴
 
-**What goes wrong:**
-`npx double-talk` downloads and installs the package on first run. If the package has many dependencies (TUI library + WebSocket + crypto + geolocation client), the initial install takes 10-30 seconds with no visible feedback. Users think the command hung and Ctrl+C. Even after caching, npx version resolution adds 2-5 seconds overhead. Native dependencies (if any) require compilation that may fail on systems without build tools.
-
-**Why it happens:**
-npm's dependency tree is deep. A TUI library like blessed pulls ~30 dependencies. Adding WebSocket, crypto, and HTTP client libraries compounds this. npx runs `npm install` in a temporary directory each time (unless cached). Users of `npx` expect instant execution like any other CLI command.
-
-**How to avoid:**
-- Zero native dependencies. Use only pure JavaScript/TypeScript packages. No node-gyp, no C++ bindings.
-- Minimize dependency count aggressively. Prefer built-in Node.js modules (`readline`, `net`, `crypto`, `http`) over npm packages where feasible.
-- Bundle with esbuild/rollup into a single file to eliminate install-time dependency resolution.
-- Show immediate ASCII banner/spinner on first output before any async initialization.
-- Consider recommending global install (`npm i -g double-talk`) in docs for frequent users.
-- Test npx cold start time on every release. Budget: under 5 seconds on broadband.
-
-**Warning signs:**
-- `npm pack` produces a tarball over 1MB
-- `npm install` takes more than 5 seconds on fast connection
-- Package has native optional dependencies that fail on some platforms
-- No output appears for several seconds after running `npx double-talk`
-
-**Phase to address:**
-Phase 1 (project setup). Choose minimal dependencies from the start. Switching from a heavy TUI library to a lighter one later means rewriting the entire UI layer.
+**What goes wrong:** `figlet.textSync('HIVECHAT', { font: 'Standard' })` 결과물이 약 75 컬럼 폭. 60 컬럼 미만 터미널에서 줄바꿈이 발생하여 배너가 깨지고, Ink의 layout engine이 예상치 못한 높이를 계산하여 하단 UI가 밀려남.
+**Why it happens:** figlet은 터미널 폭을 고려하지 않고 고정 폭 텍스트 생성. Ink의 Box/Text는 텍스트가 overflow하면 terminal의 line wrapping에 의존하는데, 이 wrapping이 Ink의 layout 계산과 불일치.
+**Consequences:** 배너 줄바꿈으로 6줄 -> 12줄 이상으로 확장. 온보딩/웰컴 화면에서 실제 input 영역이 화면 밖으로 밀림. 극단적 케이스에서 입력 불가.
+**Prevention:**
+- 터미널 폭 감지 후 조건부 배너 선택: `columns >= 75` figlet, `columns >= 50` 간소화 배너, `< 50` 단순 텍스트
+- 현재 `AsciiBanner.tsx`의 fallback `=== HIVECHAT ===`은 catch 블록에만 존재 -- width 기반 분기로 확장 필요
+- figlet에 `width` 옵션 전달하여 출력 폭 제한 가능
+- 웰컴 섹션의 모든 decorative element에도 동일 패턴 적용
+**Detection:** `COLUMNS=50 npx hivechat`으로 실행하여 배너가 깨지는지 확인
 
 ---
 
-### Pitfall 5: Terminal Compatibility Breaks Across OS and Emulators
+## Moderate Pitfalls
 
-**What goes wrong:**
-TUI rendering that works in iTerm2 breaks in Windows Terminal, GNOME Terminal, or basic Terminal.app. Specific failures: ANSI 256-color/truecolor codes render as garbage in terminals that only support 16 colors. Box-drawing characters (for chat bubbles/borders) render as `?` in terminals without UTF-8. Mouse events are handled differently across terminal emulators. Window resize events (`SIGWINCH`) behave differently or are missing on Windows. `process.stdout.columns` returns `undefined` when piped.
+### Pitfall 5: 반응형 레이아웃에서 resize 이벤트 처리 누락
 
-**Why it happens:**
-Terminal emulators implement different subsets of ANSI/VT100/xterm escape codes. Windows Terminal has dramatically improved but older ConHost still has gaps. Each terminal has different Unicode rendering capabilities. There is no universal terminal capability detection beyond basic TERM environment variable.
-
-**How to avoid:**
-- Use `supports-color` to detect color depth and degrade gracefully (truecolor -> 256 -> 16 -> monochrome).
-- Stick to basic ANSI codes (bold, dim, underline, 16 colors) for essential UI. Use extended colors only for decorative elements.
-- Use `is-unicode-supported` to detect if box-drawing characters will render, and provide ASCII fallbacks (`+--+` instead of `|--|`).
-- Handle missing `process.stdout.columns` gracefully (default to 80).
-- Test on: macOS Terminal.app, iTerm2, Windows Terminal, GNOME Terminal, and tmux/screen (which strip certain escape sequences).
-- Avoid mouse event dependency for core functionality.
-
-**Warning signs:**
-- UI looks perfect in developer's iTerm2 but garbled in screenshots from users
-- Box-drawing characters show as question marks
-- Colors appear wrong or not at all
-- Layout breaks when terminal is narrow (<80 columns)
-
-**Phase to address:**
-Phase 1 (TUI foundation). Establish terminal capability detection and graceful degradation patterns before building complex UI.
+**What goes wrong:** `useStdout().stdout.columns/rows`는 render 시점의 현재값을 반환하지만, 값 변경이 자동으로 re-render를 trigger하지 않음. 터미널 크기 변경 후 레이아웃이 갱신되지 않아 overflow 또는 빈 공간 발생.
+**Why it happens:** Ink의 `useStdout`은 stdout 객체 참조를 제공할 뿐 resize event listener를 자동 등록하지 않음. 현재 `ChatScreen.tsx:43-44`에서 `stdout?.columns`, `stdout?.rows`를 직접 읽지만 이는 최초 render 시점의 값만 사용됨.
+**Prevention:**
+- `stdout.on('resize', handler)` 이벤트 리스너로 state update trigger
+- custom hook `useTerminalSize()` 작성하여 resize -> re-render 파이프라인 구축
+- cleanup에서 listener 제거 필수
+- Ink issue #153 참고: 터미널 높이가 출력보다 작아지면 상단이 잘리는 문제 있음 -- fullscreen mode 사용 시 주의
+**Detection:** 터미널 창 크기를 변경한 후 UI가 이전 크기로 유지되는지 확인
 
 ---
 
-### Pitfall 6: WebSocket/TCP Connection Silently Dies, No Recovery
+### Pitfall 6: 웰컴 섹션 높이가 메시지 영역을 잠식
 
-**What goes wrong:**
-The signaling server WebSocket connection drops without triggering `close` or `error` events. TCP keepalive defaults are too long (2 hours on Linux). Users appear "online" to others but cannot receive messages. P2P connections die when laptop sleeps/wakes but the application doesn't detect the state change. Network switches (WiFi to mobile) drop all connections without notification.
-
-**Why it happens:**
-TCP does not guarantee delivery notification for dropped connections. If a network path dies (NAT mapping expires, router restarts, laptop sleeps), the TCP stack may not detect the failure for minutes or hours. WebSocket `close` events only fire for clean disconnections, not network failures. Intermediate proxies/load balancers may close idle connections after 60-120 seconds without notifying either end.
-
-**How to avoid:**
-- Implement application-level ping/pong heartbeat every 15-30 seconds on both signaling and P2P connections.
-- Use exponential backoff with jitter for reconnection (start 500ms, cap at 30s). Jitter prevents thundering herd when server restarts.
-- Set TCP keepalive to 30 seconds (not the default 2 hours): `socket.setKeepAlive(true, 30000)`.
-- Buffer outbound messages during reconnection and replay after reconnect.
-- Detect sleep/wake events and immediately trigger reconnection on wake.
-- Show connection status clearly in TUI (connected/reconnecting/offline).
-- Assign sequence numbers to signaling messages for gap detection after reconnect.
-
-**Warning signs:**
-- Users show as "online" but don't respond to messages
-- Messages silently disappear (sent but never delivered)
-- App works fine for 5 minutes then "freezes" (actually disconnected)
-- Reconnection creates duplicate sessions on the signaling server
-
-**Phase to address:**
-Phase 2 (networking layer). Connection health monitoring must be built into the WebSocket/TCP abstraction layer, not added as an afterthought to individual connection handlers.
+**What goes wrong:** 웰컴 섹션(버전, ASCII 아트, 프로필, Tips)이 10-15줄 차지하여 `messageAreaHeight = Math.max(1, rows - 4 - overlayHeight)` (ChatScreen.tsx:84)에서 메시지 표시 영역이 극도로 줄어듦. 24줄 터미널에서 메시지 2-3줄만 표시 가능.
+**Why it happens:** ChatScreen의 높이 계산이 현재 overlay만 고려하고 웰컴 섹션의 동적 높이를 반영하지 않음. `rows - 4` magic number가 고정 구조(separator 2줄 + StatusBar 1줄 + input 1줄)만 가정.
+**Consequences:** 사용자가 채팅 시작 후에도 웰컴 섹션이 공간을 차지하여 메시지가 거의 보이지 않음.
+**Prevention:**
+- 웰컴 섹션은 채팅 시작 전에만 표시, 첫 메시지 수신/발신 시 자동 축소 또는 숨김
+- 터미널 높이 기반 adaptive: `rows < 30` 간소화, `rows < 20` 완전 숨김
+- 메시지 영역 최소 높이 보장: `Math.max(5, calculatedHeight)`
+- magic number 4를 동적 계산으로 리팩토링
+**Detection:** `LINES=20 npx hivechat`으로 실행하여 메시지 영역이 최소 5줄 이상 확보되는지 확인
 
 ---
 
-## Technical Debt Patterns
+### Pitfall 7: Box-drawing 문자와 Unicode 지원 미확인
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Skip relay fallback, P2P only | Simpler architecture, no relay server cost | 15-30% of users can never connect | Never for a chat app |
-| Use `readline` instead of TUI library | Zero dependencies, instant startup | No split-pane layout, no concurrent input/output, no chat bubble rendering | Prototype only, rewrite needed |
-| Hardcode single geolocation API | Fast implementation | API goes down = feature dies, rate limits hit with growth | MVP only, add fallback by v1 |
-| Store identity in plain JSON file | Simple persistence | No migration path when schema changes, race conditions on concurrent access | Acceptable if you define a version field from day one |
-| Skip message encryption | Simpler P2P protocol | All messages are plaintext over network, easily sniffed | Never for a real product; acceptable for initial prototype if documented |
-| Synchronous geolocation lookup on startup | Simpler code flow | Blocks TUI rendering for 1-3 seconds on every launch | Never; always async with loading indicator |
+**What goes wrong:** 웰컴 섹션에 box-drawing 문자(│, ─, ═, rounded corners ╭╮╰╯)를 사용하면 Unicode 미지원 터미널에서 깨진 문자 표시. 특히 Windows의 일부 legacy terminal, tmux의 `TERM=screen` 설정.
+**Why it happens:** 프로젝트 rule에 `is-unicode-supported`로 확인 후 ASCII fallback이 명시되어 있지만, 실제 구현에서 이를 누락하기 쉬움. 현재 코드에서 `TransitionLine.tsx`의 `═` 문자, `ChatScreen.tsx:301`의 `─` 문자가 이미 Unicode에 의존.
+**Prevention:**
+- `is-unicode-supported` 패키지로 런타임 감지
+- Unicode 불가 시 ASCII fallback: `─` -> `-`, `═` -> `=`, `│` -> `|`, corners -> `+`
+- 웰컴 섹션의 새 border/separator 추가 시 반드시 fallback 쌍 정의
+- theme에 `chars.unicode` / `chars.ascii` 분기 추가
+**Detection:** `TERM=dumb npx hivechat` 또는 `TERM=screen npx hivechat`
 
-## Integration Gotchas
+---
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| IP Geolocation API (MaxMind/ipinfo) | Calling API on every request, hitting rate limits | Cache result locally with 1-hour TTL. IP rarely changes for desktop users. Free tiers have 1K-50K requests/month limits. |
-| STUN servers (Google/Twilio) | Using only one STUN server | Use 2-3 STUN servers. Google's `stun.l.google.com:19302` is free but undocumented/unsupported. Include a self-hosted fallback. |
-| npm registry (npx distribution) | Publishing with `devDependencies` in bundle | Use `.npmignore` or `files` field in package.json. `devDependencies` should never ship. Test with `npm pack` + `npm install <tarball>`. |
-| WebSocket library (ws) | Assuming `ws` handles reconnection | `ws` is a raw WebSocket implementation. Reconnection, heartbeat, and backoff must be implemented manually or use `reconnecting-websocket`. |
-| Terminal (cross-platform) | Assuming `process.stdout.columns` always exists | Returns `undefined` when output is piped or in non-TTY contexts. Always provide fallback: `process.stdout.columns \|\| 80`. |
+### Pitfall 8: 사이드 패널(Tips/Activity) 추가 시 가로 레이아웃과 CJK 폭 계산 불일치
 
-## Performance Traps
+**What goes wrong:** 넓은 터미널에서 사이드 패널을 `flexDirection="row"`로 추가하면, `string-width` 기반 폭 계산이 Ink의 Yoga layout engine과 불일치. 특히 CJK 문자(2-column), 이모지(2-column)가 포함된 콘텐츠에서 overflow 또는 잘림 발생.
+**Why it happens:** Ink의 Yoga layout은 character 단위가 아닌 Yoga 고유 측정 방식 사용. `width` prop을 percentage(`"50%"`)로 지정하면 CJK 문자와의 정렬이 틀어짐. 현재 `IMETextInput`의 `availableWidth` 계산(line 153)이 columns 기준인데, 사이드 패널 추가 시 이 값이 전체 터미널 폭이 아닌 메인 패널 폭이어야 함.
+**Prevention:**
+- 사이드 패널 폭을 절대값(숫자)으로 지정: `<Box width={30}>` (percentage 사용 금지)
+- 메인 영역은 `flexGrow={1}`로 나머지 공간 차지
+- `IMETextInput`에 `availableWidth`를 부모로부터 prop으로 전달하거나, 자체적으로 부모 Box 폭 감지
+- 사이드 패널 내 텍스트를 `string-width`로 truncate 처리
+**Detection:** 120+ 컬럼 터미널에서 한글 닉네임 + 이모지 포함 Tips 표시 후 레이아웃 정렬 확인
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Re-rendering entire TUI on every message | Input lag, flickering, high CPU | Differential rendering: only update changed regions. Ink handles this via React reconciliation. Blessed has `screen.render()` optimization. | >50 messages/second in active group chat |
-| Unbounded message buffer in TUI | Memory grows continuously during long sessions | Cap visible message history (e.g., last 500 messages). Old messages scroll off and are freed. | Multi-hour sessions with active chat |
-| Signaling server stores all online users in memory | Works at 100 users, OOM at 100K | Use geospatial index (Redis GEO or in-memory R-tree) for location queries instead of scanning all users | >10K concurrent users |
-| Geolocation lookup blocks event loop | TUI freezes for 1-3s on startup | Async lookup with immediate TUI render showing "detecting location..." | Always noticeable on slow networks |
-| `string-width` called on every render frame | Sluggish TUI with CJK/emoji content | Cache width calculations for unchanged strings. Width only changes when content changes. | Chat with heavy emoji/CJK usage |
+---
 
-## Security Mistakes
+### Pitfall 9: 온보딩 step 전환 시 깜빡임(flicker)
 
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Exposing user's real IP to all "nearby" users via signaling server | IP address leakage enables DDoS, physical location tracking | Signaling server should broker P2P connections without exposing IPs to the user list. Only exchange IPs during active connection handshake between consenting users. |
-| No rate limiting on signaling server | DDoS, spam user registration, location scraping | Rate limit by IP: connection attempts, message relay, user discovery queries. Use sliding window, not fixed window. |
-| Trusting client-reported location | Users can fake location to appear anywhere, stalk specific users | Server should determine location from connecting IP, never trust client-reported coordinates. |
-| Plaintext P2P messages | Network sniffing reveals all chat content | Use TLS for signaling WebSocket (wss://). For P2P, implement lightweight encryption (TweetNaCl/libsodium) with key exchange during handshake. |
-| Predictable user ID tags | Enumeration attack to discover all users | Use cryptographically random tag generation (4+ hex chars from `crypto.randomBytes`), not sequential or timestamp-based. |
-| No abuse/block mechanism | Harassment with no recourse | Implement client-side block list (persisted locally). Blocked users cannot initiate P2P connections. |
+**What goes wrong:** 온보딩 step 변경(welcome -> nickname -> ai-cli) 시 전체 화면이 깜빡임. 특히 AsciiBanner가 매 step마다 re-render되면서 figlet 텍스트가 한 프레임 사라졌다 나타남.
+**Why it happens:** Ink의 rendering은 stdout에 ANSI escape sequence로 이전 출력을 지우고 새 출력을 그림. Step 전환 시 component tree가 변경되면 전체 화면 다시 그리기 발생. SSH/tmux 환경에서 latency가 더해져 flicker가 심화.
+**Consequences:** 시각적으로 불안정한 전환. 전문적이지 않은 인상.
+**Prevention:**
+- AsciiBanner를 step 간 공유 component로 유지 (현재 OnboardingScreen이 이 패턴을 따름 -- step별 return 각각에 `<AsciiBanner />` 포함)
+- step 전환을 단일 component 내 state 변경으로 구현 (현재 패턴 유지)
+- 절대로 step별로 별도 Screen component를 mount/unmount 하지 말 것
+- content 영역만 변경하고 layout shell(banner + outer box)은 고정
+- 온보딩 리팩토링 시 `<Box flexDirection="column">` + `<AsciiBanner />` 를 외부에 한 번만 배치하고 내부 content만 조건부 렌더링
+**Detection:** tmux 내에서 온보딩 진행하며 화면 깜빡임 확인
 
-## UX Pitfalls
+---
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| No visual feedback during P2P connection setup | User thinks app is frozen. Connection can take 3-10 seconds for hole punching. | Show connection state: "Discovering peer... Connecting... Connected!" with spinner |
-| Chat input and message display in same region | Incoming messages push input field around, losing typing context | Split layout: fixed input area at bottom, scrolling message area above. This is standard for chat UIs but easy to skip in TUI. |
-| No indication of message delivery | User doesn't know if message was received | Implement delivery acknowledgment. Show sent/delivered indicators (checkmarks or similar ASCII indicators). |
-| Blocking UI during nickname setup | First-run experience feels heavy | Make nickname optional with auto-generated default (e.g., "anon#3A7F"). Let users change later with `/nick` command. |
-| Unicode username rendering misalignment | Korean/Japanese nicknames break column alignment in user list | Use `string-width` for all column calculations. Test with mixed ASCII + CJK + emoji usernames. |
-| No graceful exit | Ctrl+C leaves ghost sessions on signaling server | Handle SIGINT/SIGTERM: send disconnect to signaling server, close P2P connections, then exit. Set a 2-second force-exit timeout. |
+## Minor Pitfalls
 
-## "Looks Done But Isn't" Checklist
+### Pitfall 10: color depth 미감지로 배경색/강조색 표시 실패
 
-- [ ] **Korean input:** Test actual Korean IME composition (not just pasting Korean text). Type `hangul` using Korean keyboard and verify each jamo combines correctly in real-time.
-- [ ] **P2P connectivity:** Test between two different ISPs/networks (not just localhost or same LAN). Test with one user on mobile hotspot.
-- [ ] **Nearby users:** Test with VPN enabled. Test from a suburban location. Verify the displayed distance is plausible.
-- [ ] **npx cold start:** Run `npx double-talk` on a machine that has never installed it. Time it. Clear npm cache and try again.
-- [ ] **Terminal compatibility:** Test in tmux/screen (which strip some escape sequences). Test with TERM=xterm-256color AND TERM=xterm.
-- [ ] **Reconnection:** Kill WiFi mid-chat, wait 10 seconds, re-enable. Verify reconnection and message delivery after recovery.
-- [ ] **Concurrent users:** Test group chat with 5+ users simultaneously. Verify messages arrive at all participants in order.
-- [ ] **Long session:** Leave app running for 1+ hour. Verify signaling server connection is still alive (heartbeat working).
-- [ ] **Graceful shutdown:** Ctrl+C during active chat. Verify peer sees disconnect status, not "online" ghost.
-- [ ] **Emoji in messages:** Send emoji (especially compound emoji like family emoji) and verify they don't break layout alignment.
+**What goes wrong:** 웰컴 섹션에 배경색, gradient, 또는 256-color를 사용하면 true-color 미지원 터미널에서 색상이 깨지거나 읽기 어려운 조합으로 표시.
+**Prevention:**
+- `supports-color` 패키지로 color depth 감지 (이미 프로젝트 rule에 명시)
+- 16-color fallback 우선, 256-color는 enhancement
+- 배경색 사용 최소화 -- 전경색 + bold/dim으로 시각적 구분
 
-## Recovery Strategies
+---
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Wrong TUI library choice (no CJK support) | HIGH | Full UI rewrite. Mitigate by prototyping Korean input in the first week before building features. |
-| P2P-only architecture (no relay) | HIGH | Requires protocol changes, new server infrastructure, client updates. Design relay into the protocol from the start. |
-| IP geolocation too granular (1km promises) | LOW | Change UI labels and default radius. No code changes needed if radius is configurable. |
-| npx startup too slow (heavy deps) | MEDIUM | Bundle with esbuild. May need to replace heavy libraries with lighter alternatives. |
-| No heartbeat/reconnection | MEDIUM | Add heartbeat layer to existing WebSocket abstraction. Requires testing all connection states. |
-| Plaintext P2P messages | MEDIUM | Add encryption layer to existing message protocol. Requires key exchange during handshake, but message format change is additive. |
+### Pitfall 11: 웰컴 화면의 하드코딩된 버전 문자열
 
-## Pitfall-to-Phase Mapping
+**What goes wrong:** 현재 `ChatScreen.tsx:116`에 `'HiveChat v0.1.0'`이 하드코딩됨. 웰컴 섹션에 버전을 표시하면 실제 package.json 버전과 불일치. 배포 후 버전이 업데이트되어도 표시는 v0.1.0 고정.
+**Prevention:**
+- `package.json`에서 version을 빌드 타임에 주입 (tsdown define 또는 import assertion)
+- 절대 문자열 리터럴로 버전 하드코딩 금지
+- 패턴: `const VERSION = process.env.npm_package_version ?? 'dev';` 또는 빌드 시 `define: { __VERSION__: JSON.stringify(pkg.version) }`
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| CJK IME composition invisible | Phase 1 (TUI setup) | Type Korean sentence in input field, verify real-time character composition visible |
-| NAT traversal failure (no relay) | Phase 2 (P2P networking) | Connect two users on different ISPs; test with symmetric NAT (mobile hotspot) |
-| IP geolocation inaccuracy | Phase 2 (signaling + discovery) | Compare reported location vs actual for 10+ IPs across different ISPs and mobile |
-| npx cold start too slow | Phase 1 (project setup) | `time npx double-talk` on clean npm cache < 5 seconds |
-| Terminal compatibility | Phase 1 (TUI foundation) | Screenshot comparison across 4 target terminals + tmux |
-| Connection silent death | Phase 2 (networking) | Kill network mid-session, verify reconnection within 30 seconds |
-| IP exposure to user list | Phase 2 (signaling server) | Inspect signaling protocol: IPs never in discovery/list responses |
-| No abuse mechanism | Phase 3 (social features) | Block a user, verify they cannot re-initiate contact |
-| Message delivery uncertainty | Phase 3 (chat polish) | Send message, verify delivery indicator appears within 1 second |
+---
+
+### Pitfall 12: Tips 영역의 l10n/i18n 누락
+
+**What goes wrong:** Tips 텍스트를 영어로 하드코딩하면 프로젝트 global rule 위반 (사용자 대면 문자열 l10n/i18n 처리 필수).
+**Prevention:**
+- Tips 문자열을 상수 배열로 분리하여 향후 i18n 대응 가능하게
+- 최소한 파일 분리: `ui/constants/tips.ts` 등
+- 현재 `ChatScreen.tsx:117`의 Tips 문자열도 동일하게 분리 필요
+
+---
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| 온보딩 화면 UI 개선 | Pitfall 2 (useInput 충돌), Pitfall 3 (CJK regression), Pitfall 9 (flicker) | 모든 useInput에 isActive 추가, 변경 후 한글 테스트, step 전환을 state-only로 구현 |
+| 웰컴 섹션 추가 | Pitfall 4 (ASCII banner overflow), Pitfall 6 (높이 잠식), Pitfall 11 (버전 하드코딩) | 터미널 폭 기반 배너 분기, 웰컴 섹션 동적 높이 + 최소 메시지 영역 보장, 버전 자동 주입 |
+| 반응형 레이아웃 | Pitfall 5 (resize 미처리), Pitfall 8 (사이드 패널 폭), Pitfall 7 (Unicode fallback) | useTerminalSize hook, 절대값 width, is-unicode-supported 감지 |
+| 전체 통합 | Pitfall 1 (setTimeout cleanup) | App.tsx의 setTimeout을 useEffect 기반으로 리팩토링 |
+
+---
+
+## Integration Risk: ChatScreen 높이 계산 Magic Number
+
+현재 `ChatScreen.tsx:84`의 `messageAreaHeight = Math.max(1, rows - 4 - overlayHeight)` 계산은 고정된 UI 구조(separator 2줄 + StatusBar 1줄 + input 1줄 = 4줄)를 가정. 웰컴 섹션이나 반응형 레이아웃 변경 시 이 magic number 4를 반드시 업데이트해야 하며, 동적으로 계산하는 방식으로 리팩토링하는 것을 권장.
+
+구체적으로:
+- 웰컴 섹션 높이가 동적이면 `overlayHeight` 계산에 포함해야 함
+- 사이드 패널 추가 시 세로 높이는 유지되지만 가로 공간 분할 필요
+- `rows` 기반 계산이 여러 곳에 산재하면 유지보수 어려움 -- 단일 layout config 객체로 중앙화
+
+---
 
 ## Sources
 
-- [Claude Code IME composition issue #22732](https://github.com/anthropics/claude-code/issues/22732) - Korean IME invisible during composition in Ink TUI
-- [OpenCode double-byte character issue #2920](https://github.com/anomalyco/opencode/issues/2920) - TUI hides double-byte characters
-- [Claude Code IME cursor position issue #19207](https://github.com/anthropics/claude-code/issues/19207) - IME candidate window mispositioned
-- [MaxMind Geolocation Accuracy](https://support.maxmind.com/knowledge-base/articles/maxmind-geolocation-accuracy) - Official accuracy documentation
-- [IP Geolocation Accuracy Study](https://ipapi.is/blog/ip-geolocation-accuracy.html) - Comparative accuracy study showing 15-35% city-level accuracy
-- [libp2p Hole Punching](https://docs.libp2p.io/concepts/nat/hole-punching/) - NAT traversal documentation and success rates
-- [Symmetric NAT discussion](https://discuss.libp2p.io/t/symmetric-nat-holepunching/1335) - libp2p community discussion on symmetric NAT challenges
-- [WebSocket Reconnection Guide](https://websocket.org/guides/reconnection/) - State sync and recovery patterns
-- [reconnecting-websocket npm](https://www.npmjs.com/package/reconnecting-websocket) - Auto-reconnection library for WebSocket
-- [string-width npm](https://www.npmjs.com/package/string-width) - Terminal string width calculation for CJK/emoji
-- [Ink GitHub](https://github.com/vadimdemedes/ink) - React for CLI, cursor-ime example for CJK support
+- [Ink GitHub - resize events issue #153](https://github.com/vadimdemedes/ink/issues/153)
+- [Ink GitHub repository](https://github.com/vadimdemedes/ink)
+- [React IME composition events issue #8683](https://github.com/facebook/react/issues/8683)
+- [Claude Code Korean IME issue #22732](https://github.com/anthropics/claude-code/issues/22732)
+- [figlet npm package](https://www.npmjs.com/package/figlet)
+- [Ink v3 hooks and focus management](https://developerlife.com/2021/11/25/ink-v3-advanced-ui-components/)
+- [TUI Development: Ink + React (2025)](https://combray.prose.sh/2025-12-01-tui-development)
+- [fullscreen-ink npm](https://www.npmjs.com/package/fullscreen-ink) - resize handling reference
 
 ---
-*Pitfalls research for: CLI P2P Chat Tool (Double Talk)*
-*Researched: 2026-03-19*
+*Pitfalls research for: HiveChat v1.4 UI/UX Polish*
+*Researched: 2026-03-21*
