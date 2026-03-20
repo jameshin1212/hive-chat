@@ -2,15 +2,23 @@ import React from 'react';
 import { Text } from 'ink';
 import figlet from 'figlet';
 import { theme } from '../theme.js';
+import type { Breakpoint } from '../../hooks/useTerminalSize.js';
 
 // Generate ASCII art at module load time (not runtime)
-let BANNER_TEXT: string;
+let FIGLET_BANNER: string;
 try {
-  BANNER_TEXT = figlet.textSync('HIVECHAT', { font: 'Standard' });
+  FIGLET_BANNER = figlet.textSync('HIVECHAT', { font: 'Standard' });
 } catch {
-  BANNER_TEXT = '=== HIVECHAT ===';
+  FIGLET_BANNER = '=== HIVECHAT ===';
 }
 
-export function AsciiBanner() {
-  return <Text color={theme.text.primary}>{BANNER_TEXT}</Text>;
+const PLAIN_BANNER = '=== HIVECHAT ===';
+
+interface AsciiBannerProps {
+  breakpoint?: Breakpoint;
+}
+
+export function AsciiBanner({ breakpoint }: AsciiBannerProps) {
+  const bannerText = breakpoint === 'compact' ? PLAIN_BANNER : FIGLET_BANNER;
+  return <Text color={theme.text.primary}>{bannerText}</Text>;
 }
