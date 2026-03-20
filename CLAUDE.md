@@ -1,11 +1,11 @@
-# Cling Talk — Project Instructions
+# HiveChat — Project Instructions
 
 ## Project Overview
 
 CLI P2P 채팅 도구. AI CLI(Claude Code, Codex, Gemini, Cursor) 사용자들이 터미널에서 근처 개발자를 발견하고 채팅.
 - **Core Value**: 터미널을 떠나지 않고 근처 개발자와 즉시 대화
 - **Architecture**: 경량 신호 서버(발견/presence) + P2P 직접 메시지 (relay fallback)
-- **Distribution**: `npx cling-talk`으로 즉시 실행
+- **Distribution**: `npx hivechat`으로 즉시 실행
 
 ## Tech Stack
 

@@ -1,8 +1,8 @@
-# Roadmap: Cling Talk
+# Roadmap: HiveChat
 
 ## Milestones
 
-- [x] **v1.0 Cling Talk MVP** -- Phases 1-5 (shipped 2026-03-19)
+- [x] **v1.0 HiveChat MVP** -- Phases 1-5 (shipped 2026-03-19)
 - [x] **v1.0.1 Bug Fix & UX Polish** -- Phases 6-8 (shipped 2026-03-19)
 - [x] **v1.1 Settings & Cleanup** -- Phases 9-10 (shipped 2026-03-20)
 - [ ] **v1.2 Deploy & Publish** -- Phases 11-13
@@ -10,7 +10,7 @@
 ## Phases
 
 <details>
-<summary>v1.0 Cling Talk MVP (Phases 1-5) -- SHIPPED 2026-03-19</summary>
+<summary>v1.0 HiveChat MVP (Phases 1-5) -- SHIPPED 2026-03-19</summary>
 
 - [x] Phase 1: Foundation (3/3 plans) -- completed 2026-03-19
 - [x] Phase 2: Signaling & Discovery (3/3 plans) -- completed 2026-03-19
@@ -48,13 +48,13 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 ## Phase Details
 
 ### Phase 11: Server Deploy
-**Goal**: Cling Talk -> HiveChat 리네이밍 + 신호 서버가 Fly.io에 배포되어 클라이언트가 공용 서버에 접속할 수 있다
+**Goal**: HiveChat -> HiveChat 리네이밍 + 신호 서버가 Fly.io에 배포되어 클라이언트가 공용 서버에 접속할 수 있다
 **Depends on**: Nothing (기존 서버 코드 기반)
 **Requirements**: DEP-01, DEP-02, DEP-03
 **Plans:** 1/3 plans executed
 
 Plans:
-- [ ] 11-01-PLAN.md -- 코드베이스 리네이밍 (Cling Talk -> HiveChat)
+- [ ] 11-01-PLAN.md -- 코드베이스 리네이밍 (HiveChat -> HiveChat)
 - [ ] 11-02-PLAN.md -- Dockerfile + fly.toml + 문서 리네이밍
 - [ ] 11-03-PLAN.md -- Fly.io 배포 + WebSocket 연결 검증
 
