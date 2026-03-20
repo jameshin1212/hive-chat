@@ -20,7 +20,6 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/server/package.json ./packages/server/
-COPY --from=builder /app/packages/server/node_modules ./packages/server/node_modules
 EXPOSE 3456
 WORKDIR /app/packages/server
 CMD ["node", "dist/index.mjs"]
