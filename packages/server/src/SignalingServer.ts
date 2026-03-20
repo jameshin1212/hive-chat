@@ -226,6 +226,7 @@ export class SignalingServer {
   }
 
   private handleChatRequest(ws: AliveWebSocket, targetNickname: string, targetTag: string): void {
+    console.log(`[ChatRequest] ${ws.userId} → ${targetNickname}#${targetTag}`);
     const targetUserId = `${targetNickname}#${targetTag}`;
     const targetUser = this.presenceManager.getUser(targetUserId);
 
@@ -239,6 +240,7 @@ export class SignalingServer {
     }
 
     if (this.chatSessionManager.isUserBusy(targetUserId)) {
+      console.log(`[ChatRequest] REJECTED: ${targetUserId} is busy`);
       this.send(ws, {
         type: MessageType.CHAT_ERROR,
         code: 'USER_BUSY',
@@ -248,6 +250,7 @@ export class SignalingServer {
     }
 
     if (this.chatSessionManager.isUserBusy(ws.userId!)) {
+      console.log(`[ChatRequest] REJECTED: ${ws.userId} is busy (self)`);
       this.send(ws, {
         type: MessageType.CHAT_ERROR,
         code: 'USER_BUSY',

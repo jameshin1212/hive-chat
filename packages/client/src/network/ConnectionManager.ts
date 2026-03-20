@@ -175,6 +175,10 @@ export class ConnectionManager extends EventEmitter {
     // P2P disconnected: chat ends (no fallback)
     this.p2pTransport.on('disconnected', () => {
       if (this.activeTransport === 'direct') {
+        // Notify server to clean up session
+        if (this.currentSessionId) {
+          this.signalingClient.leaveChat(this.currentSessionId);
+        }
         this.activeTransport = 'relay';
         this.emit('transport_changed', 'relay');
         this.emit('p2p_disconnected');
@@ -200,6 +204,9 @@ export class ConnectionManager extends EventEmitter {
       await this.p2pTransport.connect(sessionId, isInitiator);
     } catch {
       this.isConnecting = false;
+      // Notify server to clean up session
+      this.signalingClient.leaveChat(sessionId);
+      this.cleanupP2P();
       this.emit('p2p_failed', { reason: 'Connection error' });
       return;
     }
@@ -208,7 +215,12 @@ export class ConnectionManager extends EventEmitter {
     this.connectTimer = setTimeout(() => {
       if (!this.p2pTransport.isConnected) {
         this.isConnecting = false;
+        // Notify server to clean up session
+        if (this.currentSessionId) {
+          this.signalingClient.leaveChat(this.currentSessionId);
+        }
         this.p2pTransport.cleanup();
+        this.cleanupP2P();
         this.emit('p2p_failed', { reason: 'Connection timed out (NAT/firewall may be blocking)' });
       }
     }, P2P_CONNECT_TIMEOUT_MS);
