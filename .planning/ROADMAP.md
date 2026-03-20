@@ -41,7 +41,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 ### v1.2 Deploy & Publish
 
-- [ ] **Phase 11: Server Deploy** - HiveChat 리네이밍 + Fly.io 배포 + DEFAULT_SERVER_URL 변경 + 동작 검증
+- [x] **Phase 11: Server Deploy** - HiveChat 리네이밍 + Fly.io 배포 + DEFAULT_SERVER_URL 변경 + 동작 검증 (completed 2026-03-20)
 - [ ] **Phase 12: npm Publish** - 패키지 메타데이터 완비 + 번들 크기 최적화 + npm publish
 - [ ] **Phase 13: Documentation** - README.md 작성 (설치/실행/기능/스크린샷)
 
@@ -51,7 +51,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Goal**: HiveChat -> HiveChat 리네이밍 + 신호 서버가 Fly.io에 배포되어 클라이언트가 공용 서버에 접속할 수 있다
 **Depends on**: Nothing (기존 서버 코드 기반)
 **Requirements**: DEP-01, DEP-02, DEP-03
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 11-01-PLAN.md -- 코드베이스 리네이밍 (HiveChat -> HiveChat)
@@ -99,7 +99,7 @@ Plans:
 | 8. Visual Polish | v1.0.1 | 2/2 | Complete | 2026-03-19 |
 | 9. Settings Command | v1.1 | 2/2 | Complete | 2026-03-20 |
 | 10. Command Cleanup | v1.1 | 1/1 | Complete | 2026-03-19 |
-| 11. Server Deploy | 2/3 | In Progress|  | - |
+| 11. Server Deploy | 3/3 | Complete   | 2026-03-20 | - |
 | 12. npm Publish | v1.2 | 0/? | Not started | - |
 | 13. Documentation | v1.2 | 0/? | Not started | - |
 
