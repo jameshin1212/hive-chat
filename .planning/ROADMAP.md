@@ -43,7 +43,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 - [x] **Phase 11: Server Deploy** - HiveChat 리네이밍 + Fly.io 배포 + DEFAULT_SERVER_URL 변경 + 동작 검증 (completed 2026-03-20)
 - [x] **Phase 12: npm Publish** - 패키지 메타데이터 완비 + 번들 크기 최적화 + npm publish (completed 2026-03-20)
-- [ ] **Phase 13: Documentation** - README.md 작성 (설치/실행/기능/스크린샷)
+- [x] **Phase 13: Documentation** - README.md 작성 (설치/실행/기능/스크린샷) (completed 2026-03-20)
 
 ## Phase Details
 
@@ -84,7 +84,7 @@ Plans:
 **Goal**: 처음 보는 사용자가 README만 읽고 설치부터 채팅까지 할 수 있다
 **Depends on**: Phase 11, Phase 12 (설치 명령어와 서버 정보가 확정되어야 함)
 **Requirements**: DOC-01
-**Plans:** 1 plan
+**Plans:** 0/1 plans complete
 
 Plans:
 - [ ] 13-01-PLAN.md -- README.md 작성 (설치/실행/기능/스크린샷 placeholder)
@@ -110,7 +110,7 @@ Plans:
 | 10. Command Cleanup | v1.1 | 1/1 | Complete | 2026-03-19 |
 | 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
 | 12. npm Publish | v1.2 | 2/2 | Complete | 2026-03-20 |
-| 13. Documentation | v1.2 | 0/1 | Not started | - |
+| 13. Documentation | v1.2 | Complete    | 2026-03-20 | - |
 
 ---
 *Created: 2026-03-19 (v1.0)*

@@ -4,11 +4,11 @@ milestone: v1.2
 milestone_name: Deploy & Publish
 status: unknown
 stopped_at: Phase 12 npm publish complete
-last_updated: "2026-03-20T05:54:36.834Z"
+last_updated: "2026-03-20T06:09:01.443Z"
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 5
+  total_plans: 6
   completed_plans: 5
 ---
 
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 12 — npm-publish
+**Current focus:** Phase 13 — documentation
 
 ## Current Position
 
-Phase: 12 (npm-publish) — EXECUTING
-Plan: 2 of 2
+Phase: 13 (documentation) — EXECUTING
+Plan: 1 of 1
 
 ## Accumulated Context
 
