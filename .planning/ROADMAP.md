@@ -7,7 +7,7 @@
 - [x] **v1.1 Settings & Cleanup** -- Phases 9-10 (shipped 2026-03-20)
 - [x] **v1.2 Deploy & Publish** -- Phases 11-13 (shipped 2026-03-20)
 - [x] **v1.3 Infrastructure Optimization** -- Phases 14-15 (shipped 2026-03-21)
-- [ ] **v1.4 UI/UX Polish** -- Phases 16-19
+- [x] **v1.4 UI/UX Polish** -- Phases 16-19 (shipped 2026-03-21)
 
 ## Phases
 
@@ -121,8 +121,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — CommandSuggestions Claude Code 스타일 개선 + Enter 즉시 실행
-- [ ] 19-02-PLAN.md — ChatRequestOverlay 시각 강조 + StatusBar 반응형 + 입력 최소 높이
+- [x] 19-01-PLAN.md — CommandSuggestions Claude Code 스타일 개선 + Enter 즉시 실행
+- [x] 19-02-PLAN.md — ChatRequestOverlay 시각 강조 + StatusBar 반응형 + 입력 최소 높이
 
 **Success Criteria** (what must be TRUE):
   1. `/` 입력 시 명령어 목록이 오버레이로 표시되며, 각 항목에 명령어명과 설명이 정렬되어 보인다
@@ -154,7 +154,7 @@ Plans:
 | 16. Shared Infrastructure | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
 | 17. Onboarding Polish | 1/1 | Complete    | 2026-03-20 | - |
 | 18. Welcome Section | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
-| 19. Slash Command & Responsive Finish | v1.4 | 0/2 | Not started | - |
+| 19. Slash Command & Responsive Finish | v1.4 | 2/2 | Complete | 2026-03-21 |
 
 ---
 *Created: 2026-03-19 (v1.0)*

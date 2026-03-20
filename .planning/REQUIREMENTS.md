@@ -28,19 +28,19 @@ Requirements for UI/UX Polish. 온보딩 개선, 웰컴 섹션, 슬래시 명령
 
 ### Slash Command UX
 
-- [ ] **SLSH-01**: Claude Code 스타일 슬래시 명령어 오버레이 UI (명령어명 + 설명, 하이라이트, 정렬)
-- [ ] **SLSH-02**: 오버레이에서 엔터 입력 시 선택된 명령어 즉시 실행
+- [x] **SLSH-01**: Claude Code 스타일 슬래시 명령어 오버레이 UI (명령어명 + 설명, 하이라이트, 정렬)
+- [x] **SLSH-02**: 오버레이에서 엔터 입력 시 선택된 명령어 즉시 실행
 
 ### Chat Request UX
 
-- [ ] **CHAT-01**: 채팅 요청 오버레이가 시각적으로 강조되어 (Box border, 색상 강조) 사용자가 즉시 인지할 수 있다
-- [ ] **CHAT-02**: 수락/거절 액션이 직관적 UI로 표시되어 행동이 명확하다
+- [x] **CHAT-01**: 채팅 요청 오버레이가 시각적으로 강조되어 (Box border, 색상 강조) 사용자가 즉시 인지할 수 있다
+- [x] **CHAT-02**: 수락/거절 액션이 직관적 UI로 표시되어 행동이 명확하다
 
 ### Responsive Layout
 
 - [x] **RESP-01**: compact(<80)/standard(80-120)/wide(>120) 3단계 breakpoint 시스템
-- [ ] **RESP-02**: 채팅 입력 영역 최소 높이 보장 (터미널 크기 무관)
-- [ ] **RESP-03**: 좁은 터미널에서 StatusBar 정보 축약 표시
+- [x] **RESP-02**: 채팅 입력 영역 최소 높이 보장 (터미널 크기 무관)
+- [x] **RESP-03**: 좁은 터미널에서 StatusBar 정보 축약 표시
 
 ## Previous Requirements (v1.0-v1.3)
 
@@ -101,12 +101,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WELC-02 | Phase 18 | Complete |
 | WELC-03 | Phase 18 | Complete |
 | WELC-04 | Phase 18 | Complete |
-| SLSH-01 | Phase 19 | Pending |
-| SLSH-02 | Phase 19 | Pending |
-| CHAT-01 | Phase 19 | Pending |
-| CHAT-02 | Phase 19 | Pending |
-| RESP-02 | Phase 19 | Pending |
-| RESP-03 | Phase 19 | Pending |
+| SLSH-01 | Phase 19 | Complete |
+| SLSH-02 | Phase 19 | Complete |
+| CHAT-01 | Phase 19 | Complete |
+| CHAT-02 | Phase 19 | Complete |
+| RESP-02 | Phase 19 | Complete |
+| RESP-03 | Phase 19 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 17 total
