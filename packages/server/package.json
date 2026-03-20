@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsdown src/index.ts --format esm --out-dir dist --no-external @hivechat/shared",
+    "build": "tsdown src/index.ts --format esm --out-dir dist",
     "test": "vitest run"
   },
   "dependencies": {
