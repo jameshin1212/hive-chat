@@ -31,6 +31,8 @@ export class SignalingServer {
   private presenceManager = new PresenceManager();
   private chatSessionManager = new ChatSessionManager();
   private friendSubscriptions = new Map<string, Array<{ nickname: string; tag: string }>>();
+  private friendReverseIndex = new Map<string, Set<string>>();
+  private subscriberTargets = new Map<string, Set<string>>();
   private port: number;
 
   constructor(port: number) {
@@ -370,6 +372,7 @@ export class SignalingServer {
 
     // Clean up this user's own friend subscriptions
     this.friendSubscriptions.delete(ws.userId);
+    this.cleanReverseIndexForSubscriber(ws.userId);
 
     this.presenceManager.unregister(ws.userId);
 
@@ -412,6 +415,7 @@ export class SignalingServer {
   ): void {
     // Store subscription for push updates
     this.friendSubscriptions.set(ws.userId!, friends);
+    this.updateFriendReverseIndex(ws.userId!, friends);
 
     // Build current status for each requested friend
     const statuses = friends.map((f) => {
@@ -431,24 +435,55 @@ export class SignalingServer {
     });
   }
 
+  private updateFriendReverseIndex(subscriberId: string, friends: Array<{ nickname: string; tag: string }>): void {
+    // Clean existing reverse index entries for this subscriber
+    this.cleanReverseIndexForSubscriber(subscriberId);
+
+    // Build new reverse index entries
+    const targets = new Set<string>();
+    for (const friend of friends) {
+      const targetId = `${friend.nickname}#${friend.tag}`;
+      targets.add(targetId);
+      let subs = this.friendReverseIndex.get(targetId);
+      if (!subs) {
+        subs = new Set<string>();
+        this.friendReverseIndex.set(targetId, subs);
+      }
+      subs.add(subscriberId);
+    }
+    this.subscriberTargets.set(subscriberId, targets);
+  }
+
+  private cleanReverseIndexForSubscriber(subscriberId: string): void {
+    const targets = this.subscriberTargets.get(subscriberId);
+    if (!targets) return;
+    for (const targetId of targets) {
+      const subs = this.friendReverseIndex.get(targetId);
+      if (subs) {
+        subs.delete(subscriberId);
+        if (subs.size === 0) this.friendReverseIndex.delete(targetId);
+      }
+    }
+    this.subscriberTargets.delete(subscriberId);
+  }
+
   private notifyFriendSubscribers(userId: string, status: 'online' | 'offline'): void {
-    // Parse userId into nickname and tag (last # is separator)
     const lastHash = userId.lastIndexOf('#');
     if (lastHash === -1) return;
     const nickname = userId.substring(0, lastHash);
     const tag = userId.substring(lastHash + 1);
 
-    for (const [subscriberId, friends] of this.friendSubscriptions) {
+    const subscribers = this.friendReverseIndex.get(userId);
+    if (!subscribers) return;
+
+    for (const subscriberId of subscribers) {
       if (subscriberId === userId) continue;
-      const match = friends.some((f) => f.nickname === nickname && f.tag === tag);
-      if (match) {
-        this.sendToUser(subscriberId, {
-          type: MessageType.FRIEND_STATUS_UPDATE,
-          nickname,
-          tag,
-          status,
-        });
-      }
+      this.sendToUser(subscriberId, {
+        type: MessageType.FRIEND_STATUS_UPDATE,
+        nickname,
+        tag,
+        status,
+      });
     }
   }
 

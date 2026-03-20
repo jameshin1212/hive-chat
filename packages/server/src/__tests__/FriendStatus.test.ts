@@ -189,4 +189,57 @@ describe('Friend Status', () => {
     // If we got here without errors, cleanup worked
     expect(bob.readyState).toBe(WebSocket.OPEN);
   });
+
+  it('should clean up reverse index on disconnect so no stale notifications are sent', async () => {
+    // Alice subscribes to carol, then disconnects
+    const alice = await connectAndRegister('alice', 'AAAA');
+    const subPromise = waitForMessageOfType(alice, MessageType.FRIEND_STATUS_RESPONSE);
+    sendJson(alice, {
+      type: MessageType.FRIEND_STATUS_REQUEST,
+      friends: [{ nickname: 'carol', tag: 'CCCC' }],
+    });
+    await subPromise;
+
+    // Alice disconnects
+    alice.close();
+    await new Promise(r => setTimeout(r, 100));
+
+    // Carol registers - should not crash or send to disconnected alice
+    const carol = await connectAndRegister('carol', 'CCCC');
+    expect(carol.readyState).toBe(WebSocket.OPEN);
+
+    // Wait a bit to ensure no errors happen asynchronously
+    await new Promise(r => setTimeout(r, 100));
+  });
+
+  it('should handle re-subscription (update friend list)', async () => {
+    const alice = await connectAndRegister('alice', 'AAAA');
+    const bob = await connectAndRegister('bob', 'BBBB');
+
+    // Alice first subscribes to bob
+    const sub1Promise = waitForMessageOfType(alice, MessageType.FRIEND_STATUS_RESPONSE);
+    sendJson(alice, {
+      type: MessageType.FRIEND_STATUS_REQUEST,
+      friends: [{ nickname: 'bob', tag: 'BBBB' }],
+    });
+    await sub1Promise;
+
+    // Alice re-subscribes with different list (carol only, not bob)
+    const sub2Promise = waitForMessageOfType(alice, MessageType.FRIEND_STATUS_RESPONSE);
+    sendJson(alice, {
+      type: MessageType.FRIEND_STATUS_REQUEST,
+      friends: [{ nickname: 'carol', tag: 'CCCC' }],
+    });
+    await sub2Promise;
+
+    // Now carol registers — alice should get FRIEND_STATUS_UPDATE for carol
+    const updatePromise = waitForMessageOfType(alice, MessageType.FRIEND_STATUS_UPDATE);
+    const carol = await connectAndRegister('carol', 'CCCC');
+    const update = await updatePromise;
+    expect(update.type).toBe(MessageType.FRIEND_STATUS_UPDATE);
+    if (update.type === MessageType.FRIEND_STATUS_UPDATE) {
+      expect(update.nickname).toBe('carol');
+      expect(update.status).toBe('online');
+    }
+  });
 });
