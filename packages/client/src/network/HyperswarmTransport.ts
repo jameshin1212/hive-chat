@@ -44,19 +44,18 @@ export class HyperswarmTransport extends EventEmitter {
 
     this.swarm = new Hyperswarm();
     this.swarm.on('connection', (conn: any, _peerInfo: any) => {
-      this.emit('debug', 'Peer found (initiator)');
+      this.emit('status', 'Peer discovered, verifying identity...');
       this.handleConnection(conn, _peerInfo);
     });
 
     const topic = HyperswarmTransport.sessionToTopic(sessionId);
     this.currentTopic = topic;
-    const topicHex = b4a.toString(topic, 'hex').slice(0, 8);
-    this.emit('debug', `Announcing topic ${topicHex}...`);
+    this.emit('status', 'Registering on P2P network...');
 
     // Join as server+client, announce to DHT
     this.currentDiscovery = this.swarm.join(topic, { server: true, client: true });
     await this.currentDiscovery.flushed();
-    this.emit('debug', 'DHT announce complete, waiting for acceptor...');
+    this.emit('status', 'Waiting for peer to join...');
 
     // Start retry loop — re-lookup periodically in case acceptor joins later
     this.startRetryLoop();
@@ -78,19 +77,18 @@ export class HyperswarmTransport extends EventEmitter {
 
     this.swarm = new Hyperswarm();
     this.swarm.on('connection', (conn: any, _peerInfo: any) => {
-      this.emit('debug', 'Peer found (acceptor)');
+      this.emit('status', 'Peer discovered, verifying identity...');
       this.handleConnection(conn, _peerInfo);
     });
 
     const topic = HyperswarmTransport.sessionToTopic(sessionId);
     this.currentTopic = topic;
-    const topicHex = b4a.toString(topic, 'hex').slice(0, 8);
-    this.emit('debug', `Joining topic ${topicHex} (looking for initiator)...`);
+    this.emit('status', 'Searching for peer on P2P network...');
 
     // Join as server+client, lookup DHT for initiator
     this.currentDiscovery = this.swarm.join(topic, { server: true, client: true });
     await this.currentDiscovery.flushed();
-    this.emit('debug', 'DHT lookup complete, waiting for connection...');
+    this.emit('status', 'Connecting to peer...');
 
     // Start retry loop — re-lookup periodically
     this.startRetryLoop();
@@ -141,7 +139,7 @@ export class HyperswarmTransport extends EventEmitter {
         this.stopRetryLoop();
         return;
       }
-      this.emit('debug', 'Retrying peer discovery...');
+      this.emit('status', 'Still searching for peer...');
       try {
         await this.currentDiscovery.refresh({ client: true, server: true });
       } catch {
@@ -163,7 +161,7 @@ export class HyperswarmTransport extends EventEmitter {
       conn.destroy();
       return;
     }
-    this.emit('debug', 'Connected to peer, handshaking...');
+    this.emit('status', 'Securing connection...');
 
     this.connection = conn;
     let buffer = '';
@@ -215,7 +213,7 @@ export class HyperswarmTransport extends EventEmitter {
       }
       this.handshakeCompleted = true;
       this.stopRetryLoop();
-      this.emit('debug', `Handshake OK: ${msg.nickname}#${msg.tag}`);
+      this.emit('status', `Verified: ${msg.nickname}#${msg.tag}`);
       this.emit('connected', {
         nickname: msg.nickname,
         tag: msg.tag,
