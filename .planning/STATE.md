@@ -44,6 +44,7 @@ Plan: 2 of 2 (complete)
 - [v1.4]: @inkjs/ui Ink 6 호환성 런타임 검증 필요 (Ink 5 대상 출시)
 - [v1.4]: AiCliSelector isActive default true for backward compatibility
 - [v1.4]: readFileSync + import.meta.url로 tsdown define에서 package.json 버전 주입
+- [v1.4]: Breakpoint 3단계 -- compact(<80), standard(80-120), wide(>=120), getBreakpoint 유틸 함수 export
 
 ### Pending Todos
 

@@ -9,7 +9,7 @@ Requirements for UI/UX Polish. 온보딩 개선, 웰컴 섹션, 슬래시 명령
 
 ### Shared Infrastructure
 
-- [ ] **INFR-01**: useTerminalSize hook으로 터미널 크기 감지 + breakpoint 계산 (compact/standard/wide)
+- [x] **INFR-01**: useTerminalSize hook으로 터미널 크기 감지 + breakpoint 계산 (compact/standard/wide)
 - [x] **INFR-02**: 기존 컴포넌트의 useInput에 isActive prop 추가하여 키 이벤트 충돌 방지
 - [x] **INFR-03**: package.json 버전을 tsdown define으로 빌드타임 주입
 
@@ -38,7 +38,7 @@ Requirements for UI/UX Polish. 온보딩 개선, 웰컴 섹션, 슬래시 명령
 
 ### Responsive Layout
 
-- [ ] **RESP-01**: compact(<80)/standard(80-120)/wide(>120) 3단계 breakpoint 시스템
+- [x] **RESP-01**: compact(<80)/standard(80-120)/wide(>120) 3단계 breakpoint 시스템
 - [ ] **RESP-02**: 채팅 입력 영역 최소 높이 보장 (터미널 크기 무관)
 - [ ] **RESP-03**: 좁은 터미널에서 StatusBar 정보 축약 표시
 
@@ -90,10 +90,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SOPT-03 | Phase 14 | Complete |
 | DPLY-01 | Phase 15 | Complete |
 | DPLY-02 | Phase 15 | Complete |
-| INFR-01 | Phase 16 | Pending |
+| INFR-01 | Phase 16 | Complete |
 | INFR-02 | Phase 16 | Complete |
 | INFR-03 | Phase 16 | Complete |
-| RESP-01 | Phase 16 | Pending |
+| RESP-01 | Phase 16 | Complete |
 | ONBD-01 | Phase 17 | Pending |
 | ONBD-02 | Phase 17 | Pending |
 | ONBD-03 | Phase 17 | Pending |

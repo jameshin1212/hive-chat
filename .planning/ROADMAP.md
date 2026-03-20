@@ -74,7 +74,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — useTerminalSize hook + breakpoint 상수 + ChatScreen 통합
+- [x] 16-01-PLAN.md — useTerminalSize hook + breakpoint 상수 + ChatScreen 통합
 - [x] 16-02-PLAN.md — AiCliSelector isActive 수정 + 빌드타임 버전 주입
 
 **Success Criteria** (what must be TRUE):
