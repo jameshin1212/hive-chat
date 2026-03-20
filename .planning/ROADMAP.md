@@ -62,7 +62,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 - [x] **Phase 16: Shared Infrastructure** - useTerminalSize hook, useInput 충돌 방어, 빌드타임 버전 주입, breakpoint 시스템 (completed 2026-03-20)
 - [x] **Phase 17: Onboarding Polish** - step indicator, 시각 개선, 적응형 ASCII 배너 (completed 2026-03-20)
-- [ ] **Phase 18: Welcome Section** - 프로필 카드, 버전/ASCII 배너, Tips, 자동 dismiss
+- [x] **Phase 18: Welcome Section** - 프로필 카드, 버전/ASCII 배너, Tips, 자동 dismiss (completed 2026-03-20)
 - [ ] **Phase 19: Slash Command & Responsive Finish** - 슬래시 명령어 오버레이, 채팅 요청 UX, 입력 영역 최소 높이, StatusBar 축약
 
 ## Phase Details
@@ -149,7 +149,7 @@ Plans:
 | 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
 | 16. Shared Infrastructure | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
 | 17. Onboarding Polish | 1/1 | Complete    | 2026-03-20 | - |
-| 18. Welcome Section | v1.4 | 1/1 | Complete | 2026-03-20 |
+| 18. Welcome Section | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
 | 19. Slash Command & Responsive Finish | v1.4 | 0/? | Not started | - |
 
 ---
