@@ -45,23 +45,25 @@ export class HyperswarmTransport extends EventEmitter {
 
     this.swarm = new Hyperswarm();
     this.swarm.on('connection', (conn: any, peerInfo: any) => {
+      this.emit('debug', `Peer found (${isInitiator ? 'initiator' : 'acceptor'})`);
       this.handleConnection(conn, peerInfo);
     });
 
     const topic = HyperswarmTransport.sessionToTopic(sessionId);
     this.currentTopic = topic;
+    const topicHex = b4a.toString(topic, 'hex').slice(0, 8);
+    this.emit('debug', `Joining topic ${topicHex}... (session: ${sessionId.slice(0, 8)})`);
 
-    // Initiator as client only, acceptor as server only
-    // Prevents duplicate connections
+    // Both sides join as server AND client for reliable local discovery
     this.swarm.join(topic, {
-      server: !isInitiator,
-      client: isInitiator,
+      server: true,
+      client: true,
     });
 
-    // Flush to speed up discovery
-    if (isInitiator) {
-      await this.swarm.flush();
-    }
+    // Flush to ensure discovery starts
+    this.emit('debug', 'Searching for peer...');
+    await this.swarm.flush();
+    this.emit('debug', 'Search complete, waiting for connection...');
   }
 
   /** Send a chat message over P2P */
@@ -106,6 +108,7 @@ export class HyperswarmTransport extends EventEmitter {
       conn.destroy();
       return;
     }
+    this.emit('debug', 'Connected to peer, handshaking...');
 
     this.connection = conn;
     let buffer = '';
@@ -156,6 +159,7 @@ export class HyperswarmTransport extends EventEmitter {
         return;
       }
       this.handshakeCompleted = true;
+      this.emit('debug', `Handshake OK: ${msg.nickname}#${msg.tag}`);
       this.emit('connected', {
         nickname: msg.nickname,
         tag: msg.tag,

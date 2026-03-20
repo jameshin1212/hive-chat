@@ -151,6 +151,11 @@ export class ConnectionManager extends EventEmitter {
   }
 
   private setupP2PEvents(): void {
+    // P2P debug logs → forward to UI
+    this.p2pTransport.on('debug', (msg: string) => {
+      this.emit('p2p_debug', msg);
+    });
+
     // P2P connected: ready to chat
     this.p2pTransport.on('connected', (peerIdentity: { nickname: string; tag: string }) => {
       this.cancelConnectTimer();

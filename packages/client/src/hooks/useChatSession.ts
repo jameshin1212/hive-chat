@@ -183,6 +183,13 @@ export function useChatSession(
       ].slice(-MAX_MESSAGES));
     };
 
+    const handleP2PDebug = (msg: string) => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage(`[P2P] ${msg}`),
+      ].slice(-MAX_MESSAGES));
+    };
+
     const handleP2PConnected = () => {
       setChatMessages(msgs => [
         ...msgs,
@@ -219,6 +226,7 @@ export function useChatSession(
     client.on('p2p_connected', handleP2PConnected);
     client.on('p2p_failed', handleP2PFailed);
     client.on('p2p_disconnected', handleP2PDisconnected);
+    client.on('p2p_debug', handleP2PDebug);
 
     return () => {
       client.off('chat_requested', handleChatRequested);
@@ -232,6 +240,7 @@ export function useChatSession(
       client.off('p2p_connected', handleP2PConnected);
       client.off('p2p_failed', handleP2PFailed);
       client.off('p2p_disconnected', handleP2PDisconnected);
+      client.off('p2p_debug', handleP2PDebug);
     };
   }, [client, chatStatus]);
 
