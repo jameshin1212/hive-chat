@@ -1,0 +1,8 @@
+node_modules
+.git
+.planning
+.claude
+docs
+*.md
+packages/client
+.env*
