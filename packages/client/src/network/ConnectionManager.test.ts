@@ -275,11 +275,28 @@ describe('ConnectionManager', () => {
   });
 
   describe('chat cleanup on chat_left/chat_user_offline', () => {
-    it('cleans up P2P on chat_left', () => {
+    it('ignores chat_left during P2P connecting phase', () => {
+      const handler = vi.fn();
+      manager.on('chat_left', handler);
       signalingClient.emit('chat_accepted', {
         sessionId: 'session-1',
         partner: { nickname: 'peer', tag: 'CD34', aiCli: 'Claude Code', distance: 1, status: 'online' },
       });
+
+      // During P2P connecting, chat_left from partner is ignored
+      signalingClient.emit('chat_left', { sessionId: 'session-1', nickname: 'peer', tag: 'CD34' });
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('cleans up P2P on chat_left when P2P is connected', () => {
+      signalingClient.emit('chat_accepted', {
+        sessionId: 'session-1',
+        partner: { nickname: 'peer', tag: 'CD34', aiCli: 'Claude Code', distance: 1, status: 'online' },
+      });
+
+      // Simulate P2P connected
+      mockP2PTransport.isConnected = true;
+      mockP2PTransport.emit('connected', { nickname: 'peer', tag: 'CD34' });
 
       signalingClient.emit('chat_left', { sessionId: 'session-1', nickname: 'peer', tag: 'CD34' });
       expect(mockP2PTransport.cleanup).toHaveBeenCalled();

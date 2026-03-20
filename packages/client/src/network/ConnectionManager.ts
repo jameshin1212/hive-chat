@@ -128,8 +128,13 @@ export class ConnectionManager extends EventEmitter {
       }
     });
 
-    // Cleanup P2P on chat_left and chat_user_offline
+    // Cleanup P2P on chat_left (ignore during P2P connecting — both sides handle timeout independently)
     this.signalingClient.on('chat_left', (data: any) => {
+      if (this.isConnecting) {
+        // During P2P connection phase, partner's leave is from their own P2P timeout.
+        // We'll handle our own timeout independently.
+        return;
+      }
       this.cleanupP2P();
       this.emit('chat_left', data);
     });
