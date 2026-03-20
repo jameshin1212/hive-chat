@@ -1,7 +1,19 @@
 {
   "name": "hivechat",
-  "version": "0.1.0",
+  "version": "1.2.0",
+  "description": "Chat with nearby developers right from your terminal",
+  "keywords": ["chat", "cli", "terminal", "p2p", "developer", "tui", "hyperswarm"],
+  "license": "MIT",
+  "author": "Jamie",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamie-chat/hivechat"
+  },
+  "homepage": "https://github.com/jamie-chat/hivechat#readme",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "bin": {
     "hivechat": "./bin/hivechat.js"
   },
