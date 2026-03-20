@@ -201,10 +201,9 @@ export function useChatSession(
       setChatMessages(msgs => [
         ...msgs,
         createSystemMessage(`P2P connection failed: ${data.reason}`),
+        createSystemMessage('Use /leave to return to main screen'),
       ].slice(-MAX_MESSAGES));
-      setChatStatus('idle');
-      setPartner(null);
-      setSessionId(null);
+      setPartnerLeft(true);
     };
 
     const handleP2PDisconnected = () => {

@@ -403,15 +403,20 @@ export class SignalingServer {
   // --- P2P signal handlers ---
 
   private handleP2PSignal(ws: AliveWebSocket, sessionId: string, topic: string): void {
+    console.log(`[P2P_SIGNAL] from=${ws.userId} session=${sessionId.slice(0, 8)}`);
     const session = this.chatSessionManager.getSessionByUser(ws.userId!);
-    if (!session || session.id !== sessionId) return;
+    if (!session || session.id !== sessionId) {
+      console.log(`[P2P_SIGNAL] DROPPED — no session found for ${ws.userId} (sessionId mismatch: got=${sessionId.slice(0, 8)} expected=${session?.id?.slice(0, 8) ?? 'none'})`);
+      return;
+    }
 
     const partnerId = session.userA === ws.userId ? session.userB : session.userA;
-    this.sendToUser(partnerId, {
+    const sent = this.sendToUser(partnerId, {
       type: MessageType.P2P_SIGNAL,
       sessionId,
       topic,
     });
+    console.log(`[P2P_SIGNAL] relayed to=${partnerId} success=${sent}`);
   }
 
   private handleP2PStatus(ws: AliveWebSocket, sessionId: string, transportType: 'relay' | 'direct'): void {
