@@ -1,30 +1,32 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Deploy & Publish
-status: unknown
-stopped_at: Phase 12 npm publish complete
-last_updated: "2026-03-20T06:09:01.443Z"
+milestone: v1.3
+milestone_name: Infrastructure Optimization
+status: defining_requirements
+stopped_at: Milestone v1.3 started
+last_updated: "2026-03-21"
 progress:
-  total_phases: 3
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 5
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-20)
+See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** 터미널을 떠나지 않고 근처 개발자들과 즉시 대화할 수 있어야 한다
-**Current focus:** Phase 13 — documentation
+**Current focus:** Defining requirements for v1.3
 
 ## Current Position
 
-Phase: 13 (documentation) — EXECUTING
-Plan: 1 of 1
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-21 — Milestone v1.3 started
 
 ## Accumulated Context
 
@@ -32,13 +34,9 @@ Plan: 1 of 1
 
 - [v1.2]: npm publish + Fly.io 서버 배포 + README
 - [v1.2]: Fly.io 선택 -- WebSocket 지원, Dockerfile 기반 배포
-- [v1.2]: Phase 순서: Deploy(11) -> Publish(12) -> Docs(13) -- 서버 URL 확정 후 번들에 포함
-- [Phase 11]: DEFAULT_SERVER_URL changed to wss://hivechat.fly.dev (production WebSocket endpoint)
-- [Phase 11]: Package scope: @hivechat/* for all workspace packages
-- [Phase 11]: Multi-stage Dockerfile: Node.js 20 build + minimal production image with geoip-lite runtime deps
-- [Phase 11]: Fly.io: auto_stop_machines=stop, shared-cpu-1x/256mb, nrt primary region
-- [Phase 12]: tsdown config file 방식 채택 -- CLI flags 대신 tsdown.config.ts로 deprecated 경고 제거
-- [Phase 12]: bin entry .mjs 확장자 사용 -- tsdown ESM 출력 index.mjs와 일치
+- [v1.2]: P2P-only 아키텍처 전환 (서버 relay 제거)
+- [v1.3]: 인프라 비용 분석 — broadcastToRegistered O(N) 병목 확인, 지역 기반 최적화로 100K $260→$117/월 절감
+- [v1.3]: Fly.io trial 만료 — 카드 등록 필요 ($5/월 최소)
 
 ### Pending Todos
 
@@ -46,10 +44,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None.
+- Fly.io trial 만료 — 카드 등록 후 재배포 필요
 
 ## Session Continuity
 
-Last session: 2026-03-20T05:54:36.525Z
-Stopped at: Phase 12 npm publish complete
+Last session: 2026-03-21
+Stopped at: Milestone v1.3 started
 Resume file: None
