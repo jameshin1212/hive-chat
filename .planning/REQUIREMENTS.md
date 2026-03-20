@@ -21,10 +21,10 @@ Requirements for UI/UX Polish. 온보딩 개선, 웰컴 섹션, 슬래시 명령
 
 ### Welcome Section
 
-- [ ] **WELC-01**: ChatScreen에 프로필 카드 표시 (닉네임#태그, AI CLI, 연결 상태)
-- [ ] **WELC-02**: HiveChat 버전 + ASCII 아트 배너 표시
-- [ ] **WELC-03**: 사용법 안내 Tips 영역 표시
-- [ ] **WELC-04**: 채팅 시작 시 웰컴 섹션 자동 dismiss
+- [x] **WELC-01**: ChatScreen에 프로필 카드 표시 (닉네임#태그, AI CLI, 연결 상태)
+- [x] **WELC-02**: HiveChat 버전 + ASCII 아트 배너 표시
+- [x] **WELC-03**: 사용법 안내 Tips 영역 표시
+- [x] **WELC-04**: 채팅 시작 시 웰컴 섹션 자동 dismiss
 
 ### Slash Command UX
 
@@ -97,10 +97,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ONBD-01 | Phase 17 | Complete |
 | ONBD-02 | Phase 17 | Complete |
 | ONBD-03 | Phase 17 | Complete |
-| WELC-01 | Phase 18 | Pending |
-| WELC-02 | Phase 18 | Pending |
-| WELC-03 | Phase 18 | Pending |
-| WELC-04 | Phase 18 | Pending |
+| WELC-01 | Phase 18 | Complete |
+| WELC-02 | Phase 18 | Complete |
+| WELC-03 | Phase 18 | Complete |
+| WELC-04 | Phase 18 | Complete |
 | SLSH-01 | Phase 19 | Pending |
 | SLSH-02 | Phase 19 | Pending |
 | CHAT-01 | Phase 19 | Pending |

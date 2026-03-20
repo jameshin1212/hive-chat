@@ -105,7 +105,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 18-01-PLAN.md — 웰컴 시스템 메시지 (배너+프로필+버전+Tips) + WelcomeBack splash 제거
+- [x] 18-01-PLAN.md — 웰컴 시스템 메시지 (배너+프로필+버전+Tips) + WelcomeBack splash 제거
 
 **Success Criteria** (what must be TRUE):
   1. ChatScreen lobby 상태에서 프로필 카드(닉네임#태그, AI CLI, 연결 상태)가 표시된다
@@ -149,7 +149,7 @@ Plans:
 | 15. Deploy & Verification | v1.3 | - | Complete | 2026-03-21 |
 | 16. Shared Infrastructure | v1.4 | Complete    | 2026-03-20 | 2026-03-20 |
 | 17. Onboarding Polish | 1/1 | Complete    | 2026-03-20 | - |
-| 18. Welcome Section | v1.4 | 0/1 | Not started | - |
+| 18. Welcome Section | v1.4 | 1/1 | Complete | 2026-03-20 |
 | 19. Slash Command & Responsive Finish | v1.4 | 0/? | Not started | - |
 
 ---
