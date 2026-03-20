@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Infrastructure Optimization
-status: executing
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-03-20T16:26:07Z"
+status: phase-complete
+stopped_at: Completed 14-02-PLAN.md
+last_updated: "2026-03-20T16:30:14Z"
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: 14 (Server Optimization) — EXECUTING
-Plan: 2 of 2
+Phase: 14 (Server Optimization) — COMPLETE
+Plan: 2 of 2 (all complete)
 
 ## Accumulated Context
 
@@ -38,6 +38,8 @@ Plan: 2 of 2
 - [v1.3]: SOPT-02 (공간 인덱싱)가 SOPT-01 (지역 broadcast)의 전제조건 -- Phase 14에서 SOPT-02 먼저 구현
 - [14-01]: geohashing 라이브러리 (pure JS, zero deps) 선택 -- precision 5 (~5km cells)
 - [14-01]: subscriberTargets 정방향 맵으로 O(F) cleanup 구현
+- [14-02]: BROADCAST_RADIUS_KM = 10 서버 상수 (클라이언트 DEFAULT_RADIUS_KM = 3과 별도)
+- [14-02]: handleClose에서 unregister 전에 좌표 저장하여 broadcast origin 보존
 
 ### Pending Todos
 
@@ -49,6 +51,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T16:26:07Z
-Stopped at: Completed 14-01-PLAN.md
-Resume with: `/gsd:execute-phase 14` (Plan 02 remaining)
+Last session: 2026-03-20T16:30:14Z
+Stopped at: Completed 14-02-PLAN.md
+Resume with: Phase 14 complete. Next: Phase 15 or new milestone planning.
