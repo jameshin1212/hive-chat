@@ -18,6 +18,9 @@ import type { UserRecord } from './types.js';
 const DEFAULT_DEV_LAT = 37.5665;
 const DEFAULT_DEV_LON = 126.9780;
 
+/** Server broadcast radius - fixed at 10km per user decision */
+const BROADCAST_RADIUS_KM = 10;
+
 interface AliveWebSocket extends WebSocket {
   isAlive: boolean;
   userId?: string;
@@ -191,8 +194,8 @@ export class SignalingServer {
       users: nearbyUsers,
     });
 
-    // Broadcast USER_JOINED to nearby clients
-    this.broadcastToRegistered(
+    // Broadcast USER_JOINED to nearby clients (10km radius)
+    this.broadcastToNearby(
       {
         type: MessageType.USER_JOINED,
         user: {
@@ -203,6 +206,9 @@ export class SignalingServer {
           status: 'online',
         },
       },
+      geo.lat,
+      geo.lon,
+      BROADCAST_RADIUS_KM,
       userId,
     );
 
@@ -374,14 +380,22 @@ export class SignalingServer {
     this.friendSubscriptions.delete(ws.userId);
     this.cleanReverseIndexForSubscriber(ws.userId);
 
+    // Save coordinates before unregister removes the user from spatial index
+    const userLat = user.lat;
+    const userLon = user.lon;
+
     this.presenceManager.unregister(ws.userId);
 
-    this.broadcastToRegistered(
+    // Broadcast USER_LEFT to nearby users (10km radius)
+    this.broadcastToNearby(
       {
         type: MessageType.USER_LEFT,
         nickname: user.nickname,
         tag: user.tag,
       },
+      userLat,
+      userLon,
+      BROADCAST_RADIUS_KM,
       ws.userId,
     );
   }
@@ -506,14 +520,16 @@ export class SignalingServer {
       for (const userId of staleIds) {
         const user = this.presenceManager.getUser(userId);
         if (user) {
-          this.broadcastToRegistered(
+          this.broadcastToNearby(
             {
               type: MessageType.USER_STATUS,
               nickname: user.nickname,
               tag: user.tag,
               status: 'offline',
             },
-            undefined,
+            user.lat,
+            user.lon,
+            BROADCAST_RADIUS_KM,
           );
         }
       }
@@ -521,16 +537,21 @@ export class SignalingServer {
   }
 
   /**
-   * Broadcast a message to all registered clients, optionally excluding one.
+   * Broadcast a message to users within radius of origin coordinates.
+   * Uses geohash spatial index via PresenceManager.getUsersInRadius().
    */
-  private broadcastToRegistered(message: ServerMessage, excludeUserId?: string): void {
-    if (!this.wss) return;
-
-    for (const client of this.wss.clients) {
-      const ws = client as AliveWebSocket;
-      if (ws.readyState === WebSocket.OPEN && ws.userId && ws.userId !== excludeUserId) {
-        this.send(ws, message);
-      }
+  private broadcastToNearby(
+    message: ServerMessage,
+    originLat: number,
+    originLon: number,
+    radiusKm: number,
+    excludeUserId?: string,
+  ): void {
+    const nearbyUserIds = this.presenceManager.getUsersInRadius(
+      originLat, originLon, radiusKm, excludeUserId,
+    );
+    for (const userId of nearbyUserIds) {
+      this.sendToUser(userId, message);
     }
   }
 
