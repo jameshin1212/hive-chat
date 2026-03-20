@@ -60,7 +60,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Goal**: 서버의 broadcast/presence/friend-notify가 전체 순회(O(N)) 없이 지역 기반으로 동작하여 10K-1M 사용자 규모에서도 효율적이다
 **Depends on**: Nothing (기존 서버 코드 기반)
 **Requirements**: SOPT-01, SOPT-02, SOPT-03
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 14-01-PLAN.md -- Geohash 공간 인덱스 + 친구 역 인덱스
@@ -101,7 +101,7 @@ Plans:
 | 11. Server Deploy | v1.2 | 3/3 | Complete | 2026-03-20 |
 | 12. npm Publish | v1.2 | 2/2 | Complete | 2026-03-20 |
 | 13. Documentation | v1.2 | 1/1 | Complete | 2026-03-20 |
-| 14. Server Optimization | v1.3 | 0/2 | Not started | - |
+| 14. Server Optimization | 1/2 | In Progress|  | - |
 | 15. Deploy & Verification | v1.3 | 0/? | Not started | - |
 
 ---
