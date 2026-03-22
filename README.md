@@ -6,14 +6,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
 
-HiveChat is a CLI peer-to-peer chat tool that lets you discover and talk to developers nearby. Built for AI CLI users (Claude Code, Codex, Gemini, Cursor, etc.) who live in the terminal — find someone within 10km and start chatting without leaving your workflow.
+HiveChat is a CLI peer-to-peer chat tool that connects you with developers nearby. Built for people who live in the terminal — discover someone within 10km and start chatting, without ever leaving your workflow.
 
-## Why HiveChat?
-
-- **Discover nearby developers** — Automatically detects developers within 10km using IP geolocation
-- **True P2P connection** — Messages travel directly between peers, encrypted via Noise Protocol. The server never sees your messages
-- **Zero trace** — Nothing is stored anywhere. When the session ends, messages are gone forever
-- **One command to start** — Just run `npx hivechat`. No signup, no install, no config
+<p align="center">
+  <img src="docs/chat_demo.gif" alt="HiveChat P2P chat demo" width="700">
+</p>
 
 ## Quick Start
 
@@ -21,36 +18,56 @@ HiveChat is a CLI peer-to-peer chat tool that lets you discover and talk to deve
 npx hivechat
 ```
 
-Requires Node.js 20+
+That's it. No signup, no install, no config. Just one command.
 
-On first launch, pick a nickname and select your AI CLI tool. HiveChat connects to the signal server (`wss://hivechat-signal.fly.dev`) and automatically discovers nearby users.
-
-## Features
-
-| Feature | Description |
-|---------|-------------|
-| **Nearby Discovery** | Find developers within 10km via IP geolocation |
-| **P2P Direct Chat** | Encrypted peer-to-peer messaging via Hyperswarm (no server relay) |
-| **Friends** | Add friends by nick#tag, see real-time online/offline status |
-| **Bee Mascot** | A pixel art bee greets you in the terminal |
-| **CJK/IME Support** | Full Korean, Japanese, and Chinese input composition |
-| **Responsive TUI** | Layout adapts to any terminal size |
-| **Security** | P2P identity verification, DDoS protection, rate limiting |
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `/nearby` | List nearby users |
-| `/friends` | Show friend list |
-| `/addfriend` | Add a friend by nick#tag |
-| `/removefriend` | Remove a friend |
-| `/help` | Show available commands |
-| `/leave` | Leave current chat |
-| `/settings` | Change nickname or AI CLI |
-| `/exit` | Quit HiveChat |
+> Requires Node.js 20+
 
 ## How It Works
+
+### 1. Launch and land in the lobby
+
+Run `npx hivechat`, pick a nickname, and you're in. The lobby shows your profile and connection status at a glance.
+
+<p align="center">
+  <img src="docs/hive_chat_lobby_screen.png" alt="HiveChat lobby screen" width="500">
+</p>
+
+### 2. Find developers nearby
+
+Type `/nearby` or press `Tab` to scan for developers within **10km of your location**. HiveChat uses server-side IP geolocation to automatically detect who's around you — no GPS, no manual setup. If someone is coding nearby, they'll show up here with their distance, AI CLI tool, and online status.
+
+<p align="center">
+  <img src="docs/friend_find.png" alt="Find nearby developers within 10km" width="500">
+</p>
+
+### 3. Send or receive a chat request
+
+Select a user to chat with, or wait for someone to reach out. Chat requests show who's calling and how far they are. Accept with `Enter`, decline with `Esc`.
+
+<p align="center">
+  <img src="docs/chat_request_screen.png" alt="Incoming chat request" width="500">
+</p>
+
+### 4. Chat directly — peer to peer
+
+Once connected, messages travel **directly between you and your peer** via Hyperswarm, encrypted with Noise Protocol. The server never sees your messages. When the session ends, messages are gone forever.
+
+### 5. Build your friend list
+
+Met someone interesting? Add them by `nick#tag` so you can see when they're online and chat again anytime.
+
+<p align="center">
+  <img src="docs/add_friend.png" alt="Add friend by nick#tag" width="500">
+</p>
+
+## Why HiveChat?
+
+- **Discover nearby developers** — Automatically finds people within 10km using IP geolocation. No manual location sharing needed
+- **True P2P** — Messages go directly between peers, encrypted via Noise Protocol. The server handles discovery only
+- **Zero trace** — Nothing is stored anywhere. When the session ends, messages vanish completely
+- **One command** — `npx hivechat`. No accounts, no installation, no configuration
+
+## Architecture
 
 ```
 ┌─────────────┐       ┌──────────────┐       ┌─────────────┐
@@ -62,9 +79,34 @@ On first launch, pick a nickname and select your AI CLI tool. HiveChat connects 
                  discovery only, no messages
 ```
 
-- **Signal Server** — Handles user discovery and P2P connection coordination only. It never relays or stores messages
-- **Hyperswarm P2P** — Chat messages are encrypted with Noise Protocol and sent directly between peers
-- **Ephemeral** — All messages exist only in memory. They vanish completely when the session ends
+- **Signal Server** — User discovery and P2P connection coordination only. Never relays or stores messages
+- **Hyperswarm** — Encrypted peer-to-peer messaging via Noise Protocol and DHT-based NAT traversal
+- **Ephemeral** — All messages exist only in memory and vanish when the session ends
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/nearby` | Find developers near you |
+| `/friends` | View your friend list |
+| `/addfriend` | Add a friend by nick#tag |
+| `/removefriend` | Remove a friend |
+| `/help` | Show all commands |
+| `/leave` | Leave current chat |
+| `/settings` | Change nickname or AI CLI |
+| `/exit` | Quit HiveChat |
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| **10km Discovery** | Finds developers nearby via server-side IP geolocation |
+| **P2P Encrypted Chat** | Direct messaging via Hyperswarm, no server relay |
+| **Friends** | Add by nick#tag, see real-time online/offline status |
+| **CJK/IME Support** | Full Korean, Japanese, and Chinese input |
+| **Responsive TUI** | Adapts to any terminal size |
+| **Security** | P2P identity verification, DDoS protection, rate limiting |
+| **Auto Update Check** | Notifies when a new version is available |
 
 ## Tech Stack
 
