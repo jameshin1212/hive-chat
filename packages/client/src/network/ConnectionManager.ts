@@ -2,16 +2,27 @@ import { EventEmitter } from 'events';
 import type { SignalingClient } from './SignalingClient.js';
 import { HyperswarmTransport } from './HyperswarmTransport.js';
 import type { TransportType } from '@hivechat/shared';
-import { P2P_UPGRADE_TIMEOUT_MS } from '@hivechat/shared';
+import { P2P_CONNECT_TIMEOUT_MS } from '@hivechat/shared';
 
+/**
+ * ConnectionManager — P2P-only architecture.
+ *
+ * Server handles: discovery, presence, chat request/accept coordination, P2P signal exchange.
+ * Messages: P2P (Hyperswarm) only. No server relay.
+ *
+ * Flow:
+ * 1. chat_accepted → start P2P connection (15s timeout)
+ * 2. P2P success → 'p2p_connected' event, messages flow directly
+ * 3. P2P failure → 'p2p_failed' event, chat cannot proceed
+ */
 export class ConnectionManager extends EventEmitter {
   private signalingClient: SignalingClient;
   private p2pTransport: HyperswarmTransport;
-  private activeTransport: TransportType = 'relay';
+  private activeTransport: TransportType = 'relay'; // 'relay' = not yet P2P connected
   private currentSessionId: string | null = null;
   private currentPartner: { nickname: string; tag: string } | null = null;
-  private upgradeTimer: ReturnType<typeof setTimeout> | null = null;
-  private isUpgrading = false;
+  private connectTimer: ReturnType<typeof setTimeout> | null = null;
+  private isConnecting = false;
 
   constructor(signalingClient: SignalingClient, identity: { nickname: string; tag: string }) {
     super();
@@ -47,11 +58,18 @@ export class ConnectionManager extends EventEmitter {
     this.signalingClient.declineChat(sessionId);
   }
 
+  /**
+   * Send chat message — P2P only.
+   * If P2P is not connected, message cannot be sent.
+   */
   sendChatMessage(sessionId: string, content: string): void {
     if (this.activeTransport === 'direct' && this.p2pTransport.isConnected) {
       this.p2pTransport.send(content, Date.now());
     } else {
-      this.signalingClient.sendChatMessage(sessionId, content);
+      // P2P not connected — emit error
+      this.emit('chat_error', {
+        error: 'P2P connection not established. Cannot send message.',
+      });
     }
   }
 
@@ -80,10 +98,10 @@ export class ConnectionManager extends EventEmitter {
   // --- Private ---
 
   private setupEventProxying(): void {
-    // Proxy standard SignalingClient events
+    // Proxy standard SignalingClient events (NO chat_msg — messages only via P2P)
     const proxyEvents = [
       'connected', 'reconnecting', 'nearby_users', 'user_joined', 'user_left',
-      'user_status', 'error', 'chat_requested', 'chat_declined', 'chat_msg',
+      'user_status', 'error', 'chat_requested', 'chat_declined',
       'chat_error', 'friend_status_response', 'friend_status_update',
     ];
 
@@ -93,25 +111,30 @@ export class ConnectionManager extends EventEmitter {
       });
     }
 
-    // Special handling for chat_accepted: proxy AND trigger P2P upgrade
+    // chat_accepted: start P2P connection (mandatory, not optional upgrade)
     this.signalingClient.on('chat_accepted', (data: { sessionId: string; partner: { nickname: string; tag: string } }) => {
       this.currentSessionId = data.sessionId;
       this.currentPartner = { nickname: data.partner.nickname, tag: data.partner.tag };
       this.emit('chat_accepted', data);
-      // Initiator side: attempt P2P upgrade
-      this.attemptP2PUpgrade(data.sessionId, true);
+      // Start P2P connection (initiator side)
+      this.connectP2P(data.sessionId, true);
     });
 
-    // Listen for p2p_signal from server (acceptor side)
+    // p2p_signal from server (acceptor side)
     this.signalingClient.on('p2p_signal', (data: { sessionId: string; topic: string }) => {
-      if (!this.isUpgrading) {
+      if (!this.isConnecting) {
         this.currentSessionId = data.sessionId;
-        this.attemptP2PUpgrade(data.sessionId, false);
+        this.connectP2P(data.sessionId, false);
       }
     });
 
-    // Cleanup P2P on chat_left and chat_user_offline
+    // Cleanup P2P on chat_left (ignore during P2P connecting — both sides handle timeout independently)
     this.signalingClient.on('chat_left', (data: any) => {
+      if (this.isConnecting) {
+        // During P2P connection phase, partner's leave is from their own P2P timeout.
+        // We'll handle our own timeout independently.
+        return;
+      }
       this.cleanupP2P();
       this.emit('chat_left', data);
     });
@@ -120,24 +143,34 @@ export class ConnectionManager extends EventEmitter {
       this.cleanupP2P();
       this.emit('chat_user_offline', data);
     });
+
+    // Ignore relay chat_msg from server (P2P only architecture)
+    this.signalingClient.on('chat_msg', () => {
+      // Intentionally ignored — messages only via P2P
+    });
   }
 
   private setupP2PEvents(): void {
-    // P2P connected: switch to direct transport
+    // P2P status updates → forward to UI
+    this.p2pTransport.on('status', (msg: string) => {
+      this.emit('p2p_status_msg', msg);
+    });
+
+    // P2P connected: ready to chat
     this.p2pTransport.on('connected', (peerIdentity: { nickname: string; tag: string }) => {
-      this.cancelUpgradeTimer();
-      this.isUpgrading = false;
+      this.cancelConnectTimer();
+      this.isConnecting = false;
       this.activeTransport = 'direct';
       this.currentPartner = peerIdentity;
       this.emit('transport_changed', 'direct');
+      this.emit('p2p_connected', peerIdentity);
 
-      // Notify server of transport change
       if (this.currentSessionId) {
         this.signalingClient.sendP2PStatus(this.currentSessionId, 'direct');
       }
     });
 
-    // P2P message: convert to chat_msg event (same shape as relay)
+    // P2P message → emit as chat_msg (same interface for TUI)
     this.p2pTransport.on('message', (data: { content: string; timestamp: number }) => {
       if (this.currentSessionId && this.currentPartner) {
         this.emit('chat_msg', {
@@ -149,62 +182,80 @@ export class ConnectionManager extends EventEmitter {
       }
     });
 
-    // P2P disconnected: downgrade to relay
+    // P2P disconnected: chat ends (no fallback)
     this.p2pTransport.on('disconnected', () => {
       if (this.activeTransport === 'direct') {
+        // Notify server to clean up session
+        if (this.currentSessionId) {
+          this.signalingClient.leaveChat(this.currentSessionId);
+        }
         this.activeTransport = 'relay';
         this.emit('transport_changed', 'relay');
-
-        // Notify server of transport change
-        if (this.currentSessionId) {
-          this.signalingClient.sendP2PStatus(this.currentSessionId, 'relay');
-        }
+        this.emit('p2p_disconnected');
       }
     });
   }
 
-  private async attemptP2PUpgrade(sessionId: string, isInitiator: boolean): Promise<void> {
-    if (this.isUpgrading) return;
-    this.isUpgrading = true;
-
-    if (isInitiator) {
-      const topic = HyperswarmTransport.sessionToTopic(sessionId);
-      const topicHex = HyperswarmTransport.topicToHex(topic);
-      // Send P2P signal to partner via server
-      this.signalingClient.sendP2PSignal(sessionId, topicHex);
+  /**
+   * Connect P2P — mandatory for chat. Not an "upgrade", it's the only way.
+   *
+   * Flow:
+   * - Initiator: announce to DHT first → THEN send signal → acceptor finds us
+   * - Acceptor: receive signal → lookup DHT → connect to initiator
+   */
+  private async connectP2P(sessionId: string, isInitiator: boolean): Promise<void> {
+    if (this.isConnecting) return;
+    this.isConnecting = true;
+    // Set expected partner for P2P handshake identity verification
+    if (this.currentPartner) {
+      this.p2pTransport.setExpectedPartner(this.currentPartner);
     }
+    this.emit('p2p_connecting');
 
     try {
-      await this.p2pTransport.connect(sessionId, isInitiator);
+      if (isInitiator) {
+        // Step 1: Announce to DHT and wait for flushed
+        await this.p2pTransport.announceAndWait(sessionId);
+        // Step 2: AFTER announce complete, tell acceptor to start looking
+        const topic = HyperswarmTransport.sessionToTopic(sessionId);
+        const topicHex = HyperswarmTransport.topicToHex(topic);
+        this.signalingClient.sendP2PSignal(sessionId, topicHex);
+      } else {
+        // Acceptor: initiator is already announced, connect to them
+        await this.p2pTransport.connect(sessionId);
+      }
     } catch {
-      this.isUpgrading = false;
+      this.isConnecting = false;
+      this.signalingClient.leaveChat(sessionId);
+      this.cleanupP2P();
+      this.emit('p2p_failed', { reason: 'Connection error' });
       return;
     }
 
-    // Set timeout for P2P upgrade
-    this.upgradeTimer = setTimeout(() => {
+    // Timeout: if P2P doesn't connect in time, fail
+    this.connectTimer = setTimeout(() => {
       if (!this.p2pTransport.isConnected) {
-        this.cancelP2PUpgrade();
+        this.isConnecting = false;
+        if (this.currentSessionId) {
+          this.signalingClient.leaveChat(this.currentSessionId);
+        }
+        this.p2pTransport.cleanup();
+        this.cleanupP2P();
+        this.emit('p2p_failed', { reason: 'Connection timed out (45s). DHT bootstrap or NAT may be blocking.' });
       }
-    }, P2P_UPGRADE_TIMEOUT_MS);
+    }, P2P_CONNECT_TIMEOUT_MS);
   }
 
-  private cancelP2PUpgrade(): void {
-    this.cancelUpgradeTimer();
-    this.isUpgrading = false;
-    this.p2pTransport.cleanup();
-  }
-
-  private cancelUpgradeTimer(): void {
-    if (this.upgradeTimer) {
-      clearTimeout(this.upgradeTimer);
-      this.upgradeTimer = null;
+  private cancelConnectTimer(): void {
+    if (this.connectTimer) {
+      clearTimeout(this.connectTimer);
+      this.connectTimer = null;
     }
   }
 
   private cleanupP2P(): void {
-    this.cancelUpgradeTimer();
-    this.isUpgrading = false;
+    this.cancelConnectTimer();
+    this.isConnecting = false;
     this.activeTransport = 'relay';
     this.currentSessionId = null;
     this.currentPartner = null;

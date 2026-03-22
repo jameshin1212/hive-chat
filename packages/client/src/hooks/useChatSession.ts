@@ -17,6 +17,7 @@ export interface ChatSessionReturn {
   incomingRequest: IncomingRequest | null;
   partnerLeft: boolean;
   requestChat: (target: NearbyUser) => void;
+  cancelRequest: () => void;
   acceptRequest: () => void;
   declineRequest: () => void;
   sendMessage: (content: string, myIdentity: Identity) => void;
@@ -32,7 +33,7 @@ export function ringBell(): void {
   }
 }
 
-function createSystemMessage(content: string, kind?: 'transition'): ChatMessage {
+function createSystemMessage(content: string, kind?: ChatMessage['kind']): ChatMessage {
   return {
     id: crypto.randomUUID(),
     from: { nickname: 'system', tag: '0000', aiCli: 'Claude Code', schemaVersion: 1 },
@@ -56,11 +57,19 @@ export function useChatSession(
   const requestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevConnectionStatusRef = useRef<string>(connectionStatus);
   const partnerRef = useRef<NearbyUser | null>(null);
+  const chatStatusRef = useRef<ChatSessionStatus>(chatStatus);
+  const sessionIdRef = useRef<string | null>(sessionId);
 
-  // Keep partnerRef in sync
+  // Keep refs in sync
   useEffect(() => {
     partnerRef.current = partner;
   }, [partner]);
+  useEffect(() => {
+    chatStatusRef.current = chatStatus;
+  }, [chatStatus]);
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   // Connection status changes
   useEffect(() => {
@@ -94,7 +103,7 @@ export function useChatSession(
 
     const handleChatRequested = (data: { sessionId: string; from: NearbyUser }) => {
       // If already in a chat, auto-decline
-      if (chatStatus === 'active') {
+      if (chatStatusRef.current === 'active') {
         client.declineChat(data.sessionId);
         return;
       }
@@ -140,31 +149,90 @@ export function useChatSession(
     };
 
     const handleChatLeft = (data: { sessionId: string; nickname: string; tag: string }) => {
-      setChatMessages(msgs => [
-        ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} left the chat`, 'transition'),
-      ].slice(-MAX_MESSAGES));
-      setPartnerLeft(true);
+      // Auto-return to lobby when partner leaves
+      client.leaveChat(data.sessionId);
+      setChatStatus('idle');
+      setPartner(null);
+      setSessionId(null);
+      setPartnerLeft(false);
+      setChatMessages([]);
     };
 
     const handleChatUserOffline = (data: { nickname: string; tag: string }) => {
-      setChatMessages(msgs => [
-        ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} went offline`, 'transition'),
-      ].slice(-MAX_MESSAGES));
-      setPartnerLeft(true);
+      // Auto-return to lobby when partner goes offline
+      if (sessionIdRef.current) {
+        client.leaveChat(sessionIdRef.current);
+      }
+      setChatStatus('idle');
+      setPartner(null);
+      setSessionId(null);
+      setPartnerLeft(false);
+      setChatMessages([]);
     };
 
-    const handleChatError = (data: { code: string; message: string }) => {
-      if (data.code === 'USER_OFFLINE' || data.code === 'USER_BUSY') {
+    const handleChatError = (data: { code?: string; message?: string; error?: string }) => {
+      const code = data.code;
+      const message = data.message || data.error || 'Unknown error';
+      if (code === 'USER_OFFLINE' || code === 'USER_BUSY') {
         setChatMessages(msgs => [
           ...msgs,
-          createSystemMessage(data.message),
+          createSystemMessage(message),
         ].slice(-MAX_MESSAGES));
         setChatStatus('idle');
         setPartner(null);
         setSessionId(null);
+      } else {
+        // P2P send error etc.
+        setChatMessages(msgs => [
+          ...msgs,
+          createSystemMessage(message),
+        ].slice(-MAX_MESSAGES));
       }
+    };
+
+    // P2P events
+    const handleP2PConnecting = () => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage('Establishing P2P connection...', 'progress'),
+      ].slice(-MAX_MESSAGES));
+    };
+
+    const handleP2PStatusMsg = (msg: string) => {
+      // "Verified:" and "Peer discovered" indicate completed steps
+      const isDone = msg.startsWith('Verified:') || msg.startsWith('Peer discovered');
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage(msg, isDone ? 'progress-done' : 'progress'),
+      ].slice(-MAX_MESSAGES));
+    };
+
+    const handleP2PConnected = () => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage('P2P connected — messages are direct and encrypted', 'transition'),
+      ].slice(-MAX_MESSAGES));
+    };
+
+    const handleP2PFailed = (data: { reason: string }) => {
+      setChatMessages(msgs => [
+        ...msgs,
+        createSystemMessage(`P2P connection failed: ${data.reason}`, 'error-transition'),
+        createSystemMessage('Use /leave to return to main screen'),
+      ].slice(-MAX_MESSAGES));
+      setPartnerLeft(true);
+    };
+
+    const handleP2PDisconnected = () => {
+      // Auto-return to lobby on P2P disconnect
+      if (sessionIdRef.current) {
+        client.leaveChat(sessionIdRef.current);
+      }
+      setChatStatus('idle');
+      setPartner(null);
+      setSessionId(null);
+      setPartnerLeft(false);
+      setChatMessages([]);
     };
 
     client.on('chat_requested', handleChatRequested);
@@ -174,6 +242,11 @@ export function useChatSession(
     client.on('chat_left', handleChatLeft);
     client.on('chat_user_offline', handleChatUserOffline);
     client.on('chat_error', handleChatError);
+    client.on('p2p_connecting', handleP2PConnecting);
+    client.on('p2p_connected', handleP2PConnected);
+    client.on('p2p_failed', handleP2PFailed);
+    client.on('p2p_disconnected', handleP2PDisconnected);
+    client.on('p2p_status_msg', handleP2PStatusMsg);
 
     return () => {
       client.off('chat_requested', handleChatRequested);
@@ -183,8 +256,13 @@ export function useChatSession(
       client.off('chat_left', handleChatLeft);
       client.off('chat_user_offline', handleChatUserOffline);
       client.off('chat_error', handleChatError);
+      client.off('p2p_connecting', handleP2PConnecting);
+      client.off('p2p_connected', handleP2PConnected);
+      client.off('p2p_failed', handleP2PFailed);
+      client.off('p2p_disconnected', handleP2PDisconnected);
+      client.off('p2p_status_msg', handleP2PStatusMsg);
     };
-  }, [client, chatStatus]);
+  }, [client]);
 
   const requestChat = useCallback((target: NearbyUser) => {
     if (!client) return;
@@ -208,6 +286,16 @@ export function useChatSession(
       requestTimeoutRef.current = null;
     }, CHAT_REQUEST_TIMEOUT_MS);
   }, [client]);
+
+  const cancelRequest = useCallback(() => {
+    if (requestTimeoutRef.current) {
+      clearTimeout(requestTimeoutRef.current);
+      requestTimeoutRef.current = null;
+    }
+    setChatStatus('idle');
+    setPartner(null);
+    setChatMessages([]);
+  }, []);
 
   const acceptRequest = useCallback(() => {
     if (!client || !incomingRequest) return;
@@ -268,6 +356,7 @@ export function useChatSession(
     incomingRequest,
     partnerLeft,
     requestChat,
+    cancelRequest,
     acceptRequest,
     declineRequest,
     sendMessage,

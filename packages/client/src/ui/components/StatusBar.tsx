@@ -2,17 +2,18 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import type { Identity, TransportType } from '@hivechat/shared';
 import type { ConnectionStatus } from '../../hooks/useServerConnection.js';
+import type { Breakpoint } from '../../hooks/useTerminalSize.js';
 import { theme } from '../theme.js';
 
 interface StatusBarProps {
   identity: Identity;
   connectionStatus: ConnectionStatus;
-  radiusKm: number;
   nearbyCount: number;
   chatPartner?: { nickname: string; tag: string } | null;
   onlineFriendCount?: number;
   friendCount?: number;
   transportType?: TransportType;
+  breakpoint?: Breakpoint;
 }
 
 export function connectionColor(status: ConnectionStatus, transportType?: TransportType): string {
@@ -40,8 +41,23 @@ function connectionLabel(status: ConnectionStatus): string {
   }
 }
 
-export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, chatPartner, onlineFriendCount, friendCount, transportType }: StatusBarProps) {
+export function StatusBar({ identity, connectionStatus, nearbyCount, chatPartner, onlineFriendCount, friendCount, transportType, breakpoint }: StatusBarProps) {
   const badgeColor = theme.badge[identity.aiCli];
+  const isCompact = breakpoint === 'compact';
+
+  if (isCompact) {
+    return (
+      <Box>
+        <Text color={theme.text.primary}>{identity.nickname}#{identity.tag}</Text>
+        <Text color={theme.text.secondary}> | </Text>
+        {chatPartner ? (
+          <Text color={theme.text.info}>Chatting: {chatPartner.nickname}#{chatPartner.tag}</Text>
+        ) : (
+          <Text color={connectionColor(connectionStatus, transportType)}>{connectionLabel(connectionStatus)}</Text>
+        )}
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -49,8 +65,6 @@ export function StatusBar({ identity, connectionStatus, radiusKm, nearbyCount, c
       <Text color={theme.text.primary}> {identity.nickname}#{identity.tag}</Text>
       <Text color={theme.text.secondary}> | </Text>
       <Text color={connectionColor(connectionStatus, transportType)}>{connectionLabel(connectionStatus)}</Text>
-      <Text color={theme.text.secondary}> | </Text>
-      <Text color={theme.text.secondary}>{radiusKm}km</Text>
       <Text color={theme.text.secondary}> | </Text>
       {chatPartner ? (
         <Text color={theme.text.info}>Chatting: {chatPartner.nickname}#{chatPartner.tag}</Text>

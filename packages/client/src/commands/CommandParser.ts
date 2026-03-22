@@ -1,15 +1,14 @@
 import type { ParsedInput } from '@hivechat/shared';
 
 export const COMMANDS = {
-  '/exit': { description: 'Exit HiveChat' },
-  '/users': { description: 'Show nearby users' },
+  '/nearby': { description: 'Show nearby users' },
   '/friends': { description: 'Show friend list' },
-  '/radius': { description: 'Cycle discovery radius (1/3/5/10km)' },
-  '/settings': { description: 'Open settings' },
-  '/help': { description: 'Show available commands' },
-  '/leave': { description: 'Leave current chat' },
   '/addfriend': { description: 'Add friend by nick#tag' },
   '/removefriend': { description: 'Remove friend by nick#tag' },
+  '/help': { description: 'Show available commands' },
+  '/leave': { description: 'Leave current chat' },
+  '/settings': { description: 'Open settings' },
+  '/exit': { description: 'Exit HiveChat' },
 } as const;
 
 export type CommandName = keyof typeof COMMANDS;
@@ -27,10 +26,17 @@ export function parseInput(input: string): ParsedInput {
   return { type: 'message', content: trimmed };
 }
 
-export function filterCommands(prefix: string): Array<{ name: string; description: string }> {
+/** Commands available during active chat */
+const CHAT_COMMANDS = new Set(['/leave', '/exit', '/help']);
+
+export function filterCommands(prefix: string, isInChat = false): Array<{ name: string; description: string }> {
   return Object.entries(COMMANDS)
-    .filter(([name]) => name.startsWith(prefix))
+    .filter(([name]) => name.startsWith(prefix) && (!isInChat || CHAT_COMMANDS.has(name)))
     .map(([name, info]) => ({ name, description: info.description }));
+}
+
+export function isChatAllowedCommand(name: string): boolean {
+  return CHAT_COMMANDS.has(name);
 }
 
 export function isKnownCommand(name: string): name is CommandName {

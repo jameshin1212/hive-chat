@@ -4,15 +4,19 @@ import { EventEmitter } from 'events';
 // Mock HyperswarmTransport
 const mockP2PTransport = new EventEmitter() as EventEmitter & {
   connect: ReturnType<typeof vi.fn>;
+  announceAndWait: ReturnType<typeof vi.fn>;
   send: ReturnType<typeof vi.fn>;
   cleanup: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
+  setExpectedPartner: ReturnType<typeof vi.fn>;
   isConnected: boolean;
 };
 mockP2PTransport.connect = vi.fn().mockResolvedValue(undefined);
+mockP2PTransport.announceAndWait = vi.fn().mockResolvedValue(undefined);
 mockP2PTransport.send = vi.fn();
 mockP2PTransport.cleanup = vi.fn().mockResolvedValue(undefined);
 mockP2PTransport.destroy = vi.fn().mockResolvedValue(undefined);
+mockP2PTransport.setExpectedPartner = vi.fn();
 mockP2PTransport.isConnected = false;
 
 vi.mock('./HyperswarmTransport.js', () => ({
@@ -83,12 +87,13 @@ describe('ConnectionManager', () => {
       expect(handler).toHaveBeenCalledWith(users);
     });
 
-    it('proxies chat_msg event from SignalingClient', () => {
+    it('ignores chat_msg from SignalingClient (P2P only)', () => {
       const handler = vi.fn();
       manager.on('chat_msg', handler);
       const data = { sessionId: 's1', from: { nickname: 'u', tag: 't' }, content: 'hi', timestamp: 123 };
       signalingClient.emit('chat_msg', data);
-      expect(handler).toHaveBeenCalledWith(data);
+      // chat_msg from server is intentionally ignored in P2P-only architecture
+      expect(handler).not.toHaveBeenCalled();
     });
 
     it('proxies chat_requested event from SignalingClient', () => {
@@ -122,9 +127,11 @@ describe('ConnectionManager', () => {
   });
 
   describe('sendChatMessage routing', () => {
-    it('routes through relay by default', () => {
+    it('emits error when P2P not connected', () => {
+      const handler = vi.fn();
+      manager.on('chat_error', handler);
       manager.sendChatMessage('session-1', 'hello');
-      expect(signalingClient.sendChatMessage).toHaveBeenCalledWith('session-1', 'hello');
+      expect(handler).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('P2P') }));
       expect(mockP2PTransport.send).not.toHaveBeenCalled();
     });
 
@@ -146,7 +153,7 @@ describe('ConnectionManager', () => {
   });
 
   describe('P2P upgrade flow', () => {
-    it('initiates P2P upgrade on chat_accepted', () => {
+    it('initiates P2P upgrade on chat_accepted', async () => {
       const handler = vi.fn();
       manager.on('chat_accepted', handler);
 
@@ -158,7 +165,12 @@ describe('ConnectionManager', () => {
       // Event should still be proxied
       expect(handler).toHaveBeenCalled();
 
-      // P2P signal should be sent
+      // Wait for async announceAndWait to complete
+      await vi.waitFor(() => {
+        expect(mockP2PTransport.announceAndWait).toHaveBeenCalledWith('session-1');
+      });
+
+      // P2P signal should be sent AFTER announce
       expect(signalingClient.sendP2PSignal).toHaveBeenCalledWith('session-1', 'ab'.repeat(32));
     });
 
@@ -199,20 +211,22 @@ describe('ConnectionManager', () => {
       expect(manager.transportType).toBe('relay');
     });
 
-    it('stays on relay after P2P timeout (3s)', () => {
-      const handler = vi.fn();
-      manager.on('transport_changed', handler);
+    it('emits p2p_failed after timeout (45s)', async () => {
+      const failHandler = vi.fn();
+      manager.on('p2p_failed', failHandler);
 
       signalingClient.emit('chat_accepted', {
         sessionId: 'session-1',
         partner: { nickname: 'peer', tag: 'CD34', aiCli: 'Claude Code', distance: 1, status: 'online' },
       });
 
-      // Advance past P2P timeout (3000ms)
-      vi.advanceTimersByTime(3001);
+      // Wait for async connectP2P to set up timeout
+      await vi.advanceTimersByTimeAsync(100);
 
-      // Should NOT emit transport_changed - stays on relay
-      expect(handler).not.toHaveBeenCalled();
+      // Advance past P2P timeout (45000ms)
+      await vi.advanceTimersByTimeAsync(45_000);
+
+      expect(failHandler).toHaveBeenCalled();
       expect(manager.transportType).toBe('relay');
     });
   });
@@ -237,7 +251,7 @@ describe('ConnectionManager', () => {
   });
 
   describe('P2P message to chat_msg conversion', () => {
-    it('converts P2P messages to chat_msg events', () => {
+    it('converts P2P messages to chat_msg events', async () => {
       const handler = vi.fn();
       manager.on('chat_msg', handler);
 
@@ -246,6 +260,9 @@ describe('ConnectionManager', () => {
         sessionId: 'session-1',
         partner: { nickname: 'peer', tag: 'CD34', aiCli: 'Claude Code', distance: 1, status: 'online' },
       });
+
+      // Wait for async announceAndWait
+      await vi.advanceTimersByTimeAsync(10);
 
       mockP2PTransport.isConnected = true;
       mockP2PTransport.emit('connected', { nickname: 'peer', tag: 'CD34' });
@@ -267,16 +284,39 @@ describe('ConnectionManager', () => {
       // Simulate being the acceptor - receiving p2p_signal from partner via server
       signalingClient.emit('p2p_signal', { sessionId: 'session-1', topic: 'ab'.repeat(32) });
 
-      expect(mockP2PTransport.connect).toHaveBeenCalledWith('session-1', false);
+      expect(mockP2PTransport.connect).toHaveBeenCalledWith('session-1');
     });
   });
 
   describe('chat cleanup on chat_left/chat_user_offline', () => {
-    it('cleans up P2P on chat_left', () => {
+    it('ignores chat_left during P2P connecting phase', async () => {
+      // Use a slow announceAndWait to keep isConnecting=true
+      mockP2PTransport.announceAndWait = vi.fn(() => new Promise(() => {})); // never resolves
+
+      const handler = vi.fn();
+      manager.on('chat_left', handler);
       signalingClient.emit('chat_accepted', {
         sessionId: 'session-1',
         partner: { nickname: 'peer', tag: 'CD34', aiCli: 'Claude Code', distance: 1, status: 'online' },
       });
+
+      // Small delay for isConnecting to be set
+      await vi.advanceTimersByTimeAsync(10);
+
+      // During P2P connecting, chat_left from partner is ignored
+      signalingClient.emit('chat_left', { sessionId: 'session-1', nickname: 'peer', tag: 'CD34' });
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('cleans up P2P on chat_left when P2P is connected', () => {
+      signalingClient.emit('chat_accepted', {
+        sessionId: 'session-1',
+        partner: { nickname: 'peer', tag: 'CD34', aiCli: 'Claude Code', distance: 1, status: 'online' },
+      });
+
+      // Simulate P2P connected
+      mockP2PTransport.isConnected = true;
+      mockP2PTransport.emit('connected', { nickname: 'peer', tag: 'CD34' });
 
       signalingClient.emit('chat_left', { sessionId: 'session-1', nickname: 'peer', tag: 'CD34' });
       expect(mockP2PTransport.cleanup).toHaveBeenCalled();

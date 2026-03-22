@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
+import { theme } from '../theme.js';
 
 interface CommandSuggestion {
   name: string;
@@ -14,7 +15,7 @@ interface CommandSuggestionsProps {
 }
 
 /**
- * Command autocomplete dropdown.
+ * Command autocomplete dropdown — Claude Code style overlay.
  *
  * Scroll strategy: the selected item is ALWAYS visible.
  * The window slides to keep selectedIndex in view — no ref, no persistent state.
@@ -25,25 +26,34 @@ export function CommandSuggestions({ suggestions, selectedIndex, visible, maxVis
 
   const total = suggestions.length;
 
+  // Calculate max command name width for alignment
+  const maxNameWidth = Math.max(...suggestions.map(s => s.name.length));
+
+  const renderItem = (cmd: CommandSuggestion, isSelected: boolean) => {
+    const paddedName = cmd.name.padEnd(maxNameWidth);
+    const prefix = isSelected ? '> ' : '  ';
+    return (
+      <Box key={cmd.name}>
+        <Text inverse={isSelected} bold={isSelected} color={isSelected ? undefined : theme.text.primary}>
+          {prefix}{paddedName}
+        </Text>
+        <Text dimColor>{'  '}{cmd.description}</Text>
+      </Box>
+    );
+  };
+
   // All items fit — no scrolling needed
   if (total <= maxVisible) {
     return (
-      <Box flexDirection="column" paddingX={1}>
-        {suggestions.map((cmd, i) => (
-          <Box key={cmd.name}>
-            <Text inverse={i === selectedIndex} bold={i === selectedIndex}>
-              {i === selectedIndex ? '▸ ' : '  '}{cmd.name}
-            </Text>
-            <Text dimColor>{' — '}{cmd.description}</Text>
-          </Box>
-        ))}
+      <Box flexDirection="column" borderStyle="single" borderColor={theme.text.info} paddingX={1}>
+        {suggestions.map((cmd, i) => renderItem(cmd, i === selectedIndex))}
       </Box>
     );
   }
 
   // Scrolling needed: show a window around selectedIndex
   // Strategy: selectedIndex is always centered (or as close as possible)
-  const half = Math.floor((maxVisible - 2) / 2); // -2 for ↑↓ indicators
+  const half = Math.floor((maxVisible - 2) / 2); // -2 for scroll indicators
   const itemSlots = maxVisible - 2;
 
   let start = selectedIndex - half;
@@ -55,21 +65,13 @@ export function CommandSuggestions({ suggestions, selectedIndex, visible, maxVis
   const items = suggestions.slice(start, end);
 
   return (
-    <Box flexDirection="column" paddingX={1}>
-      <Text dimColor>{start > 0 ? `  ↑ ${start} more` : ' '}</Text>
+    <Box flexDirection="column" borderStyle="single" borderColor={theme.text.info} paddingX={1}>
+      <Text dimColor>{start > 0 ? `  \u2191 ${start} more` : ' '}</Text>
       {items.map((cmd, i) => {
         const realIndex = start + i;
-        const isSelected = realIndex === selectedIndex;
-        return (
-          <Box key={cmd.name}>
-            <Text inverse={isSelected} bold={isSelected}>
-              {isSelected ? '▸ ' : '  '}{cmd.name}
-            </Text>
-            <Text dimColor>{' — '}{cmd.description}</Text>
-          </Box>
-        );
+        return renderItem(cmd, realIndex === selectedIndex);
       })}
-      <Text dimColor>{end < total ? `  ↓ ${total - end} more` : ' '}</Text>
+      <Text dimColor>{end < total ? `  \u2193 ${total - end} more` : ' '}</Text>
     </Box>
   );
 }

@@ -18,10 +18,27 @@ import type { UserRecord } from './types.js';
 const DEFAULT_DEV_LAT = 37.5665;
 const DEFAULT_DEV_LON = 126.9780;
 
+/** Server broadcast radius - fixed at 10km per user decision */
+const BROADCAST_RADIUS_KM = 10;
+
+/** Rate limiter: max messages per second per connection */
+const MAX_MESSAGES_PER_SECOND = 100;
+/** Max connections per IP */
+const MAX_CONNECTIONS_PER_IP = 10;
+/** Max consecutive errors before disconnect */
+const MAX_CONSECUTIVE_ERRORS = 5;
+/** Max friends per subscription request */
+const MAX_FRIENDS_PER_REQUEST = 100;
+
 interface AliveWebSocket extends WebSocket {
   isAlive: boolean;
   userId?: string;
   clientIp?: string;
+  /** Message rate limiting */
+  msgCount: number;
+  msgResetTime: number;
+  /** Consecutive error counter */
+  errorCount: number;
 }
 
 export class SignalingServer {
@@ -31,6 +48,10 @@ export class SignalingServer {
   private presenceManager = new PresenceManager();
   private chatSessionManager = new ChatSessionManager();
   private friendSubscriptions = new Map<string, Array<{ nickname: string; tag: string }>>();
+  private friendReverseIndex = new Map<string, Set<string>>();
+  private subscriberTargets = new Map<string, Set<string>>();
+  /** Track connection count per IP for DDoS protection */
+  private ipConnectionCount = new Map<string, number>();
   private port: number;
 
   constructor(port: number) {
@@ -49,7 +70,11 @@ export class SignalingServer {
         res.end('HiveChat signaling server');
       });
 
-      this.wss = new WebSocketServer({ server: this.httpServer });
+      this.wss = new WebSocketServer({
+        server: this.httpServer,
+        maxPayload: 64 * 1024, // 64KB max message size
+        perMessageDeflate: false, // Disable compression (compression bomb prevention)
+      });
 
       this.httpServer.listen(this.port, '0.0.0.0', () => {
         const addr = this.httpServer!.address() as AddressInfo;
@@ -63,16 +88,45 @@ export class SignalingServer {
       this.wss.on('connection', (ws: AliveWebSocket, req: IncomingMessage) => {
         ws.isAlive = true;
         ws.clientIp = normalizeIp(req.socket.remoteAddress ?? '127.0.0.1');
+        ws.msgCount = 0;
+        ws.msgResetTime = Date.now();
+        ws.errorCount = 0;
+
+        // Per-IP connection limit
+        const ip = ws.clientIp;
+        const count = (this.ipConnectionCount.get(ip) ?? 0) + 1;
+        if (count > MAX_CONNECTIONS_PER_IP) {
+          ws.close(1013, 'Too many connections from this IP');
+          return;
+        }
+        this.ipConnectionCount.set(ip, count);
 
         ws.on('pong', () => {
           ws.isAlive = true;
         });
 
         ws.on('message', (data: Buffer) => {
+          // Message rate limiting
+          const now = Date.now();
+          if (now - ws.msgResetTime > 1000) {
+            ws.msgCount = 0;
+            ws.msgResetTime = now;
+          }
+          ws.msgCount++;
+          if (ws.msgCount > MAX_MESSAGES_PER_SECOND) {
+            ws.close(1008, 'Rate limit exceeded');
+            return;
+          }
           this.handleMessage(ws, data);
         });
 
         ws.on('close', () => {
+          // Decrement IP connection count
+          if (ws.clientIp) {
+            const remaining = (this.ipConnectionCount.get(ws.clientIp) ?? 1) - 1;
+            if (remaining <= 0) this.ipConnectionCount.delete(ws.clientIp);
+            else this.ipConnectionCount.set(ws.clientIp, remaining);
+          }
           this.handleClose(ws);
         });
 
@@ -88,6 +142,11 @@ export class SignalingServer {
     try {
       parsed = JSON.parse(data.toString());
     } catch {
+      ws.errorCount++;
+      if (ws.errorCount >= MAX_CONSECUTIVE_ERRORS) {
+        ws.close(1008, 'Too many invalid messages');
+        return;
+      }
       this.send(ws, {
         type: MessageType.ERROR,
         code: 'INVALID_MESSAGE',
@@ -98,6 +157,11 @@ export class SignalingServer {
 
     const result = clientMessageSchema.safeParse(parsed);
     if (!result.success) {
+      ws.errorCount++;
+      if (ws.errorCount >= MAX_CONSECUTIVE_ERRORS) {
+        ws.close(1008, 'Too many invalid messages');
+        return;
+      }
       this.send(ws, {
         type: MessageType.ERROR,
         code: 'INVALID_MESSAGE',
@@ -105,6 +169,9 @@ export class SignalingServer {
       });
       return;
     }
+
+    // Valid message resets error counter
+    ws.errorCount = 0;
 
     const msg = result.data;
 
@@ -135,9 +202,7 @@ export class SignalingServer {
       case MessageType.CHAT_DECLINE:
         this.handleChatDecline(ws, msg.sessionId);
         break;
-      case MessageType.CHAT_MESSAGE:
-        this.handleChatMessage(ws, msg.sessionId, msg.content);
-        break;
+      // CHAT_MESSAGE removed — P2P only architecture. Server does not relay messages.
       case MessageType.CHAT_LEAVE:
         this.handleChatLeave(ws, msg.sessionId);
         break;
@@ -191,8 +256,8 @@ export class SignalingServer {
       users: nearbyUsers,
     });
 
-    // Broadcast USER_JOINED to nearby clients
-    this.broadcastToRegistered(
+    // Broadcast USER_JOINED to nearby clients (10km radius)
+    this.broadcastToNearby(
       {
         type: MessageType.USER_JOINED,
         user: {
@@ -203,6 +268,9 @@ export class SignalingServer {
           status: 'online',
         },
       },
+      geo.lat,
+      geo.lon,
+      BROADCAST_RADIUS_KM,
       userId,
     );
 
@@ -228,6 +296,7 @@ export class SignalingServer {
   }
 
   private handleChatRequest(ws: AliveWebSocket, targetNickname: string, targetTag: string): void {
+    console.log(`[ChatRequest] ${ws.userId} → ${targetNickname}#${targetTag}`);
     const targetUserId = `${targetNickname}#${targetTag}`;
     const targetUser = this.presenceManager.getUser(targetUserId);
 
@@ -241,6 +310,7 @@ export class SignalingServer {
     }
 
     if (this.chatSessionManager.isUserBusy(targetUserId)) {
+      console.log(`[ChatRequest] REJECTED: ${targetUserId} is busy`);
       this.send(ws, {
         type: MessageType.CHAT_ERROR,
         code: 'USER_BUSY',
@@ -250,6 +320,7 @@ export class SignalingServer {
     }
 
     if (this.chatSessionManager.isUserBusy(ws.userId!)) {
+      console.log(`[ChatRequest] REJECTED: ${ws.userId} is busy (self)`);
       this.send(ws, {
         type: MessageType.CHAT_ERROR,
         code: 'USER_BUSY',
@@ -323,22 +394,7 @@ export class SignalingServer {
     });
   }
 
-  private handleChatMessage(ws: AliveWebSocket, sessionId: string, content: string): void {
-    const session = this.chatSessionManager.getSessionByUser(ws.userId!);
-    if (!session || session.id !== sessionId) return;
-
-    const partnerId = session.userA === ws.userId ? session.userB : session.userA;
-    const senderUser = this.presenceManager.getUser(ws.userId!);
-    if (!senderUser) return;
-
-    this.sendToUser(partnerId, {
-      type: MessageType.CHAT_MSG,
-      sessionId,
-      from: { nickname: senderUser.nickname, tag: senderUser.tag },
-      content,
-      timestamp: Date.now(),
-    });
-  }
+  // handleChatMessage removed — P2P only architecture
 
   private handleChatLeave(ws: AliveWebSocket, sessionId: string): void {
     const session = this.chatSessionManager.getSessionByUser(ws.userId!);
@@ -384,15 +440,24 @@ export class SignalingServer {
 
     // Clean up this user's own friend subscriptions
     this.friendSubscriptions.delete(ws.userId);
+    this.cleanReverseIndexForSubscriber(ws.userId);
+
+    // Save coordinates before unregister removes the user from spatial index
+    const userLat = user.lat;
+    const userLon = user.lon;
 
     this.presenceManager.unregister(ws.userId);
 
-    this.broadcastToRegistered(
+    // Broadcast USER_LEFT to nearby users (10km radius)
+    this.broadcastToNearby(
       {
         type: MessageType.USER_LEFT,
         nickname: user.nickname,
         tag: user.tag,
       },
+      userLat,
+      userLon,
+      BROADCAST_RADIUS_KM,
       ws.userId,
     );
   }
@@ -400,15 +465,20 @@ export class SignalingServer {
   // --- P2P signal handlers ---
 
   private handleP2PSignal(ws: AliveWebSocket, sessionId: string, topic: string): void {
+    console.log(`[P2P_SIGNAL] from=${ws.userId} session=${sessionId.slice(0, 8)}`);
     const session = this.chatSessionManager.getSessionByUser(ws.userId!);
-    if (!session || session.id !== sessionId) return;
+    if (!session || session.id !== sessionId) {
+      console.log(`[P2P_SIGNAL] DROPPED — no session found for ${ws.userId} (sessionId mismatch: got=${sessionId.slice(0, 8)} expected=${session?.id?.slice(0, 8) ?? 'none'})`);
+      return;
+    }
 
     const partnerId = session.userA === ws.userId ? session.userB : session.userA;
-    this.sendToUser(partnerId, {
+    const sent = this.sendToUser(partnerId, {
       type: MessageType.P2P_SIGNAL,
       sessionId,
       topic,
     });
+    console.log(`[P2P_SIGNAL] relayed to=${partnerId} success=${sent}`);
   }
 
   private handleP2PStatus(ws: AliveWebSocket, sessionId: string, transportType: 'relay' | 'direct'): void {
@@ -426,6 +496,7 @@ export class SignalingServer {
   ): void {
     // Store subscription for push updates
     this.friendSubscriptions.set(ws.userId!, friends);
+    this.updateFriendReverseIndex(ws.userId!, friends);
 
     // Build current status for each requested friend
     const statuses = friends.map((f) => {
@@ -445,24 +516,55 @@ export class SignalingServer {
     });
   }
 
+  private updateFriendReverseIndex(subscriberId: string, friends: Array<{ nickname: string; tag: string }>): void {
+    // Clean existing reverse index entries for this subscriber
+    this.cleanReverseIndexForSubscriber(subscriberId);
+
+    // Build new reverse index entries
+    const targets = new Set<string>();
+    for (const friend of friends) {
+      const targetId = `${friend.nickname}#${friend.tag}`;
+      targets.add(targetId);
+      let subs = this.friendReverseIndex.get(targetId);
+      if (!subs) {
+        subs = new Set<string>();
+        this.friendReverseIndex.set(targetId, subs);
+      }
+      subs.add(subscriberId);
+    }
+    this.subscriberTargets.set(subscriberId, targets);
+  }
+
+  private cleanReverseIndexForSubscriber(subscriberId: string): void {
+    const targets = this.subscriberTargets.get(subscriberId);
+    if (!targets) return;
+    for (const targetId of targets) {
+      const subs = this.friendReverseIndex.get(targetId);
+      if (subs) {
+        subs.delete(subscriberId);
+        if (subs.size === 0) this.friendReverseIndex.delete(targetId);
+      }
+    }
+    this.subscriberTargets.delete(subscriberId);
+  }
+
   private notifyFriendSubscribers(userId: string, status: 'online' | 'offline'): void {
-    // Parse userId into nickname and tag (last # is separator)
     const lastHash = userId.lastIndexOf('#');
     if (lastHash === -1) return;
     const nickname = userId.substring(0, lastHash);
     const tag = userId.substring(lastHash + 1);
 
-    for (const [subscriberId, friends] of this.friendSubscriptions) {
+    const subscribers = this.friendReverseIndex.get(userId);
+    if (!subscribers) return;
+
+    for (const subscriberId of subscribers) {
       if (subscriberId === userId) continue;
-      const match = friends.some((f) => f.nickname === nickname && f.tag === tag);
-      if (match) {
-        this.sendToUser(subscriberId, {
-          type: MessageType.FRIEND_STATUS_UPDATE,
-          nickname,
-          tag,
-          status,
-        });
-      }
+      this.sendToUser(subscriberId, {
+        type: MessageType.FRIEND_STATUS_UPDATE,
+        nickname,
+        tag,
+        status,
+      });
     }
   }
 
@@ -480,19 +582,24 @@ export class SignalingServer {
         ws.ping();
       }
 
+      // Clean up stale pending requests (30s timeout)
+      this.chatSessionManager.cleanupStalePending(30_000);
+
       // Check for stale users
       const staleIds = this.presenceManager.checkStaleUsers();
       for (const userId of staleIds) {
         const user = this.presenceManager.getUser(userId);
         if (user) {
-          this.broadcastToRegistered(
+          this.broadcastToNearby(
             {
               type: MessageType.USER_STATUS,
               nickname: user.nickname,
               tag: user.tag,
               status: 'offline',
             },
-            undefined,
+            user.lat,
+            user.lon,
+            BROADCAST_RADIUS_KM,
           );
         }
       }
@@ -500,16 +607,21 @@ export class SignalingServer {
   }
 
   /**
-   * Broadcast a message to all registered clients, optionally excluding one.
+   * Broadcast a message to users within radius of origin coordinates.
+   * Uses geohash spatial index via PresenceManager.getUsersInRadius().
    */
-  private broadcastToRegistered(message: ServerMessage, excludeUserId?: string): void {
-    if (!this.wss) return;
-
-    for (const client of this.wss.clients) {
-      const ws = client as AliveWebSocket;
-      if (ws.readyState === WebSocket.OPEN && ws.userId && ws.userId !== excludeUserId) {
-        this.send(ws, message);
-      }
+  private broadcastToNearby(
+    message: ServerMessage,
+    originLat: number,
+    originLon: number,
+    radiusKm: number,
+    excludeUserId?: string,
+  ): void {
+    const nearbyUserIds = this.presenceManager.getUsersInRadius(
+      originLat, originLon, radiusKm, excludeUserId,
+    );
+    for (const userId of nearbyUserIds) {
+      this.sendToUser(userId, message);
     }
   }
 

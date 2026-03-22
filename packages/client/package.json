@@ -1,7 +1,7 @@
 {
   "name": "hivechat",
-  "version": "1.2.1",
-  "description": "Chat with nearby developers right from your terminal",
+  "version": "1.2.2",
+  "description": "Meet terminal friends nearby — P2P chat for CLI users",
   "keywords": [
     "chat",
     "cli",

@@ -5,9 +5,10 @@ import { theme } from '../theme.js';
 
 interface AiCliSelectorProps {
   onSelect: (aiCli: AiCli) => void;
+  isActive?: boolean;
 }
 
-export function AiCliSelector({ onSelect }: AiCliSelectorProps) {
+export function AiCliSelector({ onSelect, isActive = true }: AiCliSelectorProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useInput((input, key) => {
@@ -23,7 +24,7 @@ export function AiCliSelector({ onSelect }: AiCliSelectorProps) {
       onSelect(AI_CLI_OPTIONS[selectedIndex]!);
       return;
     }
-  });
+  }, { isActive });
 
   return (
     <Box flexDirection="column">

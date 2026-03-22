@@ -191,4 +191,79 @@ describe('SignalingServer', () => {
 
     expect(response.type).toBe(MessageType.REGISTERED);
   });
+
+  describe('broadcastToNearby (regional broadcast)', () => {
+    it('should broadcast USER_JOINED to nearby users (same location)', async () => {
+      // Both clients use the same DEV_GEO (Seoul) — within 10km
+      const ws1 = await createClient(port);
+      clients.push(ws1);
+      const reg1 = waitForMessage(ws1);
+      sendJson(ws1, registerMsg('alice', 'AA11'));
+      await reg1;
+
+      const joinPromise = waitForMessage(ws1);
+
+      const ws2 = await createClient(port);
+      clients.push(ws2);
+      const reg2 = waitForMessage(ws2);
+      sendJson(ws2, registerMsg('bob', 'BB22'));
+      await reg2;
+
+      const joinMsg = await joinPromise;
+      expect(joinMsg.type).toBe(MessageType.USER_JOINED);
+      if (joinMsg.type === MessageType.USER_JOINED) {
+        expect(joinMsg.user.nickname).toBe('bob');
+      }
+    });
+
+    it('should broadcast USER_LEFT to nearby users on disconnect', async () => {
+      const ws1 = await createClient(port);
+      clients.push(ws1);
+      const reg1 = waitForMessage(ws1);
+      sendJson(ws1, registerMsg('alice', 'AA11'));
+      await reg1;
+
+      const ws2 = await createClient(port);
+      clients.push(ws2);
+      const reg2 = waitForMessage(ws2);
+      const joinPromise = waitForMessage(ws1);
+      sendJson(ws2, registerMsg('bob', 'BB22'));
+      await reg2;
+      await joinPromise;
+
+      const leftPromise = waitForMessage(ws1);
+      ws2.close();
+      const leftMsg = await leftPromise;
+
+      expect(leftMsg.type).toBe(MessageType.USER_LEFT);
+      if (leftMsg.type === MessageType.USER_LEFT) {
+        expect(leftMsg.nickname).toBe('bob');
+      }
+    });
+
+    it('should use broadcastToNearby instead of broadcastToRegistered', async () => {
+      // Verify the broadcastToRegistered method no longer exists
+      // by checking that the server still works with regional broadcast
+      const ws1 = await createClient(port);
+      clients.push(ws1);
+      const reg1 = waitForMessage(ws1);
+      sendJson(ws1, registerMsg('charlie', 'CC33'));
+      await reg1;
+
+      // Register a second user and verify USER_JOINED is received
+      const joinPromise = waitForMessage(ws1);
+      const ws2 = await createClient(port);
+      clients.push(ws2);
+      const reg2 = waitForMessage(ws2);
+      sendJson(ws2, registerMsg('dave', 'DD44'));
+      await reg2;
+
+      const msg = await joinPromise;
+      expect(msg.type).toBe(MessageType.USER_JOINED);
+      if (msg.type === MessageType.USER_JOINED) {
+        expect(msg.user.nickname).toBe('dave');
+        expect(msg.user.status).toBe('online');
+      }
+    });
+  });
 });

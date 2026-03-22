@@ -2,15 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { connectionColor } from './StatusBar.js';
 
 describe('connectionColor', () => {
-  it('returns green for connected + direct transport', () => {
+  it('returns green for connected with direct transport', () => {
     expect(connectionColor('connected', 'direct')).toBe('green');
   });
 
-  it('returns yellow for connected + relay transport', () => {
+  it('returns yellow for connected with relay transport', () => {
     expect(connectionColor('connected', 'relay')).toBe('yellow');
-  });
-
-  it('returns yellow for connected + undefined transport (backward compat)', () => {
     expect(connectionColor('connected', undefined)).toBe('yellow');
   });
 

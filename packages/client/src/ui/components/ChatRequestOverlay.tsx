@@ -24,15 +24,16 @@ export function ChatRequestOverlay({ request, onAccept, onDecline }: ChatRequest
   const badgeColor = theme.badge[from.aiCli];
 
   return (
-    <Box flexDirection="column" paddingX={1} paddingY={1}>
+    <Box flexDirection="column" borderStyle="single" borderColor="yellow" paddingX={1}>
       <Box>
-        <Text color={theme.text.info}>Chat request from </Text>
+        <Text bold color="yellow">Chat request from </Text>
         <Text color={badgeColor}>[{from.aiCli}]</Text>
-        <Text color={theme.text.info}> {from.nickname}#{from.tag}</Text>
+        <Text bold color="yellow"> {from.nickname}#{from.tag}</Text>
         <Text color={theme.text.secondary}> ({from.distance}km away)</Text>
       </Box>
-      <Box marginTop={1}>
-        <Text color={theme.text.secondary}>Enter to accept, Escape to decline</Text>
+      <Box marginTop={1} gap={2}>
+        <Text><Text bold color="green">[Enter]</Text> Accept</Text>
+        <Text><Text bold color="red">[Esc]</Text> Decline</Text>
       </Box>
     </Box>
   );

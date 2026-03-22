@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { EventEmitter } from 'events';
 
+// Mock discovery object returned by swarm.join()
+const mockDiscovery = {
+  flushed: vi.fn().mockResolvedValue(undefined),
+  refresh: vi.fn().mockResolvedValue(undefined),
+};
+
 // Mock Hyperswarm before importing the module
 const mockSwarm = new EventEmitter() as EventEmitter & {
   join: ReturnType<typeof vi.fn>;
@@ -8,7 +14,7 @@ const mockSwarm = new EventEmitter() as EventEmitter & {
   flush: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
 };
-mockSwarm.join = vi.fn();
+mockSwarm.join = vi.fn().mockReturnValue(mockDiscovery);
 mockSwarm.leave = vi.fn().mockResolvedValue(undefined);
 mockSwarm.flush = vi.fn().mockResolvedValue(undefined);
 mockSwarm.destroy = vi.fn().mockResolvedValue(undefined);
@@ -45,6 +51,9 @@ describe('HyperswarmTransport', () => {
     transport = new HyperswarmTransport(identity);
     vi.clearAllMocks();
     mockSwarm.removeAllListeners();
+    mockSwarm.join = vi.fn().mockReturnValue(mockDiscovery);
+    mockDiscovery.flushed = vi.fn().mockResolvedValue(undefined);
+    mockDiscovery.refresh = vi.fn().mockResolvedValue(undefined);
   });
 
   afterEach(async () => {
@@ -90,7 +99,7 @@ describe('HyperswarmTransport', () => {
 
   describe('cleanup', () => {
     it('resets state', async () => {
-      await transport.connect('test-session', true);
+      await transport.connect('test-session');
       await transport.cleanup();
       expect(transport.isConnected).toBe(false);
     });
@@ -98,34 +107,28 @@ describe('HyperswarmTransport', () => {
 
   describe('connection handling', () => {
     it('destroys duplicate connection (only first connection kept)', async () => {
-      await transport.connect('test-session', true);
+      await transport.connect('test-session');
 
-      // Create first mock connection
       const conn1 = new EventEmitter() as EventEmitter & {
         write: ReturnType<typeof vi.fn>;
         destroy: ReturnType<typeof vi.fn>;
       };
       conn1.write = vi.fn();
       conn1.destroy = vi.fn();
-
-      // Trigger first connection
       mockSwarm.emit('connection', conn1, {});
 
-      // Create second mock connection
       const conn2 = new EventEmitter() as EventEmitter & {
         write: ReturnType<typeof vi.fn>;
         destroy: ReturnType<typeof vi.fn>;
       };
       conn2.write = vi.fn();
       conn2.destroy = vi.fn();
-
-      // Trigger second connection - should be destroyed
       mockSwarm.emit('connection', conn2, {});
       expect(conn2.destroy).toHaveBeenCalled();
     });
 
     it('destroys connection on handshake sessionId mismatch', async () => {
-      await transport.connect('correct-session', true);
+      await transport.connect('correct-session');
 
       const conn = new EventEmitter() as EventEmitter & {
         write: ReturnType<typeof vi.fn>;
@@ -133,23 +136,20 @@ describe('HyperswarmTransport', () => {
       };
       conn.write = vi.fn();
       conn.destroy = vi.fn();
-
       mockSwarm.emit('connection', conn, {});
 
-      // Simulate receiving handshake with wrong sessionId
       const wrongHandshake = JSON.stringify({
         type: 'handshake',
         nickname: 'peer',
         tag: 'CD34',
         sessionId: 'wrong-session',
       }) + '\n';
-
       conn.emit('data', Buffer.from(wrongHandshake));
       expect(conn.destroy).toHaveBeenCalled();
     });
 
     it('emits connected with peer identity after successful handshake', async () => {
-      await transport.connect('test-session', true);
+      await transport.connect('test-session');
 
       const conn = new EventEmitter() as EventEmitter & {
         write: ReturnType<typeof vi.fn>;
@@ -164,14 +164,12 @@ describe('HyperswarmTransport', () => {
 
       mockSwarm.emit('connection', conn, {});
 
-      // Simulate valid handshake
       const handshake = JSON.stringify({
         type: 'handshake',
         nickname: 'peer',
         tag: 'CD34',
         sessionId: 'test-session',
       }) + '\n';
-
       conn.emit('data', Buffer.from(handshake));
 
       const peerIdentity = await connectedPromise;
@@ -180,7 +178,7 @@ describe('HyperswarmTransport', () => {
     });
 
     it('emits disconnected after peer disconnects', async () => {
-      await transport.connect('test-session', true);
+      await transport.connect('test-session');
 
       const conn = new EventEmitter() as EventEmitter & {
         write: ReturnType<typeof vi.fn>;
@@ -188,31 +186,22 @@ describe('HyperswarmTransport', () => {
       };
       conn.write = vi.fn();
       conn.destroy = vi.fn();
-
       mockSwarm.emit('connection', conn, {});
 
-      // Complete handshake first
-      const handshake = JSON.stringify({
-        type: 'handshake',
-        nickname: 'peer',
-        tag: 'CD34',
-        sessionId: 'test-session',
-      }) + '\n';
-      conn.emit('data', Buffer.from(handshake));
+      conn.emit('data', Buffer.from(JSON.stringify({
+        type: 'handshake', nickname: 'peer', tag: 'CD34', sessionId: 'test-session',
+      }) + '\n'));
 
       const disconnectedPromise = new Promise<void>((resolve) => {
         transport.on('disconnected', resolve);
       });
-
-      // Simulate close
       conn.emit('close');
-
       await disconnectedPromise;
       expect(transport.isConnected).toBe(false);
     });
 
     it('sends messages over P2P after handshake', async () => {
-      await transport.connect('test-session', true);
+      await transport.connect('test-session');
 
       const conn = new EventEmitter() as EventEmitter & {
         write: ReturnType<typeof vi.fn>;
@@ -220,28 +209,21 @@ describe('HyperswarmTransport', () => {
       };
       conn.write = vi.fn();
       conn.destroy = vi.fn();
-
       mockSwarm.emit('connection', conn, {});
 
-      // Complete handshake
-      const handshake = JSON.stringify({
-        type: 'handshake',
-        nickname: 'peer',
-        tag: 'CD34',
-        sessionId: 'test-session',
-      }) + '\n';
-      conn.emit('data', Buffer.from(handshake));
+      conn.emit('data', Buffer.from(JSON.stringify({
+        type: 'handshake', nickname: 'peer', tag: 'CD34', sessionId: 'test-session',
+      }) + '\n'));
 
       const timestamp = Date.now();
       transport.send('hello world', timestamp);
-
       expect(conn.write).toHaveBeenCalledWith(
         JSON.stringify({ type: 'message', content: 'hello world', timestamp }) + '\n',
       );
     });
 
     it('emits message event on incoming P2P message', async () => {
-      await transport.connect('test-session', true);
+      await transport.connect('test-session');
 
       const conn = new EventEmitter() as EventEmitter & {
         write: ReturnType<typeof vi.fn>;
@@ -249,10 +231,8 @@ describe('HyperswarmTransport', () => {
       };
       conn.write = vi.fn();
       conn.destroy = vi.fn();
-
       mockSwarm.emit('connection', conn, {});
 
-      // Complete handshake
       conn.emit('data', Buffer.from(JSON.stringify({
         type: 'handshake', nickname: 'peer', tag: 'CD34', sessionId: 'test-session',
       }) + '\n'));
@@ -261,7 +241,6 @@ describe('HyperswarmTransport', () => {
         transport.on('message', resolve);
       });
 
-      // Simulate incoming message
       conn.emit('data', Buffer.from(JSON.stringify({
         type: 'message', content: 'hi there', timestamp: 12345,
       }) + '\n'));

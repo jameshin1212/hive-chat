@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { NearbyUser } from '@hivechat/shared';
-import { RADIUS_OPTIONS, DEFAULT_RADIUS_KM } from '@hivechat/shared';
+import { DEFAULT_RADIUS_KM } from '@hivechat/shared';
 import type { ConnectionManager } from '../network/ConnectionManager.js';
 
 export function useNearbyUsers(client: ConnectionManager | null) {
   const [users, setUsers] = useState<NearbyUser[]>([]);
-  const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_KM);
 
   useEffect(() => {
     if (!client) return;
@@ -47,23 +46,11 @@ export function useNearbyUsers(client: ConnectionManager | null) {
     };
   }, [client]);
 
-  const cycleRadius = useCallback(() => {
-    setRadiusKm(current => {
-      const currentIndex = RADIUS_OPTIONS.indexOf(current as typeof RADIUS_OPTIONS[number]);
-      const nextIndex = (currentIndex + 1) % RADIUS_OPTIONS.length;
-      const next = RADIUS_OPTIONS[nextIndex]!;
-      if (client) {
-        client.updateRadius(next);
-      }
-      return next;
-    });
-  }, [client]);
-
   const refreshUsers = useCallback(() => {
     if (client) {
-      client.requestNearbyUsers(radiusKm);
+      client.requestNearbyUsers(DEFAULT_RADIUS_KM);
     }
-  }, [client, radiusKm]);
+  }, [client]);
 
-  return { users, radiusKm, cycleRadius, refreshUsers };
+  return { users, refreshUsers };
 }

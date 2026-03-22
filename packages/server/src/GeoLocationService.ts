@@ -1,6 +1,26 @@
 import geoip from 'geoip-lite';
 import haversine from 'haversine';
+import { encodeBase32, getNeighborsBase32 } from 'geohashing';
 import type { GeoResult, UserRecord } from './types.js';
+
+const GEOHASH_PRECISION = 5; // ~5km cells
+
+/**
+ * Encode lat/lon to a geohash string at precision 5.
+ */
+export function encodeGeohash(lat: number, lon: number): string {
+  return encodeBase32(lat, lon, GEOHASH_PRECISION);
+}
+
+/**
+ * Get center geohash cell + 8 neighbors for a given coordinate.
+ * Returns 9 geohash strings covering the area around the point.
+ */
+export function getGeohashCells(lat: number, lon: number): string[] {
+  const center = encodeBase32(lat, lon, GEOHASH_PRECISION);
+  const n = getNeighborsBase32(center);
+  return [center, n.north, n.northEast, n.east, n.southEast, n.south, n.southWest, n.west, n.northWest];
+}
 
 /**
  * Strip IPv6-mapped IPv4 prefix (::ffff:) to get plain IPv4.

@@ -102,6 +102,23 @@ export function MessageArea({ messages, myIdentity, availableHeight, columns = D
           if (msg.kind === 'transition') {
             return <TransitionLine key={msg.id} text={msg.content} columns={columns} />;
           }
+          if (msg.kind === 'error-transition') {
+            return <TransitionLine key={msg.id} text={msg.content} columns={columns} color="red" />;
+          }
+          if (msg.kind === 'progress') {
+            return (
+              <Box key={msg.id}>
+                <Text color="yellow">{' \u25CC '}{msg.content}</Text>
+              </Box>
+            );
+          }
+          if (msg.kind === 'progress-done') {
+            return (
+              <Box key={msg.id}>
+                <Text color="green">{' \u25CF '}{msg.content}</Text>
+              </Box>
+            );
+          }
           return (
             <Box key={msg.id}>
               <Text color={theme.text.secondary} italic>{'\u2500'} {msg.content} {'\u2500'}</Text>

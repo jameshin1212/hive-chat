@@ -22,11 +22,17 @@ export function UserList({ users, visible, onSelect, onClose, maxVisible = 8 }: 
   useInput((_input, key) => {
     if (!visible) return;
 
+    // Empty list: any key closes
+    if (users.length === 0) {
+      onClose();
+      return;
+    }
+
     if (key.upArrow) {
       setSelectedIndex(prev => prev <= 0 ? users.length - 1 : prev - 1);
     } else if (key.downArrow) {
       setSelectedIndex(prev => prev >= users.length - 1 ? 0 : prev + 1);
-    } else if (key.return && users.length > 0) {
+    } else if (key.return) {
       onSelect(users[selectedIndex]!);
     } else if (key.escape) {
       onClose();
@@ -37,32 +43,12 @@ export function UserList({ users, visible, onSelect, onClose, maxVisible = 8 }: 
 
   if (users.length === 0) {
     return (
-      <Box flexDirection="column" paddingX={1}>
-        <Text color={theme.text.secondary}>No users nearby. Try expanding radius</Text>
-        <Text color={theme.text.secondary} dimColor>(Press Escape to close, Tab to expand radius)</Text>
+      <Box flexDirection="column" borderStyle="single" borderColor={theme.text.info} paddingX={1} flexShrink={0}>
+        <Text color={theme.text.primary}>No users nearby.</Text>
+        <Text color={theme.text.secondary}>(Press any key to close)</Text>
       </Box>
     );
   }
-
-  // Header (always visible)
-  const header = (
-    <>
-      <Box marginBottom={1}>
-        <Text bold color={theme.text.primary}>Nearby Users</Text>
-        <Text color={theme.text.secondary}> (Esc to close, Enter to select)</Text>
-      </Box>
-      <Box>
-        <Text color={theme.text.secondary}>
-          {'  nick#tag            AI CLI         dist   status'}
-        </Text>
-      </Box>
-      <Box>
-        <Text color={theme.text.secondary}>
-          {'  ─────────────────── ────────────── ────── ──────'}
-        </Text>
-      </Box>
-    </>
-  );
 
   const renderUser = (user: NearbyUser, index: number, isSelected: boolean) => {
     const nameDisplay = `${user.nickname}#${user.tag}`.padEnd(19);
@@ -72,7 +58,7 @@ export function UserList({ users, visible, onSelect, onClose, maxVisible = 8 }: 
 
     return (
       <Box key={`${user.nickname}-${user.tag}`}>
-        <Text inverse={isSelected}>
+        <Text inverse={isSelected} bold={isSelected}>
           {isSelected ? '> ' : '  '}
           {nameDisplay} {cliDisplay} {distDisplay} </Text>
         <Text inverse={isSelected} color={statusColor}>{user.status}</Text>
@@ -83,15 +69,18 @@ export function UserList({ users, visible, onSelect, onClose, maxVisible = 8 }: 
   // No scroll needed
   if (users.length <= maxVisible) {
     return (
-      <Box flexDirection="column" paddingX={1}>
-        {header}
+      <Box flexDirection="column" borderStyle="single" borderColor={theme.text.info} paddingX={1} flexShrink={0}>
+        <Box marginBottom={0}>
+          <Text bold color={theme.text.primary}>Nearby Users</Text>
+          <Text color={theme.text.secondary}> (Esc to close, Enter to select)</Text>
+        </Box>
         {users.map((user, i) => renderUser(user, i, i === selectedIndex))}
       </Box>
     );
   }
 
-  // Scroll window (stateless, centered on selectedIndex)
-  const itemSlots = maxVisible - 2; // reserve 2 for indicators
+  // Scroll window
+  const itemSlots = maxVisible - 2;
   const half = Math.floor(itemSlots / 2);
   let start = Math.max(0, Math.min(selectedIndex - half, users.length - itemSlots));
   start = Math.max(0, start);
@@ -99,11 +88,14 @@ export function UserList({ users, visible, onSelect, onClose, maxVisible = 8 }: 
   const visible_items = users.slice(start, end);
 
   return (
-    <Box flexDirection="column" paddingX={1}>
-      {header}
-      <Text dimColor>{start > 0 ? `  ↑ ${start} more` : ' '}</Text>
+    <Box flexDirection="column" borderStyle="single" borderColor={theme.text.info} paddingX={1} flexShrink={0}>
+      <Box marginBottom={0}>
+        <Text bold color={theme.text.primary}>Nearby Users</Text>
+        <Text color={theme.text.secondary}> (Esc to close, Enter to select)</Text>
+      </Box>
+      <Text dimColor>{start > 0 ? `  \u2191 ${start} more` : ' '}</Text>
       {visible_items.map((user, i) => renderUser(user, start + i, start + i === selectedIndex))}
-      <Text dimColor>{end < users.length ? `  ↓ ${users.length - end} more` : ' '}</Text>
+      <Text dimColor>{end < users.length ? `  \u2193 ${users.length - end} more` : ' '}</Text>
     </Box>
   );
 }

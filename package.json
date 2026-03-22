@@ -11,10 +11,10 @@
   "scripts": {
     "test": "vitest run",
     "build": "npm -w packages/client run build",
-    "dev": "npm -w packages/server run dev & sleep 1 && npm -w packages/client run dev",
+    "dev": "npm -w packages/server run dev & sleep 1 && HIVECHAT_SERVER=ws://localhost:3456 npm -w packages/client run dev",
     "dev:server": "npm -w packages/server run dev",
-    "dev:client": "npm -w packages/client run dev",
-    "dev:client2": "HIVECHAT_PROFILE=test2 npm -w packages/client run dev"
+    "dev:client": "HIVECHAT_SERVER=ws://localhost:3456 npm -w packages/client run dev",
+    "dev:client2": "HIVECHAT_SERVER=ws://localhost:3456 HIVECHAT_PROFILE=test2 npm -w packages/client run dev"
   },
   "devDependencies": {
     "concurrently": "^9",

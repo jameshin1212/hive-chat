@@ -78,7 +78,7 @@ describe('COMMANDS', () => {
   it('contains all expected commands', () => {
     const commandNames = Object.keys(COMMANDS);
     expect(commandNames).toContain('/exit');
-    expect(commandNames).toContain('/users');
+    expect(commandNames).toContain('/nearby');
     expect(commandNames).toContain('/friends');
     expect(commandNames).not.toContain('/chat');
     expect(commandNames).toContain('/settings');
