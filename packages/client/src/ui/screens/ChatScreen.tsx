@@ -21,9 +21,15 @@ import { FriendList } from '../components/FriendList.js';
 import { ChatRequestOverlay } from '../components/ChatRequestOverlay.js';
 import { CommandSuggestions } from '../components/CommandSuggestions.js';
 import { SettingsOverlay } from '../components/SettingsOverlay.js';
-import { getBannerText } from '../components/AsciiBanner.js';
+import { WelcomeBox, getWelcomeBoxHeight } from '../components/WelcomeBox.js';
+import { HelpOverlay } from '../components/HelpOverlay.js';
+import { ConfirmOverlay } from '../components/ConfirmOverlay.js';
+import { AddFriendOverlay } from '../components/AddFriendOverlay.js';
 import { theme } from '../theme.js';
 import type { Key } from 'ink';
+
+/** Long separator — Ink truncates to actual width via wrap="truncate" */
+const SEPARATOR_LONG = '\u2500'.repeat(300);
 
 interface ChatScreenProps {
   identity: Identity;
@@ -41,6 +47,10 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const [showUserList, setShowUserList] = useState(false);
   const [showFriendList, setShowFriendList] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [removeFriendMode, setRemoveFriendMode] = useState(false);
+  const [confirmState, setConfirmState] = useState<{ message: string; onConfirm: () => void } | null>(null);
   const { rows, columns, breakpoint } = useTerminalSize();
   const gracefulExit = useGracefulExit();
 
@@ -48,8 +58,8 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const { users, refreshUsers } = useNearbyUsers(client);
   const {
     chatStatus, partner, sessionId, chatMessages,
-    incomingRequest, partnerLeft, requestChat, acceptRequest,
-    declineRequest, sendMessage, leaveChat,
+    incomingRequest, partnerLeft, requestChat, cancelRequest,
+    acceptRequest, declineRequest, sendMessage, leaveChat,
   } = useChatSession(client, status);
   const { friendStatuses, friendCount, onlineFriendCount, refreshFriendStatuses } = useFriends(client, status);
 
@@ -62,22 +72,28 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const isInputDisabled = chatStatus === 'disconnected' || chatStatus === 'requesting';
 
   // Dynamic overlay height — subtract from MessageArea so overlays don't clip below StatusBar
+  // +2 for border (top+bottom), +1 for title row
   const maxListVisible = 8;
   const overlayHeight = (() => {
     if (showSettings) return 8;
+    if (confirmState) return 4; // border(2) + message + buttons
+    if (showHelp) return Object.keys(COMMANDS).length + 4 + 2; // items + extra lines + border
+    if (showAddFriend) return 4; // border(2) + title + instruction
     if (showUserList) {
+      if (users.length === 0) return 4;
       const items = Math.min(users.length, maxListVisible);
       const indicators = users.length > maxListVisible ? 2 : 0;
-      return items + indicators + 4; // +4 for title/subtitle/header/divider
+      return items + indicators + 1 + 2;
     }
-    if (showFriendList) {
+    if (showFriendList || removeFriendMode) {
+      if (friendStatuses.length === 0) return 4;
       const items = Math.min(friendStatuses.length, maxListVisible);
       const indicators = friendStatuses.length > maxListVisible ? 2 : 0;
-      return items + indicators + 4;
+      return items + indicators + 1 + 2;
     }
     if (showSuggestions) {
       const filtered = filterCommands(currentInput);
-      return Math.min(filtered.length, 8) + (filtered.length > 8 ? 2 : 0) + 2; // +2 for Box border
+      return Math.min(filtered.length, 8) + (filtered.length > 8 ? 2 : 0) + 2;
     }
     return 0;
   })();
@@ -115,17 +131,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
 
     switch (status) {
       case 'connected':
-        addSystemMessage(getBannerText(breakpoint));
-        addSystemMessage(`${identity.nickname}#${identity.tag}  |  ${identity.aiCli}  |  Connected`);
-        addSystemMessage(`HiveChat v${__APP_VERSION__}`);
-        addSystemMessage([
-          'Tips:',
-          '  Tab        \u2014 nearby users',
-          '  /addfriend \u2014 add friend (nick#TAG)',
-          '  /friends   \u2014 friend list',
-          '  /help      \u2014 all commands',
-        ].join('\n'));
-        addSystemMessage('Connected', 'transition');
+        addSystemMessage('You are in the lobby. Type /nearby or press Tab to find people.', 'transition');
         break;
       case 'reconnecting':
         addSystemMessage('Connection lost. Reconnecting...');
@@ -148,6 +154,10 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         setShowUserList(true);
         refreshUsers();
       }
+    }
+    if (key.escape && chatStatus === 'requesting') {
+      cancelRequest();
+      addSystemMessage('Chat request cancelled');
     }
   });
 
@@ -172,13 +182,10 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         return;
       }
       if (parsed.name === '/help') {
-        const helpLines = Object.entries(COMMANDS)
-          .map(([cmd, info]) => `  ${cmd} - ${info.description}`)
-          .join('\n');
-        addSystemMessage(`Available commands:\n${helpLines}`);
+        setShowHelp(true);
         return;
       }
-      if (parsed.name === '/users') {
+      if (parsed.name === '/nearby') {
         setShowUserList(true);
         refreshUsers();
         return;
@@ -186,8 +193,14 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       if (parsed.name === '/leave') {
         if (isInChat) {
           const partnerName = partner ? `${partner.nickname}#${partner.tag}` : 'chat';
-          leaveChat();
-          addSystemMessage(`Left chat with ${partnerName}`, 'transition');
+          setConfirmState({
+            message: `Leave chat with ${partnerName}?`,
+            onConfirm: () => {
+              leaveChat();
+              addSystemMessage(`Left chat with ${partnerName}`, 'transition');
+              setConfirmState(null);
+            },
+          });
         } else {
           addSystemMessage('Not in a chat');
         }
@@ -200,7 +213,8 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       }
       if (parsed.name === '/addfriend') {
         if (parsed.args.length === 0) {
-          addSystemMessage('Usage: /addfriend nick#TAG');
+          // No args: show overlay prompt
+          setShowAddFriend(true);
           return;
         }
         const nickTag = parsed.args[0]!;
@@ -219,27 +233,14 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         }
         addFriend(parsedNt.nickname, parsedNt.tag);
         addSystemMessage(`Added ${nickTag} to friends`);
+        setShowAddFriend(false);
         refreshFriendStatuses();
         return;
       }
       if (parsed.name === '/removefriend') {
-        if (parsed.args.length === 0) {
-          addSystemMessage('Usage: /removefriend nick#TAG');
-          return;
-        }
-        const nickTag = parsed.args[0]!;
-        const parsedNt = parseNickTag(nickTag);
-        if (!parsedNt) {
-          addSystemMessage('Invalid format. Use: nick#TAG');
-          return;
-        }
-        const removed = removeFriend(parsedNt.nickname, parsedNt.tag);
-        if (removed) {
-          addSystemMessage(`Removed ${nickTag} from friends`);
-          refreshFriendStatuses();
-        } else {
-          addSystemMessage(`${nickTag} is not in your friend list`);
-        }
+        // Show friend list for selection → then confirm
+        setRemoveFriendMode(true);
+        refreshFriendStatuses();
         return;
       }
       if (parsed.name === '/settings') {
@@ -310,18 +311,23 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       ? 'Type a message...'
       : 'Type a message or /help...';
 
-  const separator = '\u2500'.repeat(columns);
+  const hasOverlay = showUserList || showFriendList || showSettings || showHelp || showAddFriend || removeFriendMode || !!confirmState || !!incomingRequest;
+  const showWelcome = status === 'connected' && !isInChat && messages.length <= 2 && !hasOverlay;
+  const welcomeBoxHeight = showWelcome ? getWelcomeBoxHeight(breakpoint) : 0;
 
   return (
     <Box flexDirection="column" height={rows}>
+      {showWelcome && (
+        <WelcomeBox identity={identity} breakpoint={breakpoint} />
+      )}
       <MessageArea
         messages={displayMessages}
         myIdentity={identity}
-        availableHeight={messageAreaHeight}
+        availableHeight={showWelcome ? Math.max(1, messageAreaHeight - welcomeBoxHeight) : messageAreaHeight}
         columns={columns}
         isActive={!showUserList && !showFriendList && !incomingRequest && !showSettings}
       />
-      {showFriendList && !showUserList && !incomingRequest && (
+      {showFriendList && !showUserList && !incomingRequest && !removeFriendMode && (
         <FriendList
           friends={friendStatuses}
           visible={showFriendList}
@@ -334,6 +340,26 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
             }
           }}
           onClose={() => setShowFriendList(false)}
+        />
+      )}
+      {removeFriendMode && !confirmState && (
+        <FriendList
+          friends={friendStatuses}
+          visible={removeFriendMode}
+          onSelect={(friend: FriendStatus) => {
+            const nickTag = `${friend.nickname}#${friend.tag}`;
+            setConfirmState({
+              message: `Remove ${nickTag} from friends?`,
+              onConfirm: () => {
+                removeFriend(friend.nickname, friend.tag);
+                addSystemMessage(`Removed ${nickTag} from friends`);
+                refreshFriendStatuses();
+                setConfirmState(null);
+                setRemoveFriendMode(false);
+              },
+            });
+          }}
+          onClose={() => setRemoveFriendMode(false)}
         />
       )}
       {showUserList && (
@@ -365,6 +391,42 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
           }}
         />
       )}
+      {showHelp && (
+        <HelpOverlay visible={showHelp} onClose={() => setShowHelp(false)} />
+      )}
+      {showAddFriend && (
+        <AddFriendOverlay
+          visible={showAddFriend}
+          onSubmit={(nickTag) => {
+            const parsedNt = parseNickTag(nickTag);
+            if (!parsedNt) {
+              addSystemMessage('Invalid format. Use: nick#TAG');
+              return;
+            }
+            if (parsedNt.nickname === identity.nickname && parsedNt.tag === identity.tag) {
+              addSystemMessage('Cannot add yourself');
+              return;
+            }
+            if (isFriend(parsedNt.nickname, parsedNt.tag)) {
+              addSystemMessage('Already in friend list');
+              return;
+            }
+            addFriend(parsedNt.nickname, parsedNt.tag);
+            addSystemMessage(`Added ${nickTag} to friends`);
+            setShowAddFriend(false);
+            refreshFriendStatuses();
+          }}
+          onClose={() => setShowAddFriend(false)}
+        />
+      )}
+      {confirmState && (
+        <ConfirmOverlay
+          message={confirmState.message}
+          visible={!!confirmState}
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => { setConfirmState(null); setRemoveFriendMode(false); }}
+        />
+      )}
       {showSuggestions && (
         <CommandSuggestions
           suggestions={filterCommands(currentInput)}
@@ -372,28 +434,25 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
           visible={showSuggestions}
         />
       )}
-      <Box>
-        <Text color={theme.ui.separator}>{separator}</Text>
-      </Box>
+      <Text color={theme.ui.separator} wrap="truncate">{SEPARATOR_LONG}</Text>
       <StatusBar
         identity={identity}
         connectionStatus={status}
         nearbyCount={users.length}
         chatPartner={chatPartner}
+        isRequesting={chatStatus === 'requesting'}
         onlineFriendCount={onlineFriendCount}
         friendCount={friendCount}
         transportType={transportType}
         breakpoint={breakpoint}
       />
-      <Box>
-        <Text color={theme.ui.separator}>{separator}</Text>
-      </Box>
+      <Text color={theme.ui.separator} wrap="truncate">{SEPARATOR_LONG}</Text>
       <IMETextInput
         onSubmit={handleSubmit}
         onTextChange={handleTextChange}
         onKeyIntercept={handleKeyIntercept}
-        placeholder={inputPlaceholder}
-        isActive={!isInputDisabled && !showUserList && !showFriendList && !incomingRequest && !showSettings}
+        placeholder={showAddFriend ? 'Enter nick#TAG...' : inputPlaceholder}
+        isActive={!isInputDisabled && !showUserList && !showFriendList && !incomingRequest && !showSettings && !showHelp && !showAddFriend && !removeFriendMode && !confirmState}
       />
     </Box>
   );
