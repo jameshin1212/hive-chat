@@ -58,6 +58,7 @@ export function useChatSession(
   const prevConnectionStatusRef = useRef<string>(connectionStatus);
   const partnerRef = useRef<NearbyUser | null>(null);
   const chatStatusRef = useRef<ChatSessionStatus>(chatStatus);
+  const sessionIdRef = useRef<string | null>(sessionId);
 
   // Keep refs in sync
   useEffect(() => {
@@ -66,6 +67,9 @@ export function useChatSession(
   useEffect(() => {
     chatStatusRef.current = chatStatus;
   }, [chatStatus]);
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   // Connection status changes
   useEffect(() => {
@@ -145,19 +149,25 @@ export function useChatSession(
     };
 
     const handleChatLeft = (data: { sessionId: string; nickname: string; tag: string }) => {
-      setChatMessages(msgs => [
-        ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} left the chat`, 'error-transition'),
-      ].slice(-MAX_MESSAGES));
-      setPartnerLeft(true);
+      // Auto-return to lobby when partner leaves
+      client.leaveChat(data.sessionId);
+      setChatStatus('idle');
+      setPartner(null);
+      setSessionId(null);
+      setPartnerLeft(false);
+      setChatMessages([]);
     };
 
     const handleChatUserOffline = (data: { nickname: string; tag: string }) => {
-      setChatMessages(msgs => [
-        ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} went offline`, 'error-transition'),
-      ].slice(-MAX_MESSAGES));
-      setPartnerLeft(true);
+      // Auto-return to lobby when partner goes offline
+      if (sessionIdRef.current) {
+        client.leaveChat(sessionIdRef.current);
+      }
+      setChatStatus('idle');
+      setPartner(null);
+      setSessionId(null);
+      setPartnerLeft(false);
+      setChatMessages([]);
     };
 
     const handleChatError = (data: { code?: string; message?: string; error?: string }) => {
@@ -214,11 +224,15 @@ export function useChatSession(
     };
 
     const handleP2PDisconnected = () => {
-      setChatMessages(msgs => [
-        ...msgs,
-        createSystemMessage('P2P connection lost', 'error-transition'),
-      ].slice(-MAX_MESSAGES));
-      setPartnerLeft(true);
+      // Auto-return to lobby on P2P disconnect
+      if (sessionIdRef.current) {
+        client.leaveChat(sessionIdRef.current);
+      }
+      setChatStatus('idle');
+      setPartner(null);
+      setSessionId(null);
+      setPartnerLeft(false);
+      setChatMessages([]);
     };
 
     client.on('chat_requested', handleChatRequested);
