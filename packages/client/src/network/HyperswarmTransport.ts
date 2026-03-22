@@ -106,7 +106,11 @@ export class HyperswarmTransport extends EventEmitter {
 
     if (this.currentTopic) {
       try {
-        await this.swarm.leave(this.currentTopic);
+        // Timeout leave() to prevent hanging on slow DHT
+        await Promise.race([
+          this.swarm.leave(this.currentTopic),
+          new Promise<void>(resolve => setTimeout(resolve, 3000)),
+        ]);
       } catch {
         // Ignore leave errors (swarm may already be cleaned)
       }

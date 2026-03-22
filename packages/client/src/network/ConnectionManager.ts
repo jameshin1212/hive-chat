@@ -202,11 +202,6 @@ export class ConnectionManager extends EventEmitter {
     if (this.isConnecting) return;
     this.isConnecting = true;
 
-    // Wait for any pending cleanup to finish before starting new connection
-    if (this.cleanupPromise) {
-      await this.cleanupPromise;
-    }
-
     // Set expected partner for P2P handshake identity verification
     if (this.currentPartner) {
       this.p2pTransport.setExpectedPartner(this.currentPartner);
