@@ -26,6 +26,7 @@ import { HelpOverlay } from '../components/HelpOverlay.js';
 import { ConfirmOverlay } from '../components/ConfirmOverlay.js';
 import { AddFriendOverlay } from '../components/AddFriendOverlay.js';
 import { theme } from '../theme.js';
+import { checkUpdate } from '../../utils/checkUpdate.js';
 import type { Key } from 'ink';
 
 /** Long separator — Ink truncates to actual width via wrap="truncate" */
@@ -132,6 +133,12 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     switch (status) {
       case 'connected':
         addSystemMessage('You are in the lobby. Type /nearby or press Tab to find people.', 'transition');
+        // Check for updates (non-blocking)
+        checkUpdate(__APP_VERSION__).then(latest => {
+          if (latest) {
+            addSystemMessage(`Update available: v${__APP_VERSION__} → v${latest}. Run: npx hivechat@latest`);
+          }
+        });
         break;
       case 'reconnecting':
         addSystemMessage('Connection lost. Reconnecting...');
