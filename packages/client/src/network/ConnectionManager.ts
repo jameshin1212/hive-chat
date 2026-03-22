@@ -128,10 +128,9 @@ export class ConnectionManager extends EventEmitter {
       }
     });
 
-    // Cleanup P2P on chat_left
+    // Cleanup P2P on chat_left — only if it's for the CURRENT session
     this.signalingClient.on('chat_left', (data: any) => {
-      // Don't cleanup if we're already connecting to a NEW session
-      // (this chat_left is from the OLD session)
+      if (data.sessionId && data.sessionId !== this.currentSessionId) return;
       if (this.isConnecting) return;
       this.cleanupP2P();
       this.emit('chat_left', data);

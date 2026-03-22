@@ -148,8 +148,9 @@ export function useChatSession(
       ringBell();
     };
 
-    const handleChatLeft = (_data: { sessionId: string; nickname: string; tag: string }) => {
-      // Auto-return to lobby — ConnectionManager already handles cleanup
+    const handleChatLeft = (data: { sessionId: string; nickname: string; tag: string }) => {
+      // Only handle if this is for the CURRENT session (ignore stale events from old sessions)
+      if (data.sessionId !== sessionIdRef.current) return;
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
