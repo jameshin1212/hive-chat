@@ -65,11 +65,18 @@ describe('ConnectionManager', () => {
   });
 
   describe('event proxying', () => {
-    it('proxies connection_status event from SignalingClient', () => {
+    it('proxies connected event from SignalingClient', () => {
       const handler = vi.fn();
-      manager.on('connection_status', handler);
-      signalingClient.emit('connection_status', 'connected');
-      expect(handler).toHaveBeenCalledWith('connected');
+      manager.on('connected', handler);
+      signalingClient.emit('connected');
+      expect(handler).toHaveBeenCalled();
+    });
+
+    it('proxies reconnecting event from SignalingClient', () => {
+      const handler = vi.fn();
+      manager.on('reconnecting', handler);
+      signalingClient.emit('reconnecting');
+      expect(handler).toHaveBeenCalled();
     });
 
     it('proxies nearby_users event from SignalingClient', () => {

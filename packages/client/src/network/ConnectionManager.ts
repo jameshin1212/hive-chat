@@ -103,7 +103,7 @@ export class ConnectionManager extends EventEmitter {
       'registered', 'nearby_users', 'user_joined', 'user_left', 'user_status',
       'chat_requested', 'chat_declined', 'chat_error',
       'friend_status_response', 'friend_status_update',
-      'connection_status',
+      'connected', 'reconnecting',
     ];
     for (const event of forwardEvents) {
       this.signalingClient.on(event, (...args: unknown[]) => {
