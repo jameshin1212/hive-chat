@@ -88,7 +88,10 @@ export class HyperswarmTransport extends EventEmitter {
     // Join as server+client, lookup DHT for initiator
     this.currentDiscovery = this.swarm.join(topic, { server: true, client: true });
     await this.currentDiscovery.flushed();
-    this.emit('status', 'Connecting to peer...');
+    // Only emit if not already connected (receiver may connect before flushed resolves)
+    if (!this.handshakeCompleted) {
+      this.emit('status', 'Connecting to peer...');
+    }
 
     // Start retry loop — re-lookup periodically
     this.startRetryLoop();
