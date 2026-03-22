@@ -4,7 +4,7 @@ import crypto from 'hypercore-crypto';
 import b4a from 'b4a';
 
 export class HyperswarmTransport extends EventEmitter {
-  private swarm: Hyperswarm | null = null;
+  private swarm: Hyperswarm;
   private connection: any | null = null; // Duplex stream
   private currentTopic: Buffer | null = null;
   private currentDiscovery: any | null = null;
@@ -17,6 +17,12 @@ export class HyperswarmTransport extends EventEmitter {
   constructor(identity: { nickname: string; tag: string }) {
     super();
     this.identity = identity;
+    // Create swarm once and reuse — keeps DHT connections warm
+    this.swarm = new Hyperswarm();
+    this.swarm.on('connection', (conn: any, _peerInfo: any) => {
+      this.emit('status', 'Peer discovered, verifying identity...');
+      this.handleConnection(conn, _peerInfo);
+    });
   }
 
   /** Convert sessionId to 32-byte topic buffer */
@@ -35,19 +41,9 @@ export class HyperswarmTransport extends EventEmitter {
    */
   async announceAndWait(sessionId: string): Promise<void> {
     await this.cleanup();
-    if (this.swarm) {
-      await this.swarm.destroy();
-      this.swarm = null;
-    }
 
     this.expectedSessionId = sessionId;
     this.handshakeCompleted = false;
-
-    this.swarm = new Hyperswarm();
-    this.swarm.on('connection', (conn: any, _peerInfo: any) => {
-      this.emit('status', 'Peer discovered, verifying identity...');
-      this.handleConnection(conn, _peerInfo);
-    });
 
     const topic = HyperswarmTransport.sessionToTopic(sessionId);
     this.currentTopic = topic;
@@ -68,19 +64,9 @@ export class HyperswarmTransport extends EventEmitter {
    */
   async connect(sessionId: string): Promise<void> {
     await this.cleanup();
-    if (this.swarm) {
-      await this.swarm.destroy();
-      this.swarm = null;
-    }
 
     this.expectedSessionId = sessionId;
     this.handshakeCompleted = false;
-
-    this.swarm = new Hyperswarm();
-    this.swarm.on('connection', (conn: any, _peerInfo: any) => {
-      this.emit('status', 'Peer discovered, verifying identity...');
-      this.handleConnection(conn, _peerInfo);
-    });
 
     const topic = HyperswarmTransport.sessionToTopic(sessionId);
     this.currentTopic = topic;
@@ -105,7 +91,7 @@ export class HyperswarmTransport extends EventEmitter {
     this.connection.write(msg + '\n');
   }
 
-  /** Clean up: leave topic, destroy connection, stop retries */
+  /** Clean up current session: leave topic, destroy connection, stop retries */
   async cleanup(): Promise<void> {
     this.stopRetryLoop();
     this.handshakeCompleted = false;
@@ -118,8 +104,12 @@ export class HyperswarmTransport extends EventEmitter {
       this.connection = null;
     }
 
-    if (this.currentTopic && this.swarm) {
-      await this.swarm.leave(this.currentTopic);
+    if (this.currentTopic) {
+      try {
+        await this.swarm.leave(this.currentTopic);
+      } catch {
+        // Ignore leave errors (swarm may already be cleaned)
+      }
       this.currentTopic = null;
     }
   }
@@ -127,10 +117,7 @@ export class HyperswarmTransport extends EventEmitter {
   /** Full shutdown (app exit) */
   async destroy(): Promise<void> {
     await this.cleanup();
-    if (this.swarm) {
-      await this.swarm.destroy();
-      this.swarm = null;
-    }
+    await this.swarm.destroy();
   }
 
   /** Set expected partner for handshake identity verification */
@@ -145,7 +132,7 @@ export class HyperswarmTransport extends EventEmitter {
   private startRetryLoop(): void {
     this.stopRetryLoop();
     this.retryTimer = setInterval(async () => {
-      if (this.handshakeCompleted || !this.swarm || !this.currentDiscovery) {
+      if (this.handshakeCompleted || !this.currentDiscovery) {
         this.stopRetryLoop();
         return;
       }

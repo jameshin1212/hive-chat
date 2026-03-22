@@ -48,12 +48,15 @@ describe('HyperswarmTransport', () => {
   const identity = { nickname: 'tester', tag: 'AB12' };
 
   beforeEach(() => {
-    transport = new HyperswarmTransport(identity);
     vi.clearAllMocks();
     mockSwarm.removeAllListeners();
     mockSwarm.join = vi.fn().mockReturnValue(mockDiscovery);
+    mockSwarm.leave = vi.fn().mockResolvedValue(undefined);
+    mockSwarm.destroy = vi.fn().mockResolvedValue(undefined);
     mockDiscovery.flushed = vi.fn().mockResolvedValue(undefined);
     mockDiscovery.refresh = vi.fn().mockResolvedValue(undefined);
+    // Create transport AFTER resetting mocks so constructor's swarm listener is preserved
+    transport = new HyperswarmTransport(identity);
   });
 
   afterEach(async () => {
