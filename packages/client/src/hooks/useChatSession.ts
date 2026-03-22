@@ -17,6 +17,7 @@ export interface ChatSessionReturn {
   incomingRequest: IncomingRequest | null;
   partnerLeft: boolean;
   requestChat: (target: NearbyUser) => void;
+  cancelRequest: () => void;
   acceptRequest: () => void;
   declineRequest: () => void;
   sendMessage: (content: string, myIdentity: Identity) => void;
@@ -32,7 +33,7 @@ export function ringBell(): void {
   }
 }
 
-function createSystemMessage(content: string, kind?: 'transition'): ChatMessage {
+function createSystemMessage(content: string, kind?: ChatMessage['kind']): ChatMessage {
   return {
     id: crypto.randomUUID(),
     from: { nickname: 'system', tag: '0000', aiCli: 'Claude Code', schemaVersion: 1 },
@@ -179,14 +180,16 @@ export function useChatSession(
     const handleP2PConnecting = () => {
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage('Establishing P2P connection...'),
+        createSystemMessage('Establishing P2P connection...', 'progress'),
       ].slice(-MAX_MESSAGES));
     };
 
     const handleP2PStatusMsg = (msg: string) => {
+      // "Verified:" and "Peer discovered" indicate completed steps
+      const isDone = msg.startsWith('Verified:') || msg.startsWith('Peer discovered');
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage(msg),
+        createSystemMessage(msg, isDone ? 'progress-done' : 'progress'),
       ].slice(-MAX_MESSAGES));
     };
 
@@ -266,6 +269,16 @@ export function useChatSession(
     }, CHAT_REQUEST_TIMEOUT_MS);
   }, [client]);
 
+  const cancelRequest = useCallback(() => {
+    if (requestTimeoutRef.current) {
+      clearTimeout(requestTimeoutRef.current);
+      requestTimeoutRef.current = null;
+    }
+    setChatStatus('idle');
+    setPartner(null);
+    setChatMessages([]);
+  }, []);
+
   const acceptRequest = useCallback(() => {
     if (!client || !incomingRequest) return;
     client.acceptChat(incomingRequest.sessionId);
@@ -325,6 +338,7 @@ export function useChatSession(
     incomingRequest,
     partnerLeft,
     requestChat,
+    cancelRequest,
     acceptRequest,
     declineRequest,
     sendMessage,
