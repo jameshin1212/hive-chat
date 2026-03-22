@@ -206,6 +206,10 @@ export class ConnectionManager extends EventEmitter {
   private async connectP2P(sessionId: string, isInitiator: boolean): Promise<void> {
     if (this.isConnecting) return;
     this.isConnecting = true;
+    // Set expected partner for P2P handshake identity verification
+    if (this.currentPartner) {
+      this.p2pTransport.setExpectedPartner(this.currentPartner);
+    }
     this.emit('p2p_connecting');
 
     try {

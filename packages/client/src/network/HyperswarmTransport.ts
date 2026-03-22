@@ -12,6 +12,7 @@ export class HyperswarmTransport extends EventEmitter {
   private identity: { nickname: string; tag: string };
   private handshakeCompleted = false;
   private expectedSessionId: string | null = null;
+  private expectedPartner: { nickname: string; tag: string } | null = null;
 
   constructor(identity: { nickname: string; tag: string }) {
     super();
@@ -109,6 +110,7 @@ export class HyperswarmTransport extends EventEmitter {
     this.stopRetryLoop();
     this.handshakeCompleted = false;
     this.expectedSessionId = null;
+    this.expectedPartner = null;
     this.currentDiscovery = null;
 
     if (this.connection) {
@@ -129,6 +131,11 @@ export class HyperswarmTransport extends EventEmitter {
       await this.swarm.destroy();
       this.swarm = null;
     }
+  }
+
+  /** Set expected partner for handshake identity verification */
+  setExpectedPartner(partner: { nickname: string; tag: string }): void {
+    this.expectedPartner = partner;
   }
 
   get isConnected(): boolean {
@@ -211,6 +218,12 @@ export class HyperswarmTransport extends EventEmitter {
     if (msg.type === 'handshake') {
       // Verify session matches
       if (msg.sessionId !== this.expectedSessionId) {
+        this.connection?.destroy();
+        return;
+      }
+      // Verify peer identity matches expected partner
+      if (this.expectedPartner &&
+          (msg.nickname !== this.expectedPartner.nickname || msg.tag !== this.expectedPartner.tag)) {
         this.connection?.destroy();
         return;
       }
