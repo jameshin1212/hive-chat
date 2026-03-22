@@ -1,14 +1,14 @@
 import type { ParsedInput } from '@hivechat/shared';
 
 export const COMMANDS = {
-  '/exit': { description: 'Exit HiveChat' },
-  '/users': { description: 'Show nearby users' },
+  '/nearby': { description: 'Show nearby users' },
   '/friends': { description: 'Show friend list' },
-  '/settings': { description: 'Open settings' },
-  '/help': { description: 'Show available commands' },
-  '/leave': { description: 'Leave current chat' },
   '/addfriend': { description: 'Add friend by nick#tag' },
   '/removefriend': { description: 'Remove friend by nick#tag' },
+  '/help': { description: 'Show available commands' },
+  '/leave': { description: 'Leave current chat' },
+  '/settings': { description: 'Open settings' },
+  '/exit': { description: 'Exit HiveChat' },
 } as const;
 
 export type CommandName = keyof typeof COMMANDS;
