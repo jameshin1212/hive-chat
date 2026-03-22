@@ -180,6 +180,9 @@ export class HyperswarmTransport extends EventEmitter {
     });
 
     conn.on('close', () => {
+      // Only handle close if this is still the active connection
+      // (old connection close events must not affect new sessions)
+      if (this.connection !== conn) return;
       this.connection = null;
       if (this.handshakeCompleted) {
         this.handshakeCompleted = false;
