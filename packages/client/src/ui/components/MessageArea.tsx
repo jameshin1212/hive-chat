@@ -12,6 +12,7 @@ interface MessageAreaProps {
   availableHeight: number;
   columns?: number;
   isActive?: boolean;
+  connectionStatus?: 'connecting' | 'connected' | 'reconnecting' | 'offline';
 }
 
 function formatTimestamp(ts: number): string {
@@ -55,7 +56,7 @@ export function calcVisibleMessages(
   return messages.slice(safeStart, endIndex);
 }
 
-export function MessageArea({ messages, myIdentity, availableHeight, columns = DEFAULT_TERMINAL_WIDTH, isActive }: MessageAreaProps) {
+export function MessageArea({ messages, myIdentity, availableHeight, columns = DEFAULT_TERMINAL_WIDTH, isActive, connectionStatus }: MessageAreaProps) {
   const [scrollOffset, setScrollOffset] = useState(0);
   const prevMessageCount = useRef(messages.length);
 
@@ -88,9 +89,14 @@ export function MessageArea({ messages, myIdentity, availableHeight, columns = D
   const visibleMessages = calcVisibleMessages(messages, displayHeight, scrollOffset);
 
   if (visibleMessages.length === 0) {
+    const emptyText = connectionStatus === 'connecting' || connectionStatus === 'reconnecting'
+      ? 'Connecting to server...'
+      : connectionStatus === 'offline'
+        ? 'Disconnected from server'
+        : '';
     return (
       <Box flexDirection="column" height={availableHeight} overflow="hidden">
-        <Text dimColor>No messages yet. Say hello!</Text>
+        {emptyText ? <Text color="yellow">{emptyText}</Text> : null}
       </Box>
     );
   }

@@ -338,6 +338,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
         availableHeight={showWelcome ? Math.max(1, messageAreaHeight - welcomeBoxHeight) : messageAreaHeight}
         columns={columns}
         isActive={!showUserList && !showFriendList && !incomingRequest && !showSettings}
+        connectionStatus={status}
       />
       {showFriendList && !showUserList && !incomingRequest && !removeFriendMode && (
         <FriendList
