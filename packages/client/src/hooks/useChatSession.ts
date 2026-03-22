@@ -143,7 +143,7 @@ export function useChatSession(
     const handleChatLeft = (data: { sessionId: string; nickname: string; tag: string }) => {
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} left the chat`, 'transition'),
+        createSystemMessage(`${data.nickname}#${data.tag} left the chat`, 'error-transition'),
       ].slice(-MAX_MESSAGES));
       setPartnerLeft(true);
     };
@@ -151,7 +151,7 @@ export function useChatSession(
     const handleChatUserOffline = (data: { nickname: string; tag: string }) => {
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage(`${data.nickname}#${data.tag} went offline`, 'transition'),
+        createSystemMessage(`${data.nickname}#${data.tag} went offline`, 'error-transition'),
       ].slice(-MAX_MESSAGES));
       setPartnerLeft(true);
     };
@@ -203,7 +203,7 @@ export function useChatSession(
     const handleP2PFailed = (data: { reason: string }) => {
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage(`P2P connection failed: ${data.reason}`),
+        createSystemMessage(`P2P connection failed: ${data.reason}`, 'error-transition'),
         createSystemMessage('Use /leave to return to main screen'),
       ].slice(-MAX_MESSAGES));
       setPartnerLeft(true);
@@ -212,7 +212,7 @@ export function useChatSession(
     const handleP2PDisconnected = () => {
       setChatMessages(msgs => [
         ...msgs,
-        createSystemMessage('P2P connection lost', 'transition'),
+        createSystemMessage('P2P connection lost', 'error-transition'),
       ].slice(-MAX_MESSAGES));
       setPartnerLeft(true);
     };

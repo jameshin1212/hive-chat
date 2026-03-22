@@ -102,6 +102,9 @@ export function MessageArea({ messages, myIdentity, availableHeight, columns = D
           if (msg.kind === 'transition') {
             return <TransitionLine key={msg.id} text={msg.content} columns={columns} />;
           }
+          if (msg.kind === 'error-transition') {
+            return <TransitionLine key={msg.id} text={msg.content} columns={columns} color="red" />;
+          }
           if (msg.kind === 'progress') {
             return (
               <Box key={msg.id}>

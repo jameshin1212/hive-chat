@@ -6,6 +6,7 @@ import { theme } from '../theme.js';
 interface TransitionLineProps {
   text: string;
   columns: number;
+  color?: string;
 }
 
 const LINE_CHAR = '\u2550'; // ═ (double horizontal line)
@@ -15,7 +16,7 @@ const LINE_CHAR = '\u2550'; // ═ (double horizontal line)
  * Renders as: ═══════ text ═══════
  * Visually distinct from system messages (─ text ─).
  */
-export function TransitionLine({ text, columns }: TransitionLineProps) {
+export function TransitionLine({ text, columns, color }: TransitionLineProps) {
   const textW = stringWidth(text);
   const padding = 2; // spaces around text
   const available = columns - textW - padding * 2;
@@ -25,7 +26,7 @@ export function TransitionLine({ text, columns }: TransitionLineProps) {
 
   return (
     <Box>
-      <Text color={theme.ui.transition}>
+      <Text color={color ?? theme.ui.transition}>
         {leftLine} {text} {rightLine}
       </Text>
     </Box>
