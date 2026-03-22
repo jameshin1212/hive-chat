@@ -104,17 +104,19 @@ export class HyperswarmTransport extends EventEmitter {
       this.connection = null;
     }
 
-    if (this.currentTopic) {
+    // Grab topic and null it SYNCHRONOUSLY to prevent double-leave
+    const topicToLeave = this.currentTopic;
+    this.currentTopic = null;
+
+    if (topicToLeave) {
       try {
-        // Timeout leave() to prevent hanging on slow DHT
         await Promise.race([
-          this.swarm.leave(this.currentTopic),
+          this.swarm.leave(topicToLeave),
           new Promise<void>(resolve => setTimeout(resolve, 3000)),
         ]);
       } catch {
-        // Ignore leave errors (swarm may already be cleaned)
+        // Ignore leave errors
       }
-      this.currentTopic = null;
     }
   }
 

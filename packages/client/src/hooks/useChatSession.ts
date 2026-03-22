@@ -159,7 +159,7 @@ export function useChatSession(
     };
 
     const handleChatUserOffline = (_data: { nickname: string; tag: string }) => {
-      // Auto-return to lobby — ConnectionManager already handles cleanup
+      if (chatStatusRef.current === 'idle') return;
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
@@ -221,7 +221,8 @@ export function useChatSession(
     };
 
     const handleP2PDisconnected = () => {
-      // Auto-return to lobby — ConnectionManager already handles cleanup + server notify
+      // Only reset if we're actually in a chat (prevent stale events)
+      if (chatStatusRef.current === 'idle') return;
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
