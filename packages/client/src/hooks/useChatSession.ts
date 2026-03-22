@@ -47,7 +47,7 @@ export function useChatSession(
   client: ConnectionManager | null,
   connectionStatus: string,
 ): ChatSessionReturn {
-  const [chatStatus, setChatStatus] = useState<ChatSessionStatus>('idle');
+  const [chatStatus, setChatStatusRaw] = useState<ChatSessionStatus>('idle');
   const [partner, setPartner] = useState<NearbyUser | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -59,14 +59,24 @@ export function useChatSession(
   const partnerRef = useRef<NearbyUser | null>(null);
   const chatStatusRef = useRef<ChatSessionStatus>(chatStatus);
   const sessionIdRef = useRef<string | null>(sessionId);
+  /** Timestamp of last accept — prevents stale events from resetting active status */
+  const acceptTimestampRef = useRef<number>(0);
+
+  /** Safe setChatStatus: prevents stale idle transitions after recent accept */
+  const setChatStatus = useCallback((status: ChatSessionStatus) => {
+    if (status === 'idle' && Date.now() - acceptTimestampRef.current < 5000) {
+      // Don't allow idle transition within 5s of accept (stale event protection)
+      return;
+    }
+    chatStatusRef.current = status; // sync update ref immediately
+    setChatStatusRaw(status);
+  }, []);
 
   // Keep refs in sync
   useEffect(() => {
     partnerRef.current = partner;
   }, [partner]);
-  useEffect(() => {
-    chatStatusRef.current = chatStatus;
-  }, [chatStatus]);
+  // chatStatusRef is updated synchronously in setChatStatus wrapper
   useEffect(() => {
     sessionIdRef.current = sessionId;
   }, [sessionId]);
@@ -171,6 +181,7 @@ export function useChatSession(
       const code = data.code;
       const message = data.message || data.error || 'Unknown error';
       if (code === 'USER_OFFLINE' || code === 'USER_BUSY') {
+        if (chatStatusRef.current === 'idle') return; // Ignore stale errors
         setChatMessages(msgs => [
           ...msgs,
           createSystemMessage(message),
@@ -294,6 +305,7 @@ export function useChatSession(
 
   const acceptRequest = useCallback(() => {
     if (!client || !incomingRequest) return;
+    acceptTimestampRef.current = Date.now(); // Protect against stale idle transitions
     client.acceptChat(incomingRequest.sessionId);
     setChatStatus('active');
     setPartner(incomingRequest.from as unknown as NearbyUser);
@@ -326,6 +338,7 @@ export function useChatSession(
 
   const leaveChat = useCallback(() => {
     if (!client || !sessionId) return;
+    acceptTimestampRef.current = 0; // Allow idle transition (explicit user action)
     client.leaveChat(sessionId);
     setChatStatus('idle');
     setPartner(null);
