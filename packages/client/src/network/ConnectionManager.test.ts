@@ -65,18 +65,11 @@ describe('ConnectionManager', () => {
   });
 
   describe('event proxying', () => {
-    it('proxies connected event from SignalingClient', () => {
+    it('proxies connection_status event from SignalingClient', () => {
       const handler = vi.fn();
-      manager.on('connected', handler);
-      signalingClient.emit('connected');
-      expect(handler).toHaveBeenCalled();
-    });
-
-    it('proxies reconnecting event from SignalingClient', () => {
-      const handler = vi.fn();
-      manager.on('reconnecting', handler);
-      signalingClient.emit('reconnecting');
-      expect(handler).toHaveBeenCalled();
+      manager.on('connection_status', handler);
+      signalingClient.emit('connection_status', 'connected');
+      expect(handler).toHaveBeenCalledWith('connected');
     });
 
     it('proxies nearby_users event from SignalingClient', () => {
@@ -322,11 +315,15 @@ describe('ConnectionManager', () => {
       expect(mockP2PTransport.cleanup).toHaveBeenCalled();
     });
 
-    it('cleans up P2P on chat_user_offline', () => {
+    it('cleans up P2P on chat_user_offline when not connecting', () => {
+      // Simulate established P2P connection (not in connecting phase)
       signalingClient.emit('chat_accepted', {
         sessionId: 'session-1',
         partner: { nickname: 'peer', tag: 'CD34', aiCli: 'Claude Code', distance: 1, status: 'online' },
       });
+      // Complete P2P connection
+      mockP2PTransport.isConnected = true;
+      mockP2PTransport.emit('connected', { nickname: 'peer', tag: 'CD34' });
 
       signalingClient.emit('chat_user_offline', { nickname: 'peer', tag: 'CD34' });
       expect(mockP2PTransport.cleanup).toHaveBeenCalled();

@@ -148,9 +148,8 @@ export function useChatSession(
       ringBell();
     };
 
-    const handleChatLeft = (data: { sessionId: string; nickname: string; tag: string }) => {
-      // Auto-return to lobby when partner leaves
-      client.leaveChat(data.sessionId);
+    const handleChatLeft = (_data: { sessionId: string; nickname: string; tag: string }) => {
+      // Auto-return to lobby — ConnectionManager already handles cleanup
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
@@ -158,11 +157,8 @@ export function useChatSession(
       setChatMessages([]);
     };
 
-    const handleChatUserOffline = (data: { nickname: string; tag: string }) => {
-      // Auto-return to lobby when partner goes offline
-      if (sessionIdRef.current) {
-        client.leaveChat(sessionIdRef.current);
-      }
+    const handleChatUserOffline = (_data: { nickname: string; tag: string }) => {
+      // Auto-return to lobby — ConnectionManager already handles cleanup
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
@@ -224,10 +220,7 @@ export function useChatSession(
     };
 
     const handleP2PDisconnected = () => {
-      // Auto-return to lobby on P2P disconnect
-      if (sessionIdRef.current) {
-        client.leaveChat(sessionIdRef.current);
-      }
+      // Auto-return to lobby — ConnectionManager already handles cleanup + server notify
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
