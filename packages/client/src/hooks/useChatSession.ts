@@ -57,11 +57,15 @@ export function useChatSession(
   const requestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevConnectionStatusRef = useRef<string>(connectionStatus);
   const partnerRef = useRef<NearbyUser | null>(null);
+  const chatStatusRef = useRef<ChatSessionStatus>(chatStatus);
 
-  // Keep partnerRef in sync
+  // Keep refs in sync
   useEffect(() => {
     partnerRef.current = partner;
   }, [partner]);
+  useEffect(() => {
+    chatStatusRef.current = chatStatus;
+  }, [chatStatus]);
 
   // Connection status changes
   useEffect(() => {
@@ -95,7 +99,7 @@ export function useChatSession(
 
     const handleChatRequested = (data: { sessionId: string; from: NearbyUser }) => {
       // If already in a chat, auto-decline
-      if (chatStatus === 'active') {
+      if (chatStatusRef.current === 'active') {
         client.declineChat(data.sessionId);
         return;
       }
@@ -244,7 +248,7 @@ export function useChatSession(
       client.off('p2p_disconnected', handleP2PDisconnected);
       client.off('p2p_status_msg', handleP2PStatusMsg);
     };
-  }, [client, chatStatus]);
+  }, [client]);
 
   const requestChat = useCallback((target: NearbyUser) => {
     if (!client) return;
