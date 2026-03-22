@@ -200,7 +200,7 @@ describe('SignalingServer Chat Relay', () => {
     sendJson(ws1, {
       type: MessageType.CHAT_REQUEST,
       targetNickname: 'nobody',
-      targetTag: 'XXXX',
+      targetTag: 'FF99',
     });
 
     const error = await errorPromise;

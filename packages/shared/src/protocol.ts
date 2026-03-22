@@ -82,8 +82,8 @@ const uuidSchema = z.string().uuid();
 
 export const chatRequestSchema = z.object({
   type: z.literal(MessageType.CHAT_REQUEST),
-  targetNickname: z.string(),
-  targetTag: z.string(),
+  targetNickname: z.string().min(1).max(16),
+  targetTag: z.string().regex(/^[0-9A-F]{4}$/),
 });
 
 export const chatAcceptSchema = z.object({
@@ -111,7 +111,10 @@ export const chatLeaveSchema = z.object({
 
 export const friendStatusRequestSchema = z.object({
   type: z.literal(MessageType.FRIEND_STATUS_REQUEST),
-  friends: z.array(z.object({ nickname: z.string(), tag: z.string() })),
+  friends: z.array(z.object({
+    nickname: z.string().min(1).max(16),
+    tag: z.string().regex(/^[0-9A-F]{4}$/),
+  })).max(100),
 });
 
 // --- Bidirectional P2P schemas ---

@@ -149,4 +149,20 @@ export class ChatSessionManager {
   getPendingRequest(sessionId: string): PendingRequest | undefined {
     return this.pendingRequests.get(sessionId);
   }
+
+  /**
+   * Remove pending requests older than the given timeout (ms).
+   * Returns the sessionIds of expired requests.
+   */
+  cleanupStalePending(timeoutMs: number): string[] {
+    const now = Date.now();
+    const expired: string[] = [];
+    for (const [sessionId, pending] of this.pendingRequests) {
+      if (now - pending.createdAt > timeoutMs) {
+        this.pendingRequests.delete(sessionId);
+        expired.push(sessionId);
+      }
+    }
+    return expired;
+  }
 }

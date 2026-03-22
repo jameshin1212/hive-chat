@@ -21,10 +21,24 @@ const DEFAULT_DEV_LON = 126.9780;
 /** Server broadcast radius - fixed at 10km per user decision */
 const BROADCAST_RADIUS_KM = 10;
 
+/** Rate limiter: max messages per second per connection */
+const MAX_MESSAGES_PER_SECOND = 100;
+/** Max connections per IP */
+const MAX_CONNECTIONS_PER_IP = 10;
+/** Max consecutive errors before disconnect */
+const MAX_CONSECUTIVE_ERRORS = 5;
+/** Max friends per subscription request */
+const MAX_FRIENDS_PER_REQUEST = 100;
+
 interface AliveWebSocket extends WebSocket {
   isAlive: boolean;
   userId?: string;
   clientIp?: string;
+  /** Message rate limiting */
+  msgCount: number;
+  msgResetTime: number;
+  /** Consecutive error counter */
+  errorCount: number;
 }
 
 export class SignalingServer {
@@ -36,6 +50,8 @@ export class SignalingServer {
   private friendSubscriptions = new Map<string, Array<{ nickname: string; tag: string }>>();
   private friendReverseIndex = new Map<string, Set<string>>();
   private subscriberTargets = new Map<string, Set<string>>();
+  /** Track connection count per IP for DDoS protection */
+  private ipConnectionCount = new Map<string, number>();
   private port: number;
 
   constructor(port: number) {
@@ -54,7 +70,11 @@ export class SignalingServer {
         res.end('HiveChat signaling server');
       });
 
-      this.wss = new WebSocketServer({ server: this.httpServer });
+      this.wss = new WebSocketServer({
+        server: this.httpServer,
+        maxPayload: 64 * 1024, // 64KB max message size
+        perMessageDeflate: false, // Disable compression (compression bomb prevention)
+      });
 
       this.httpServer.listen(this.port, '0.0.0.0', () => {
         const addr = this.httpServer!.address() as AddressInfo;
@@ -68,16 +88,45 @@ export class SignalingServer {
       this.wss.on('connection', (ws: AliveWebSocket, req: IncomingMessage) => {
         ws.isAlive = true;
         ws.clientIp = normalizeIp(req.socket.remoteAddress ?? '127.0.0.1');
+        ws.msgCount = 0;
+        ws.msgResetTime = Date.now();
+        ws.errorCount = 0;
+
+        // Per-IP connection limit
+        const ip = ws.clientIp;
+        const count = (this.ipConnectionCount.get(ip) ?? 0) + 1;
+        if (count > MAX_CONNECTIONS_PER_IP) {
+          ws.close(1013, 'Too many connections from this IP');
+          return;
+        }
+        this.ipConnectionCount.set(ip, count);
 
         ws.on('pong', () => {
           ws.isAlive = true;
         });
 
         ws.on('message', (data: Buffer) => {
+          // Message rate limiting
+          const now = Date.now();
+          if (now - ws.msgResetTime > 1000) {
+            ws.msgCount = 0;
+            ws.msgResetTime = now;
+          }
+          ws.msgCount++;
+          if (ws.msgCount > MAX_MESSAGES_PER_SECOND) {
+            ws.close(1008, 'Rate limit exceeded');
+            return;
+          }
           this.handleMessage(ws, data);
         });
 
         ws.on('close', () => {
+          // Decrement IP connection count
+          if (ws.clientIp) {
+            const remaining = (this.ipConnectionCount.get(ws.clientIp) ?? 1) - 1;
+            if (remaining <= 0) this.ipConnectionCount.delete(ws.clientIp);
+            else this.ipConnectionCount.set(ws.clientIp, remaining);
+          }
           this.handleClose(ws);
         });
 
@@ -93,6 +142,11 @@ export class SignalingServer {
     try {
       parsed = JSON.parse(data.toString());
     } catch {
+      ws.errorCount++;
+      if (ws.errorCount >= MAX_CONSECUTIVE_ERRORS) {
+        ws.close(1008, 'Too many invalid messages');
+        return;
+      }
       this.send(ws, {
         type: MessageType.ERROR,
         code: 'INVALID_MESSAGE',
@@ -103,6 +157,11 @@ export class SignalingServer {
 
     const result = clientMessageSchema.safeParse(parsed);
     if (!result.success) {
+      ws.errorCount++;
+      if (ws.errorCount >= MAX_CONSECUTIVE_ERRORS) {
+        ws.close(1008, 'Too many invalid messages');
+        return;
+      }
       this.send(ws, {
         type: MessageType.ERROR,
         code: 'INVALID_MESSAGE',
@@ -110,6 +169,9 @@ export class SignalingServer {
       });
       return;
     }
+
+    // Valid message resets error counter
+    ws.errorCount = 0;
 
     const msg = result.data;
 
@@ -519,6 +581,9 @@ export class SignalingServer {
         ws.isAlive = false;
         ws.ping();
       }
+
+      // Clean up stale pending requests (30s timeout)
+      this.chatSessionManager.cleanupStalePending(30_000);
 
       // Check for stale users
       const staleIds = this.presenceManager.checkStaleUsers();
