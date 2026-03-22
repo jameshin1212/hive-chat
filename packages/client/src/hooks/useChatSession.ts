@@ -62,13 +62,13 @@ export function useChatSession(
   /** Timestamp of last accept — prevents stale events from resetting active status */
   const acceptTimestampRef = useRef<number>(0);
 
-  /** Safe setChatStatus: prevents stale idle transitions after recent accept */
+  /** Check if idle transition should be blocked (stale event protection) */
+  const isIdleBlocked = useCallback(() => {
+    return Date.now() - acceptTimestampRef.current < 5000;
+  }, []);
+
   const setChatStatus = useCallback((status: ChatSessionStatus) => {
-    if (status === 'idle' && Date.now() - acceptTimestampRef.current < 5000) {
-      // Don't allow idle transition within 5s of accept (stale event protection)
-      return;
-    }
-    chatStatusRef.current = status; // sync update ref immediately
+    chatStatusRef.current = status;
     setChatStatusRaw(status);
   }, []);
 
@@ -159,8 +159,8 @@ export function useChatSession(
     };
 
     const handleChatLeft = (data: { sessionId: string; nickname: string; tag: string }) => {
-      // Only handle if this is for the CURRENT session (ignore stale events from old sessions)
       if (data.sessionId !== sessionIdRef.current) return;
+      if (isIdleBlocked()) return; // Stale event from old session
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
@@ -169,7 +169,7 @@ export function useChatSession(
     };
 
     const handleChatUserOffline = (_data: { nickname: string; tag: string }) => {
-      if (chatStatusRef.current === 'idle') return;
+      if (chatStatusRef.current === 'idle' || isIdleBlocked()) return;
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
@@ -181,7 +181,7 @@ export function useChatSession(
       const code = data.code;
       const message = data.message || data.error || 'Unknown error';
       if (code === 'USER_OFFLINE' || code === 'USER_BUSY') {
-        if (chatStatusRef.current === 'idle') return; // Ignore stale errors
+        if (chatStatusRef.current === 'idle' || isIdleBlocked()) return;
         setChatMessages(msgs => [
           ...msgs,
           createSystemMessage(message),
@@ -232,8 +232,7 @@ export function useChatSession(
     };
 
     const handleP2PDisconnected = () => {
-      // Only reset if we're actually in a chat (prevent stale events)
-      if (chatStatusRef.current === 'idle') return;
+      if (chatStatusRef.current === 'idle' || isIdleBlocked()) return;
       setChatStatus('idle');
       setPartner(null);
       setSessionId(null);
@@ -324,8 +323,8 @@ export function useChatSession(
   }, [client, incomingRequest]);
 
   const sendMessage = useCallback((content: string, myIdentity: Identity) => {
-    if (!client || !sessionId) return;
-    client.sendChatMessage(sessionId, content);
+    if (!client || !sessionIdRef.current) return;
+    client.sendChatMessage(sessionIdRef.current, content);
     const msg: ChatMessage = {
       id: crypto.randomUUID(),
       from: myIdentity,
@@ -333,19 +332,18 @@ export function useChatSession(
       timestamp: Date.now(),
     };
     setChatMessages(msgs => [...msgs, msg].slice(-MAX_MESSAGES));
-    // Do NOT ring bell for own messages
-  }, [client, sessionId]);
+  }, [client]);
 
   const leaveChat = useCallback(() => {
-    if (!client || !sessionId) return;
+    if (!client || !sessionIdRef.current) return;
     acceptTimestampRef.current = 0; // Allow idle transition (explicit user action)
-    client.leaveChat(sessionId);
+    client.leaveChat(sessionIdRef.current);
     setChatStatus('idle');
     setPartner(null);
     setSessionId(null);
     setChatMessages([]);
     setPartnerLeft(false);
-  }, [client, sessionId]);
+  }, [client]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
