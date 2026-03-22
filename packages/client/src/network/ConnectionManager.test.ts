@@ -8,6 +8,7 @@ const mockP2PTransport = new EventEmitter() as EventEmitter & {
   send: ReturnType<typeof vi.fn>;
   cleanup: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
+  setExpectedPartner: ReturnType<typeof vi.fn>;
   isConnected: boolean;
 };
 mockP2PTransport.connect = vi.fn().mockResolvedValue(undefined);
@@ -15,6 +16,7 @@ mockP2PTransport.announceAndWait = vi.fn().mockResolvedValue(undefined);
 mockP2PTransport.send = vi.fn();
 mockP2PTransport.cleanup = vi.fn().mockResolvedValue(undefined);
 mockP2PTransport.destroy = vi.fn().mockResolvedValue(undefined);
+mockP2PTransport.setExpectedPartner = vi.fn();
 mockP2PTransport.isConnected = false;
 
 vi.mock('./HyperswarmTransport.js', () => ({

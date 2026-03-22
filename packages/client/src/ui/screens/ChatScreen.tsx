@@ -3,7 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import type { Identity, ChatMessage } from '@hivechat/shared';
 import { MAX_MESSAGES } from '@hivechat/shared';
 import { parseNickTag } from '@hivechat/shared';
-import { parseInput, isKnownCommand, COMMANDS, filterCommands } from '../../commands/CommandParser.js';
+import { parseInput, isKnownCommand, COMMANDS, filterCommands, isChatAllowedCommand } from '../../commands/CommandParser.js';
 import { useGracefulExit } from '../../hooks/useGracefulExit.js';
 import { useTerminalSize } from '../../hooks/useTerminalSize.js';
 import { useServerConnection } from '../../hooks/useServerConnection.js';
@@ -92,7 +92,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       return items + indicators + 1 + 2;
     }
     if (showSuggestions) {
-      const filtered = filterCommands(currentInput);
+      const filtered = filterCommands(currentInput, isInChat);
       return Math.min(filtered.length, 8) + (filtered.length > 8 ? 2 : 0) + 2;
     }
     return 0;
@@ -165,7 +165,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
   const handleTextChange = useCallback((text: string) => {
     setCurrentInput(text);
     if (text.startsWith('/') && text.indexOf(' ') === -1) {
-      const filtered = filterCommands(text);
+      const filtered = filterCommands(text, isInChat);
       setShowSuggestions(filtered.length > 0);
       setSuggestionIndex(0);
     } else {
@@ -177,6 +177,11 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
     const parsed = parseInput(text);
 
     if (parsed.type === 'command') {
+      // Block non-chat commands during active chat
+      if (isInChat && !isChatAllowedCommand(parsed.name)) {
+        addSystemMessage('Only /leave, /help, /exit available during chat');
+        return;
+      }
       if (parsed.name === '/exit') {
         gracefulExit();
         return;
@@ -271,7 +276,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
 
   const handleKeyIntercept = useCallback((_input: string, key: Key, setText: (t: string) => void): boolean => {
     if (!showSuggestions) return false;
-    const filtered = filterCommands(currentInput);
+    const filtered = filterCommands(currentInput, isInChat);
     if (key.upArrow) {
       setSuggestionIndex(prev => prev <= 0 ? filtered.length - 1 : prev - 1);
       return true;
@@ -429,7 +434,7 @@ export function ChatScreen({ identity, onIdentityChange }: ChatScreenProps) {
       )}
       {showSuggestions && (
         <CommandSuggestions
-          suggestions={filterCommands(currentInput)}
+          suggestions={filterCommands(currentInput, isInChat)}
           selectedIndex={suggestionIndex}
           visible={showSuggestions}
         />

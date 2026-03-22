@@ -26,10 +26,17 @@ export function parseInput(input: string): ParsedInput {
   return { type: 'message', content: trimmed };
 }
 
-export function filterCommands(prefix: string): Array<{ name: string; description: string }> {
+/** Commands available during active chat */
+const CHAT_COMMANDS = new Set(['/leave', '/exit', '/help']);
+
+export function filterCommands(prefix: string, isInChat = false): Array<{ name: string; description: string }> {
   return Object.entries(COMMANDS)
-    .filter(([name]) => name.startsWith(prefix))
+    .filter(([name]) => name.startsWith(prefix) && (!isInChat || CHAT_COMMANDS.has(name)))
     .map(([name, info]) => ({ name, description: info.description }));
+}
+
+export function isChatAllowedCommand(name: string): boolean {
+  return CHAT_COMMANDS.has(name);
 }
 
 export function isKnownCommand(name: string): name is CommandName {
