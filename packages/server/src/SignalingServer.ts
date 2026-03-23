@@ -87,7 +87,11 @@ export class SignalingServer {
 
       this.wss.on('connection', (ws: AliveWebSocket, req: IncomingMessage) => {
         ws.isAlive = true;
-        ws.clientIp = normalizeIp(req.socket.remoteAddress ?? '127.0.0.1');
+        // Fly.io proxy sets Fly-Client-IP; fallback to X-Forwarded-For, then socket
+        const flyClientIp = req.headers['fly-client-ip'] as string | undefined;
+        const xForwardedFor = req.headers['x-forwarded-for'] as string | undefined;
+        const rawIp = flyClientIp || (xForwardedFor?.split(',')[0]?.trim()) || req.socket.remoteAddress || '127.0.0.1';
+        ws.clientIp = normalizeIp(rawIp);
         ws.msgCount = 0;
         ws.msgResetTime = Date.now();
         ws.errorCount = 0;
@@ -221,13 +225,14 @@ export class SignalingServer {
     }
   }
 
-  private handleRegister(
+  private async handleRegister(
     ws: AliveWebSocket,
     msg: { nickname: string; tag: string; aiCli: string; protocolVersion: number },
-  ): void {
+  ): Promise<void> {
     const userId = `${msg.nickname}#${msg.tag}`;
 
-    let geo = lookupIp(ws.clientIp!);
+    let geo = await lookupIp(ws.clientIp!);
+    console.log(`[Register] ${userId} ip=${ws.clientIp} geo=${geo ? `${geo.city},${geo.country} (${geo.lat},${geo.lon})` : 'null'}`);
     if (!geo) {
       // Fallback to default dev coordinates for private IPs
       geo = {

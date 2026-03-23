@@ -2,20 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { normalizeIp, lookupIp, getDistanceKm, findNearbyUsers } from '../GeoLocationService.js';
 import type { UserRecord } from '../types.js';
 
-// Mock geoip-lite
-vi.mock('geoip-lite', () => ({
-  default: {
-    lookup: vi.fn((ip: string) => {
-      if (ip === '8.8.8.8') {
-        return { ll: [37.386, -122.0838], city: 'Mountain View', country: 'US' };
-      }
-      if (ip === '1.1.1.1') {
-        return { ll: [-33.8688, 151.2093], city: 'Sydney', country: 'AU' };
-      }
-      return null;
-    }),
-  },
-}));
+// Mock global fetch for ip-api.com
+const mockFetch = vi.fn();
+vi.stubGlobal('fetch', mockFetch);
+
+function mockGeoResponse(lat: number, lon: number, city: string, country: string) {
+  return {
+    ok: true,
+    json: () => Promise.resolve({ status: 'success', lat, lon, city, country }),
+  };
+}
 
 describe('GeoLocationService', () => {
   describe('normalizeIp', () => {
@@ -37,48 +33,68 @@ describe('GeoLocationService', () => {
 
     beforeEach(() => {
       process.env = { ...originalEnv };
+      mockFetch.mockReset();
     });
 
     afterEach(() => {
       process.env = originalEnv;
     });
 
-    it('returns GeoResult for a public IP', () => {
-      const result = lookupIp('8.8.8.8');
+    it('returns GeoResult for a public IP via ip-api.com', async () => {
+      mockFetch.mockResolvedValueOnce(mockGeoResponse(37.386, -122.0838, 'Mountain View', 'US'));
+      const result = await lookupIp('8.8.8.8');
       expect(result).not.toBeNull();
       expect(result!.lat).toBeCloseTo(37.386, 1);
       expect(result!.lon).toBeCloseTo(-122.0838, 1);
       expect(result!.city).toBe('Mountain View');
+      expect(mockFetch).toHaveBeenCalledWith('http://ip-api.com/json/8.8.8.8?fields=status,lat,lon,city,country');
     });
 
-    it('returns null for 127.0.0.1 without dev env', () => {
+    it('returns null for 127.0.0.1 without dev env', async () => {
       delete process.env['DEV_GEO_LAT'];
       delete process.env['DEV_GEO_LON'];
-      expect(lookupIp('127.0.0.1')).toBeNull();
+      expect(await lookupIp('127.0.0.1')).toBeNull();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it('returns dev fallback for private IP with DEV_GEO env vars', () => {
+    it('returns dev fallback for private IP with DEV_GEO env vars', async () => {
       process.env['DEV_GEO_LAT'] = '37.5665';
       process.env['DEV_GEO_LON'] = '126.9780';
-      const result = lookupIp('127.0.0.1');
+      const result = await lookupIp('127.0.0.1');
       expect(result).not.toBeNull();
       expect(result!.lat).toBeCloseTo(37.5665, 2);
       expect(result!.lon).toBeCloseTo(126.9780, 2);
       expect(result!.city).toBe('Dev');
     });
 
-    it('returns dev fallback for ::ffff:192.168.1.1 with DEV_GEO env vars', () => {
+    it('returns dev fallback for ::ffff:192.168.1.1 with DEV_GEO env vars', async () => {
       process.env['DEV_GEO_LAT'] = '35.6762';
       process.env['DEV_GEO_LON'] = '139.6503';
-      const result = lookupIp('::ffff:192.168.1.1');
+      const result = await lookupIp('::ffff:192.168.1.1');
       expect(result).not.toBeNull();
       expect(result!.lat).toBeCloseTo(35.6762, 2);
     });
 
-    it('handles IPv6-mapped public IP', () => {
-      const result = lookupIp('::ffff:8.8.8.8');
+    it('handles IPv6-mapped public IP', async () => {
+      mockFetch.mockResolvedValueOnce(mockGeoResponse(37.386, -122.0838, 'Mountain View', 'US'));
+      const result = await lookupIp('::ffff:8.8.8.8');
       expect(result).not.toBeNull();
       expect(result!.city).toBe('Mountain View');
+    });
+
+    it('returns null when ip-api returns failure', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ status: 'fail' }),
+      });
+      const result = await lookupIp('999.999.999.999');
+      expect(result).toBeNull();
+    });
+
+    it('returns null when fetch throws', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('network error'));
+      const result = await lookupIp('8.8.4.4');
+      expect(result).toBeNull();
     });
   });
 

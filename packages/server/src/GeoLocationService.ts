@@ -1,4 +1,3 @@
-import geoip from 'geoip-lite';
 import haversine from 'haversine';
 import { encodeBase32, getNeighborsBase32 } from 'geohashing';
 import type { GeoResult, UserRecord } from './types.js';
@@ -47,12 +46,16 @@ function isPrivateIp(ip: string): boolean {
   return PRIVATE_IP_RANGES.some((pattern) => pattern.test(normalized));
 }
 
+// --- IP Geolocation Cache (1 hour TTL) ---
+const GEO_CACHE_TTL_MS = 60 * 60 * 1000;
+const geoCache = new Map<string, { result: GeoResult; expiresAt: number }>();
+
 /**
- * Lookup IP address to geographic coordinates.
+ * Lookup IP address to geographic coordinates using ip-api.com.
+ * Results are cached for 1 hour.
  * For private/loopback IPs: uses DEV_GEO_LAT/DEV_GEO_LON env vars as fallback.
- * Returns null if lookup fails and no dev fallback is set.
  */
-export function lookupIp(ip: string): GeoResult | null {
+export async function lookupIp(ip: string): Promise<GeoResult | null> {
   const normalized = normalizeIp(ip);
 
   if (isPrivateIp(normalized)) {
@@ -69,17 +72,33 @@ export function lookupIp(ip: string): GeoResult | null {
     return null;
   }
 
-  const geo = geoip.lookup(normalized);
-  if (!geo || !geo.ll) {
-    return null;
+  // Check cache
+  const cached = geoCache.get(normalized);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.result;
   }
 
-  return {
-    lat: geo.ll[0]!,
-    lon: geo.ll[1]!,
-    city: geo.city || 'Unknown',
-    country: geo.country || 'Unknown',
-  };
+  try {
+    // ip-api.com free tier: 45 req/min, no API key needed
+    const res = await fetch(`http://ip-api.com/json/${normalized}?fields=status,lat,lon,city,country`);
+    const data = await res.json() as { status: string; lat?: number; lon?: number; city?: string; country?: string };
+
+    if (data.status !== 'success' || data.lat == null || data.lon == null) {
+      return null;
+    }
+
+    const result: GeoResult = {
+      lat: data.lat,
+      lon: data.lon,
+      city: data.city || 'Unknown',
+      country: data.country || 'Unknown',
+    };
+
+    geoCache.set(normalized, { result, expiresAt: Date.now() + GEO_CACHE_TTL_MS });
+    return result;
+  } catch {
+    return null;
+  }
 }
 
 /**

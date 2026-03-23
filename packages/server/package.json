@@ -18,13 +18,11 @@
   "dependencies": {
     "@hivechat/shared": "*",
     "geohashing": "^2.0.1",
-    "geoip-lite": "^2.0.1",
     "haversine": "^1.1.1",
     "ws": "^8.19.0",
     "zod": "^3.24"
   },
   "devDependencies": {
-    "@types/geoip-lite": "^1",
     "@types/haversine": "^1",
     "@types/ws": "^8",
     "tsdown": "^0",
