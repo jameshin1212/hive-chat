@@ -11,7 +11,7 @@ import {
 import type { ServerMessage, NearbyUser } from '@hivechat/shared';
 import { PresenceManager } from './PresenceManager.js';
 import { ChatSessionManager } from './ChatSessionManager.js';
-import { lookupIp, normalizeIp } from './GeoLocationService.js';
+import { lookupIp, normalizeIp, getDistanceKm } from './GeoLocationService.js';
 import type { UserRecord } from './types.js';
 
 /** Default Seoul coordinates for private IP fallback */
@@ -202,6 +202,9 @@ export class SignalingServer {
       case MessageType.CHAT_DECLINE:
         this.handleChatDecline(ws, msg.sessionId);
         break;
+      case MessageType.CHAT_CANCEL:
+        this.handleChatCancel(ws, msg.targetNickname, msg.targetTag);
+        break;
       // CHAT_MESSAGE removed — P2P only architecture. Server does not relay messages.
       case MessageType.CHAT_LEAVE:
         this.handleChatLeave(ws, msg.sessionId);
@@ -256,23 +259,29 @@ export class SignalingServer {
       users: nearbyUsers,
     });
 
-    // Broadcast USER_JOINED to nearby clients (10km radius)
-    this.broadcastToNearby(
-      {
+    // Broadcast USER_JOINED to nearby clients with per-recipient distance
+    const nearbyUserIds = this.presenceManager.getUsersInRadius(
+      geo.lat, geo.lon, BROADCAST_RADIUS_KM, userId,
+    );
+    for (const nearbyId of nearbyUserIds) {
+      const nearbyUser = this.presenceManager.getUser(nearbyId);
+      if (!nearbyUser) continue;
+      const dist = getDistanceKm(
+        { lat: geo.lat, lon: geo.lon },
+        { lat: nearbyUser.lat, lon: nearbyUser.lon },
+      );
+      const rounded = Math.round(dist * 10) / 10;
+      this.sendToUser(nearbyId, {
         type: MessageType.USER_JOINED,
         user: {
           nickname: msg.nickname,
           tag: msg.tag,
           aiCli: msg.aiCli as NearbyUser['aiCli'],
-          distance: 0,
+          distance: rounded,
           status: 'online',
         },
-      },
-      geo.lat,
-      geo.lon,
-      BROADCAST_RADIUS_KM,
-      userId,
-    );
+      });
+    }
 
     // Notify friend subscribers that this user came online
     this.notifyFriendSubscribers(userId, 'online');
@@ -392,6 +401,27 @@ export class SignalingServer {
       type: MessageType.CHAT_DECLINED,
       sessionId,
     });
+  }
+
+  /**
+   * Handle chat cancel — requester cancels their own pending request.
+   * Removes pending request and notifies the target to dismiss the overlay.
+   */
+  private handleChatCancel(ws: AliveWebSocket, targetNickname: string, targetTag: string): void {
+    const requesterId = ws.userId!;
+    const targetId = `${targetNickname}#${targetTag}`;
+
+    // Find and remove the pending request from this requester to the target
+    const removed = this.chatSessionManager.removePendingByUser(requesterId);
+    if (removed.length === 0) return;
+
+    // Notify the target that the request was cancelled
+    for (const sessionId of removed) {
+      this.sendToUser(targetId, {
+        type: MessageType.CHAT_CANCELLED,
+        sessionId,
+      });
+    }
   }
 
   // handleChatMessage removed — P2P only architecture
