@@ -110,6 +110,13 @@ export class SignalingClient extends EventEmitter {
   }
 
   /**
+   * Cancel an outgoing chat request (before it's accepted).
+   */
+  cancelChat(targetNickname: string, targetTag: string): void {
+    this.send({ type: MessageType.CHAT_CANCEL, targetNickname, targetTag });
+  }
+
+  /**
    * Send a chat message in an active session.
    */
   sendChatMessage(sessionId: string, content: string): void {
@@ -182,6 +189,9 @@ export class SignalingClient extends EventEmitter {
         break;
       case MessageType.CHAT_DECLINED:
         this.emit('chat_declined', { sessionId: msg.sessionId });
+        break;
+      case MessageType.CHAT_CANCELLED:
+        this.emit('chat_cancelled', { sessionId: msg.sessionId });
         break;
       case MessageType.CHAT_MSG:
         this.emit('chat_msg', { sessionId: msg.sessionId, from: msg.from, content: msg.content, timestamp: msg.timestamp });

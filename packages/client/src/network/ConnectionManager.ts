@@ -58,6 +58,10 @@ export class ConnectionManager extends EventEmitter {
     this.signalingClient.declineChat(sessionId);
   }
 
+  cancelChat(targetNickname: string, targetTag: string): void {
+    this.signalingClient.cancelChat(targetNickname, targetTag);
+  }
+
   /**
    * Send chat message — P2P only.
    * If P2P is not connected, message cannot be sent.
@@ -101,7 +105,7 @@ export class ConnectionManager extends EventEmitter {
     // Forward signaling events to UI layer
     const forwardEvents = [
       'registered', 'nearby_users', 'user_joined', 'user_left', 'user_status',
-      'chat_requested', 'chat_declined', 'chat_error',
+      'chat_requested', 'chat_declined', 'chat_cancelled', 'chat_error',
       'friend_status_response', 'friend_status_update',
       'connected', 'reconnecting',
     ];

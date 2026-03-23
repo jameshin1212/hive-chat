@@ -177,6 +177,11 @@ export function useChatSession(
       setChatMessages([]);
     };
 
+    const handleChatCancelled = (_data: { sessionId: string }) => {
+      // Requester cancelled — dismiss the incoming request overlay
+      setIncomingRequest(null);
+    };
+
     const handleChatError = (data: { code?: string; message?: string; error?: string }) => {
       const code = data.code;
       const message = data.message || data.error || 'Unknown error';
@@ -243,6 +248,7 @@ export function useChatSession(
     client.on('chat_requested', handleChatRequested);
     client.on('chat_accepted', handleChatAccepted);
     client.on('chat_declined', handleChatDeclined);
+    client.on('chat_cancelled', handleChatCancelled);
     client.on('chat_msg', handleChatMsg);
     client.on('chat_left', handleChatLeft);
     client.on('chat_user_offline', handleChatUserOffline);
@@ -257,6 +263,7 @@ export function useChatSession(
       client.off('chat_requested', handleChatRequested);
       client.off('chat_accepted', handleChatAccepted);
       client.off('chat_declined', handleChatDeclined);
+      client.off('chat_cancelled', handleChatCancelled);
       client.off('chat_msg', handleChatMsg);
       client.off('chat_left', handleChatLeft);
       client.off('chat_user_offline', handleChatUserOffline);
@@ -297,10 +304,14 @@ export function useChatSession(
       clearTimeout(requestTimeoutRef.current);
       requestTimeoutRef.current = null;
     }
+    // Notify server to clean up pending request
+    if (client && partnerRef.current) {
+      client.cancelChat(partnerRef.current.nickname, partnerRef.current.tag);
+    }
     setChatStatus('idle');
     setPartner(null);
     setChatMessages([]);
-  }, []);
+  }, [client]);
 
   const acceptRequest = useCallback(() => {
     if (!client || !incomingRequest) return;

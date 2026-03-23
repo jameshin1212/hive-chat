@@ -12,6 +12,7 @@ export const MessageType = {
   CHAT_REQUEST: 'chat_request',
   CHAT_ACCEPT: 'chat_accept',
   CHAT_DECLINE: 'chat_decline',
+  CHAT_CANCEL: 'chat_cancel',
   CHAT_MESSAGE: 'chat_message',
   CHAT_LEAVE: 'chat_leave',
   // Server -> Client
@@ -25,6 +26,7 @@ export const MessageType = {
   CHAT_REQUESTED: 'chat_requested',
   CHAT_ACCEPTED: 'chat_accepted',
   CHAT_DECLINED: 'chat_declined',
+  CHAT_CANCELLED: 'chat_cancelled',
   CHAT_MSG: 'chat_msg',
   CHAT_LEFT: 'chat_left',
   CHAT_USER_OFFLINE: 'chat_user_offline',
@@ -96,6 +98,12 @@ export const chatDeclineSchema = z.object({
   sessionId: uuidSchema,
 });
 
+export const chatCancelSchema = z.object({
+  type: z.literal(MessageType.CHAT_CANCEL),
+  targetNickname: z.string().min(1).max(16),
+  targetTag: z.string().regex(/^[0-9A-F]{4}$/),
+});
+
 export const chatMessageSchema = z.object({
   type: z.literal(MessageType.CHAT_MESSAGE),
   sessionId: uuidSchema,
@@ -139,6 +147,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
   chatRequestSchema,
   chatAcceptSchema,
   chatDeclineSchema,
+  chatCancelSchema,
   chatMessageSchema,
   chatLeaveSchema,
   friendStatusRequestSchema,
@@ -203,6 +212,11 @@ export const chatDeclinedSchema = z.object({
   sessionId: uuidSchema,
 });
 
+export const chatCancelledSchema = z.object({
+  type: z.literal(MessageType.CHAT_CANCELLED),
+  sessionId: uuidSchema,
+});
+
 export const chatMsgSchema = z.object({
   type: z.literal(MessageType.CHAT_MSG),
   sessionId: uuidSchema,
@@ -259,6 +273,7 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
   chatRequestedSchema,
   chatAcceptedSchema,
   chatDeclinedSchema,
+  chatCancelledSchema,
   chatMsgSchema,
   chatLeftSchema,
   chatUserOfflineSchema,
@@ -286,11 +301,13 @@ export type ErrorMessage = z.infer<typeof errorSchema>;
 export type ChatRequestMessage = z.infer<typeof chatRequestSchema>;
 export type ChatAcceptMessage = z.infer<typeof chatAcceptSchema>;
 export type ChatDeclineMessage = z.infer<typeof chatDeclineSchema>;
+export type ChatCancelMessage = z.infer<typeof chatCancelSchema>;
 export type ChatMessageMessage = z.infer<typeof chatMessageSchema>;
 export type ChatLeaveMessage = z.infer<typeof chatLeaveSchema>;
 export type ChatRequestedMessage = z.infer<typeof chatRequestedSchema>;
 export type ChatAcceptedMessage = z.infer<typeof chatAcceptedSchema>;
 export type ChatDeclinedMessage = z.infer<typeof chatDeclinedSchema>;
+export type ChatCancelledMessage = z.infer<typeof chatCancelledSchema>;
 export type ChatMsgMessage = z.infer<typeof chatMsgSchema>;
 export type ChatLeftMessage = z.infer<typeof chatLeftSchema>;
 export type ChatUserOfflineMessage = z.infer<typeof chatUserOfflineSchema>;
